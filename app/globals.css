@@ -4,32 +4,28 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Updated color scheme to match Soul Internet logo: cyan and purple */
-  --background: oklch(0.98 0 0);
-  --foreground: oklch(0.15 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.15 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.15 0 0);
-  --primary: oklch(0.53 0.15 280); /* Deep purple */
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.55 0.16 200); /* Cyan-ish */
-  --secondary-foreground: oklch(0.1 0 0);
-  --muted: oklch(0.7 0 0);
-  --muted-foreground: oklch(0.5 0 0);
-  --accent: oklch(0.6 0.2 190); /* Bright cyan */
-  --accent-foreground: oklch(0.1 0 0);
-  --destructive: oklch(0.6 0.2 20);
-  --destructive-foreground: oklch(1 0 0);
-  --border: oklch(0.93 0 0);
-  --input: oklch(0.97 0 0);
-  --ring: oklch(0.55 0.16 200);
+  /* Premium purple-to-cyan gradient theme */
+  --background: #0a0e27;
+  --foreground: #f5f7fa;
+  --card: #1a1f3a;
+  --card-foreground: #f5f7fa;
+  --primary: #8b5cf6;
+  --primary-foreground: #0a0e27;
+  --secondary: #06b6d4;
+  --secondary-foreground: #0a0e27;
+  --accent: #00d9ff;
+  --accent-foreground: #0a0e27;
+  --destructive: #ef4444;
+  --destructive-foreground: #f5f7fa;
+  --border: #2d3651;
+  --input: #141829;
+  --ring: #06b6d4;
   --chart-1: oklch(0.53 0.15 280);
   --chart-2: oklch(0.6 0.2 190);
   --chart-3: oklch(0.65 0.18 220);
   --chart-4: oklch(0.58 0.16 260);
   --chart-5: oklch(0.62 0.19 200);
-  --radius: 0.75rem;
+  --radius: 1.5rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.53 0.15 280);
@@ -82,8 +78,6 @@
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
@@ -102,7 +96,7 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
-  --radius: 0.75rem;
+  --radius: var(--radius);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -123,12 +117,14 @@
   }
   body {
     @apply bg-background text-foreground;
+    background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1426 100%);
   }
 }
 
 @layer components {
+  /* Premium gradient and glow effects matching Studio Play design */
   .gradient-text {
-    @apply text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-cyan-500 to-purple-600;
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-cyan-400 to-purple-400;
   }
 
   .gradient-accent {
@@ -145,7 +141,7 @@
   }
 
   .glow-border {
-    @apply border border-cyan-300/30 hover:border-cyan-400/60 transition-colors;
+    @apply border border-purple-500/30 hover:border-cyan-500/60 transition-colors;
   }
 
   .wave-animation {
@@ -159,6 +155,43 @@
     }
     50% {
       transform: translateY(-4px);
+    }
+  }
+
+  .glow-card {
+    @apply bg-gradient-to-br from-purple-900/20 to-cyan-900/20 border border-purple-500/30 hover:border-cyan-500/60 backdrop-blur-xl transition-all duration-300;
+    box-shadow: 0 0 30px rgba(139, 92, 246, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+
+  .premium-hover {
+    @apply transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/20 hover:-translate-y-1;
+  }
+
+  .float-animation {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+
+  .pulse-glow {
+    animation: pulse-glow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%,
+    100% {
+      box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+    }
+    50% {
+      box-shadow: 0 0 40px rgba(6, 182, 212, 0.5);
     }
   }
 }
