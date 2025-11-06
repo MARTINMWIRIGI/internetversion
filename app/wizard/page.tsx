@@ -73,81 +73,67 @@ export default function WizardPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background">
-      {/* Grid background */}
-      <div className="fixed inset-0 grid-pattern opacity-20 pointer-events-none" />
+    <main className="min-h-screen bg-white">
+      {/* Header */}
+      <header className="border-b border-slate-200 bg-white sticky top-0 z-50 shadow-sm">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between flex-col md:flex-row gap-4">
+          <Link href="/">
+            <Button variant="ghost" className="text-slate-700 hover:text-slate-900 hover:bg-slate-100">
+              ← Back to Home
+            </Button>
+          </Link>
+          <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Contribution Wizard</h1>
+          <div className="w-24" />
+        </div>
+      </header>
 
-      {/* Scan line */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute inset-0 scan-line bg-gradient-to-b from-transparent via-purple-500 to-transparent opacity-5" />
-      </div>
-
-      <div className="relative z-10">
-        {/* Header */}
-        <header className="border-b border-border/40 backdrop-blur-sm bg-background/80">
-          <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-            <Link href="/">
-              <Button variant="ghost" className="text-purple-400 hover:text-purple-300 hover:bg-purple-500/10">
-                ← Back to Vault
-              </Button>
-            </Link>
-            <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-300">
-              Contribution Wizard
-            </h1>
-            <div className="w-24" />
-          </div>
-        </header>
-
-        {/* Progress Bar */}
-        <div className="container mx-auto px-4 py-8">
-          <div className="max-w-2xl mx-auto">
-            <div className="flex items-center justify-between mb-8">
-              {STEPS.map((step, idx) => (
-                <div key={step.id} className="flex items-center flex-1">
-                  <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all ${
-                      currentStep >= step.id
-                        ? "bg-gradient-to-r from-purple-500 to-cyan-400 text-black neon-glow"
-                        : "bg-card border border-border text-muted-foreground"
-                    }`}
-                  >
-                    {step.id}
-                  </div>
-                  {idx < STEPS.length - 1 && (
-                    <div
-                      className={`flex-1 h-1 mx-2 transition-all ${
-                        currentStep > step.id ? "bg-gradient-to-r from-purple-500 to-cyan-400" : "bg-border"
-                      }`}
-                    />
-                  )}
+      {/* Progress Bar */}
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-2xl mx-auto">
+          <div className="flex items-center justify-between mb-8 overflow-x-auto pb-2">
+            {STEPS.map((step, idx) => (
+              <div key={step.id} className="flex items-center flex-1 min-w-max">
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all shadow-sm ${
+                    currentStep >= step.id
+                      ? "bg-gradient-to-r from-amber-500 to-orange-600 text-white"
+                      : "bg-slate-100 border border-slate-300 text-slate-600"
+                  }`}
+                >
+                  {step.id}
                 </div>
-              ))}
-            </div>
+                {idx < STEPS.length - 1 && (
+                  <div
+                    className={`flex-1 h-1 mx-2 transition-all ${
+                      currentStep > step.id ? "bg-gradient-to-r from-amber-500 to-orange-600" : "bg-slate-300"
+                    }`}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
 
-            {/* Step Title */}
-            <div className="mb-8 text-center">
-              <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-cyan-300 to-purple-400 mb-2">
-                {STEPS[currentStep - 1].title}
-              </h2>
-              <p className="text-muted-foreground">
-                Step {currentStep} of {STEPS.length}
-              </p>
-            </div>
+          {/* Step Title */}
+          <div className="mb-8 text-center">
+            <h2 className="text-3xl font-bold text-slate-900 mb-2">{STEPS[currentStep - 1].title}</h2>
+            <p className="text-slate-600">
+              Step {currentStep} of {STEPS.length}
+            </p>
           </div>
         </div>
+      </div>
 
-        {/* Wizard Content */}
-        <div className="container mx-auto px-4 pb-12">
-          <div className="max-w-2xl mx-auto">
-            {currentStep === 1 && <LanguageStep onNext={handleNext} data={data} />}
-            {currentStep === 2 && <ContentStep onNext={handleNext} onBack={handleBack} data={data} />}
-            {currentStep === 3 && <AudioStep onNext={handleNext} onBack={handleBack} data={data} />}
-            {currentStep === 4 && <MetadataStep onNext={handleNext} onBack={handleBack} data={data} />}
-            {currentStep === 5 && (
-              <ReviewStep onSubmit={handleSubmit} onBack={handleBack} data={data} isSubmitting={isSubmitting} />
-            )}
-            {currentStep === 6 && <ResultStep data={data} />}
-          </div>
+      {/* Wizard Content */}
+      <div className="container mx-auto px-4 pb-12">
+        <div className="max-w-2xl mx-auto">
+          {currentStep === 1 && <LanguageStep onNext={handleNext} data={data} />}
+          {currentStep === 2 && <ContentStep onNext={handleNext} onBack={handleBack} data={data} />}
+          {currentStep === 3 && <AudioStep onNext={handleNext} onBack={handleBack} data={data} />}
+          {currentStep === 4 && <MetadataStep onNext={handleNext} onBack={handleBack} data={data} />}
+          {currentStep === 5 && (
+            <ReviewStep onSubmit={handleSubmit} onBack={handleBack} data={data} isSubmitting={isSubmitting} />
+          )}
+          {currentStep === 6 && <ResultStep data={data} />}
         </div>
       </div>
     </main>
