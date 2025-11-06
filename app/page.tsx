@@ -182,9 +182,12 @@ export default function Home() {
         <div className="container mx-auto px-4 text-center text-sm text-gray-400 space-y-4">
           <p className="font-semibold text-purple-400">Soul Internet Vault Guardian</p>
           <p>Preserving humanity's linguistic and cultural heritage through Web3 technology</p>
-          <p className="text-xs">Powered by AIVG • MILSA Quality Scoring • Polygon • MetaMask • OpenSea</p>
+          <p className="text-xs">MILSA Quality Scoring • Polygon • MetaMask • OpenSea</p>
           <p className="text-xs text-gray-500">
             Not financial advice. Crypto involves risk. Learn before you contribute.
+          </p>
+          <p className="text-xs text-gray-600 pt-4 border-t border-gray-700">
+            © Soul-Internet | Powered by IMPERIAL ENTERPRISE
           </p>
         </div>
       </footer>
