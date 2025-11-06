@@ -73,25 +73,44 @@ export default function WizardPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-blue-50 to-indigo-50">
-      {/* Grid background */}
-      <div className="fixed inset-0 grid-pattern opacity-20 pointer-events-none" />
+    <main className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-900 to-slate-950 overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl animate-pulse"></div>
+        <div
+          className="absolute bottom-0 left-0 w-96 h-96 bg-cyan-600/20 rounded-full blur-3xl animate-pulse"
+          style={{ animationDelay: "1s" }}
+        ></div>
+        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
+      </div>
 
-      {/* Scan line */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute inset-0 scan-line bg-gradient-to-b from-transparent via-purple-500 to-transparent opacity-5" />
+      {/* Floating particles */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {[...Array(20)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute w-1 h-1 bg-cyan-400/30 rounded-full animate-pulse"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 2}s`,
+            }}
+          ></div>
+        ))}
       </div>
 
       <div className="relative z-10">
         {/* Header */}
-        <header className="border-b border-blue-100 bg-white/80 backdrop-blur-md sticky top-0 z-50 soft-shadow">
+        <header className="border-b border-purple-500/20 bg-gradient-to-b from-purple-900/20 to-transparent backdrop-blur-md sticky top-0 z-50">
           <div className="container mx-auto px-4 py-4 flex items-center justify-between flex-col md:flex-row gap-4">
             <Link href="/">
-              <Button variant="ghost" className="text-blue-600 hover:text-blue-700 hover:bg-blue-50">
+              <Button variant="ghost" className="text-cyan-400 hover:text-cyan-300 hover:bg-purple-500/20">
                 ← Back to Home
               </Button>
             </Link>
-            <h1 className="text-2xl font-bold gradient-text">Contribution Wizard</h1>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-cyan-400 to-purple-400 bg-clip-text text-transparent">
+              Contribution Wizard
+            </h1>
             <div className="w-24" />
           </div>
         </header>
@@ -103,10 +122,10 @@ export default function WizardPage() {
               {STEPS.map((step, idx) => (
                 <div key={step.id} className="flex items-center flex-1 min-w-max">
                   <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all soft-shadow ${
+                    className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all ${
                       currentStep >= step.id
-                        ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white"
-                        : "bg-white border border-blue-200 text-muted-foreground"
+                        ? "bg-gradient-to-r from-purple-500 to-cyan-400 text-black shadow-lg shadow-purple-500/50"
+                        : "bg-purple-900/30 border border-purple-500/30 text-purple-400"
                     }`}
                   >
                     {step.id}
@@ -114,7 +133,7 @@ export default function WizardPage() {
                   {idx < STEPS.length - 1 && (
                     <div
                       className={`flex-1 h-1 mx-2 transition-all ${
-                        currentStep > step.id ? "bg-gradient-to-r from-blue-600 to-purple-600" : "bg-blue-200"
+                        currentStep > step.id ? "bg-gradient-to-r from-purple-500 to-cyan-400" : "bg-purple-900/30"
                       }`}
                     />
                   )}
@@ -124,8 +143,10 @@ export default function WizardPage() {
 
             {/* Step Title */}
             <div className="mb-8 text-center">
-              <h2 className="text-3xl font-bold gradient-text mb-2">{STEPS[currentStep - 1].title}</h2>
-              <p className="text-muted-foreground">
+              <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-400 via-cyan-400 to-purple-400 bg-clip-text text-transparent mb-2">
+                {STEPS[currentStep - 1].title}
+              </h2>
+              <p className="text-purple-400/70">
                 Step {currentStep} of {STEPS.length}
               </p>
             </div>

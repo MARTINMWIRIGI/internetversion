@@ -4,9 +4,11 @@ import Image from "next/image"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { ArrowLeft } from "lucide-react"
 import { useState } from "react"
+import { createClient } from "@/lib/supabase/client"
 
 export default function AuthPage() {
   const [isLoading, setIsLoading] = useState(false)
+  const supabase = createClient()
 
   const handleMetaMaskConnect = async () => {
     setIsLoading(true)
@@ -21,15 +23,13 @@ export default function AuthPage() {
         method: "eth_requestAccounts",
       })
 
-      // Request network switch to Polygon Mainnet
       try {
         await window.ethereum.request({
           method: "wallet_switchEthereumChain",
-          params: [{ chainId: "0x89" }], // Polygon Mainnet chain ID
+          params: [{ chainId: "0x89" }],
         })
       } catch (switchError: any) {
         if (switchError.code === 4902) {
-          // Network not added, request to add it
           await window.ethereum.request({
             method: "wallet_addEthereumChain",
             params: [
@@ -49,21 +49,63 @@ export default function AuthPage() {
         }
       }
 
-      console.log("[v0] Connected account:", accounts[0])
-      // TODO: Store account and redirect to dashboard
+      console.log("[v0] Connected MetaMask:", accounts[0])
+      alert("MetaMask connected successfully!")
     } catch (error) {
-      console.error("[v0] Connection error:", error)
+      console.error("[v0] MetaMask error:", error)
+      alert("Failed to connect MetaMask")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true)
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      })
+
+      if (error) {
+        console.error("[v0] Google auth error:", error)
+        alert("Failed to connect Google account")
+      }
+    } catch (error) {
+      console.error("[v0] Google sign-in error:", error)
+      alert("An error occurred during Google sign-in")
     } finally {
       setIsLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-background overflow-hidden">
-      {/* Background elements */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-900 to-slate-950 overflow-hidden">
+      {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-cyan-600/20 rounded-full blur-3xl"></div>
+        <div className="absolute top-0 right-0 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl animate-pulse"></div>
+        <div
+          className="absolute bottom-0 left-0 w-96 h-96 bg-cyan-600/20 rounded-full blur-3xl animate-pulse"
+          style={{ animationDelay: "1s" }}
+        ></div>
+      </div>
+
+      {/* Floating particles */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {[...Array(15)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute w-1 h-1 bg-cyan-400/20 rounded-full"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animation: `pulse ${2 + Math.random() * 2}s infinite`,
+              animationDelay: `${Math.random() * 2}s`,
+            }}
+          ></div>
+        ))}
       </div>
 
       {/* Content */}
@@ -72,23 +114,25 @@ export default function AuthPage() {
           {/* Back button */}
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-gray-400 hover:text-cyan-400 transition-colors text-sm"
+            className="inline-flex items-center gap-2 text-purple-400 hover:text-cyan-400 transition-colors text-sm"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Home
           </Link>
 
           {/* Main Card */}
-          <Card className="glow-card border-purple-500/30 overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-purple-900/30 to-cyan-900/30 py-12 px-6 text-center space-y-4">
+          <Card className="border-purple-500/30 overflow-hidden bg-purple-900/20 backdrop-blur-xl">
+            <CardHeader className="bg-gradient-to-r from-purple-900/40 to-cyan-900/40 py-12 px-6 text-center space-y-4 border-b border-purple-500/20">
               <div className="flex justify-center">
                 <div className="w-16 h-16 relative">
                   <Image src="/logo.png" alt="Soul Internet" width={64} height={64} className="rounded-lg" />
                 </div>
               </div>
               <div className="space-y-2">
-                <h1 className="text-2xl font-bold gradient-text">Welcome Back</h1>
-                <p className="text-sm text-gray-400">
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-cyan-400 to-purple-400 bg-clip-text text-transparent">
+                  Welcome Back
+                </h1>
+                <p className="text-sm text-purple-300/70">
                   Unlock your cultural vault and start preserving linguistic heritage
                 </p>
               </div>
@@ -97,7 +141,7 @@ export default function AuthPage() {
             <CardContent className="p-6 space-y-6">
               {/* MetaMask Option */}
               <div className="space-y-3">
-                <p className="text-xs font-semibold text-purple-400 uppercase">Web3 Authentication</p>
+                <p className="text-xs font-semibold text-purple-400 uppercase tracking-wider">Web3 Authentication</p>
                 <button
                   onClick={handleMetaMaskConnect}
                   disabled={isLoading}
@@ -124,14 +168,18 @@ export default function AuthPage() {
               {/* Divider */}
               <div className="relative flex items-center gap-3">
                 <div className="flex-1 h-px bg-gradient-to-r from-transparent via-purple-500/30 to-transparent" />
-                <span className="text-xs text-gray-500">or</span>
+                <span className="text-xs text-purple-400/50">or</span>
                 <div className="flex-1 h-px bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
               </div>
 
               {/* Google Option */}
               <div className="space-y-3">
-                <p className="text-xs font-semibold text-cyan-400 uppercase">Social Authentication</p>
-                <button className="w-full group relative overflow-hidden rounded-xl border border-cyan-500/30 hover:border-purple-500/60 bg-gradient-to-br from-cyan-900/20 to-purple-900/20 hover:from-cyan-900/40 hover:to-purple-900/40 p-4 transition-all duration-300">
+                <p className="text-xs font-semibold text-cyan-400 uppercase tracking-wider">Social Authentication</p>
+                <button
+                  onClick={handleGoogleSignIn}
+                  disabled={isLoading}
+                  className="w-full group relative overflow-hidden rounded-xl border border-cyan-500/30 hover:border-purple-500/60 bg-gradient-to-br from-cyan-900/20 to-purple-900/20 hover:from-cyan-900/40 hover:to-purple-900/40 p-4 transition-all duration-300 disabled:opacity-50"
+                >
                   <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-purple-500/0 to-cyan-500/0 group-hover:from-cyan-500/10 group-hover:via-purple-500/10 group-hover:to-cyan-500/10 transition-all duration-300" />
                   <div className="relative flex items-center gap-3 justify-center">
                     <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
@@ -153,7 +201,9 @@ export default function AuthPage() {
                       />
                     </svg>
                     <div className="text-left">
-                      <p className="font-semibold text-white text-sm">Sign in with Google</p>
+                      <p className="font-semibold text-white text-sm">
+                        {isLoading ? "Signing in..." : "Sign in with Google"}
+                      </p>
                       <p className="text-xs text-purple-400">Email authentication</p>
                     </div>
                   </div>
@@ -163,14 +213,14 @@ export default function AuthPage() {
               {/* Info Box */}
               <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-4 space-y-2">
                 <p className="text-xs font-semibold text-purple-300">Why authentication?</p>
-                <p className="text-xs text-gray-400 leading-relaxed">
+                <p className="text-xs text-purple-300/70 leading-relaxed">
                   Your data is securely stored in your personal vault. MetaMask connects you to Web3 rewards on Polygon.
                   Google login lets you authenticate with email.
                 </p>
               </div>
 
               {/* Privacy Notice */}
-              <p className="text-xs text-center text-gray-500">
+              <p className="text-xs text-center text-purple-400/50">
                 By signing in, you agree to our{" "}
                 <Link href="/terms" className="text-cyan-400 hover:underline">
                   Terms
@@ -185,18 +235,18 @@ export default function AuthPage() {
 
           {/* Feature Benefits */}
           <div className="grid grid-cols-2 gap-3">
-            <Card className="glow-card p-4">
+            <Card className="border-purple-500/30 bg-purple-900/20 backdrop-blur-xl p-4">
               <div className="space-y-2">
                 <p className="text-2xl">🔐</p>
                 <p className="text-xs font-semibold text-cyan-300">Secure</p>
-                <p className="text-xs text-gray-400">Your data, encrypted & private</p>
+                <p className="text-xs text-purple-300/70">Your data, encrypted & private</p>
               </div>
             </Card>
-            <Card className="glow-card p-4">
+            <Card className="border-purple-500/30 bg-purple-900/20 backdrop-blur-xl p-4">
               <div className="space-y-2">
                 <p className="text-2xl">💰</p>
                 <p className="text-xs font-semibold text-purple-300">Earn</p>
-                <p className="text-xs text-gray-400">Web3 rewards & NFTs</p>
+                <p className="text-xs text-purple-300/70">Web3 rewards & NFTs</p>
               </div>
             </Card>
           </div>

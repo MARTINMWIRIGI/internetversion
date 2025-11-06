@@ -61,32 +61,32 @@ export function Header() {
             side="right"
             className="bg-gradient-to-b from-purple-900/40 to-purple-950/40 border-purple-500/20 backdrop-blur-xl w-80"
           >
-            <div className="space-y-6 mt-8">
-              <nav className="space-y-4">
+            <div className="space-y-6 mt-8 px-2">
+              <nav className="space-y-2">
                 <Link
                   href="/gallery"
-                  className="block text-gray-300 hover:text-cyan-400 transition-colors py-2"
+                  className="block text-gray-300 hover:text-cyan-400 transition-colors py-3 px-3 rounded-lg hover:bg-purple-500/10"
                   onClick={() => setIsOpen(false)}
                 >
                   Gallery
                 </Link>
                 <Link
                   href="/contribute"
-                  className="block text-gray-300 hover:text-cyan-400 transition-colors py-2"
+                  className="block text-gray-300 hover:text-cyan-400 transition-colors py-3 px-3 rounded-lg hover:bg-purple-500/10"
                   onClick={() => setIsOpen(false)}
                 >
                   Contribute
                 </Link>
                 <Link
                   href="/docs"
-                  className="block text-gray-300 hover:text-cyan-400 transition-colors py-2"
+                  className="block text-gray-300 hover:text-cyan-400 transition-colors py-3 px-3 rounded-lg hover:bg-purple-500/10"
                   onClick={() => setIsOpen(false)}
                 >
                   Learn
                 </Link>
                 <Link
                   href="/vault"
-                  className="block text-gray-300 hover:text-cyan-400 transition-colors py-2"
+                  className="block text-gray-300 hover:text-cyan-400 transition-colors py-3 px-3 rounded-lg hover:bg-purple-500/10"
                   onClick={() => setIsOpen(false)}
                 >
                   My Vault
@@ -94,13 +94,13 @@ export function Header() {
               </nav>
 
               <div className="pt-6 border-t border-purple-500/20 space-y-3">
-                <p className="text-xs text-purple-400 font-semibold">CONNECT & AUTHENTICATE</p>
-                <Link href="/auth" onClick={() => setIsOpen(false)} className="block w-full">
+                <p className="text-xs text-purple-400 font-semibold px-3">CONNECT & AUTHENTICATE</p>
+                <Link href="/auth" onClick={() => setIsOpen(false)} className="block w-full px-2">
                   <Button className="w-full gradient-accent text-white mb-2 hover:shadow-lg hover:shadow-purple-500/50">
                     Connect Wallet
                   </Button>
                 </Link>
-                <Link href="/auth" onClick={() => setIsOpen(false)} className="block w-full">
+                <Link href="/auth" onClick={() => setIsOpen(false)} className="block w-full px-2">
                   <Button
                     variant="outline"
                     className="w-full border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 bg-transparent"
