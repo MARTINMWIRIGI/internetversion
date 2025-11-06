@@ -1,17 +1,37 @@
 "use client"
 import Link from "next/link"
+import type React from "react"
+
 import Image from "next/image"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { ArrowLeft } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 
 export default function AuthPage() {
   const [isLoading, setIsLoading] = useState(false)
+  const [isSignUp, setIsSignUp] = useState(false)
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [rememberMe, setRememberMe] = useState(true)
+  const [error, setError] = useState("")
   const supabase = createClient()
+  const router = useRouter()
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession()
+      if (data.session) {
+        router.push("/wizard")
+      }
+    }
+    checkSession()
+  }, [supabase, router])
 
   const handleMetaMaskConnect = async () => {
     setIsLoading(true)
+    setError("")
     try {
       if (typeof window === "undefined" || !window.ethereum) {
         alert("Please install MetaMask to continue")
@@ -49,11 +69,15 @@ export default function AuthPage() {
         }
       }
 
-      console.log("[v0] Connected MetaMask:", accounts[0])
-      alert("MetaMask connected successfully!")
+      // Store wallet in session storage
+      if (rememberMe) {
+        localStorage.setItem("walletAddress", accounts[0])
+      }
+      sessionStorage.setItem("walletAddress", accounts[0])
+      router.push("/wizard")
     } catch (error) {
       console.error("[v0] MetaMask error:", error)
-      alert("Failed to connect MetaMask")
+      setError("Failed to connect MetaMask. Please try again.")
     } finally {
       setIsLoading(false)
     }
@@ -61,8 +85,9 @@ export default function AuthPage() {
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true)
+    setError("")
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
@@ -71,11 +96,65 @@ export default function AuthPage() {
 
       if (error) {
         console.error("[v0] Google auth error:", error)
-        alert("Failed to connect Google account")
+        setError("Failed to connect Google account")
       }
     } catch (error) {
       console.error("[v0] Google sign-in error:", error)
-      alert("An error occurred during Google sign-in")
+      setError("An error occurred during Google sign-in")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleEmailAuth = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+    setError("")
+
+    try {
+      if (isSignUp) {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
+          },
+        })
+
+        if (error) {
+          setError(error.message)
+          return
+        }
+
+        if (data.user) {
+          if (rememberMe) {
+            localStorage.setItem("userEmail", email)
+          }
+          sessionStorage.setItem("userEmail", email)
+          setError("Check your email to confirm your account")
+        }
+      } else {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        })
+
+        if (error) {
+          setError(error.message)
+          return
+        }
+
+        if (data.user) {
+          if (rememberMe) {
+            localStorage.setItem("userEmail", email)
+          }
+          sessionStorage.setItem("userEmail", email)
+          router.push("/wizard")
+        }
+      }
+    } catch (error) {
+      console.error("[v0] Auth error:", error)
+      setError("An error occurred. Please try again.")
     } finally {
       setIsLoading(false)
     }
@@ -83,7 +162,7 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-900 to-slate-950 overflow-hidden">
-      {/* Animated background elements */}
+      {/* ... existing background elements ... */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 right-0 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl animate-pulse"></div>
         <div
@@ -92,7 +171,6 @@ export default function AuthPage() {
         ></div>
       </div>
 
-      {/* Floating particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {[...Array(15)].map((_, i) => (
           <div
@@ -108,10 +186,8 @@ export default function AuthPage() {
         ))}
       </div>
 
-      {/* Content */}
       <div className="relative min-h-screen flex items-center justify-center px-4 py-16">
         <div className="max-w-md w-full space-y-8">
-          {/* Back button */}
           <Link
             href="/"
             className="inline-flex items-center gap-2 text-purple-400 hover:text-cyan-400 transition-colors text-sm"
@@ -120,7 +196,6 @@ export default function AuthPage() {
             Back to Home
           </Link>
 
-          {/* Main Card */}
           <Card className="border-purple-500/30 overflow-hidden bg-purple-900/20 backdrop-blur-xl">
             <CardHeader className="bg-gradient-to-r from-purple-900/40 to-cyan-900/40 py-12 px-6 text-center space-y-4 border-b border-purple-500/20">
               <div className="flex justify-center">
@@ -130,15 +205,89 @@ export default function AuthPage() {
               </div>
               <div className="space-y-2">
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-cyan-400 to-purple-400 bg-clip-text text-transparent">
-                  Welcome Back
+                  {isSignUp ? "Join the Vault" : "Welcome Back"}
                 </h1>
                 <p className="text-sm text-purple-300/70">
-                  Unlock your cultural vault and start preserving linguistic heritage
+                  {isSignUp
+                    ? "Create your account to start preserving culture"
+                    : "Unlock your cultural vault and start preserving linguistic heritage"}
                 </p>
               </div>
             </CardHeader>
 
             <CardContent className="p-6 space-y-6">
+              {error && (
+                <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
+                  <p className="text-xs text-red-300">{error}</p>
+                </div>
+              )}
+
+              {/* Email/Password Form */}
+              <form onSubmit={handleEmailAuth} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-purple-400 mb-2">Email</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="w-full px-4 py-2 rounded-lg bg-purple-900/20 border border-purple-500/30 text-white placeholder-purple-400/50 focus:outline-none focus:border-cyan-500/60 transition-colors"
+                    placeholder="your@email.com"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-purple-400 mb-2">Password</label>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="w-full px-4 py-2 rounded-lg bg-purple-900/20 border border-purple-500/30 text-white placeholder-purple-400/50 focus:outline-none focus:border-cyan-500/60 transition-colors"
+                    placeholder="••••••••"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="remember"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="w-4 h-4 rounded cursor-pointer"
+                  />
+                  <label htmlFor="remember" className="text-xs text-purple-300/70 cursor-pointer">
+                    Remember me on this device
+                  </label>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full group relative overflow-hidden rounded-xl border border-cyan-500/30 hover:border-purple-500/60 bg-gradient-to-br from-purple-900/20 to-cyan-900/20 hover:from-purple-900/40 hover:to-cyan-900/40 p-4 transition-all duration-300 disabled:opacity-50 font-semibold text-white"
+                >
+                  {isLoading ? "Processing..." : isSignUp ? "Create Account" : "Sign In"}
+                </button>
+              </form>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSignUp(!isSignUp)
+                  setError("")
+                }}
+                className="w-full text-xs text-cyan-400 hover:text-purple-400 transition-colors"
+              >
+                {isSignUp ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
+              </button>
+
+              {/* Divider */}
+              <div className="relative flex items-center gap-3">
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-purple-500/30 to-transparent" />
+                <span className="text-xs text-purple-400/50">or</span>
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
+              </div>
+
               {/* MetaMask Option */}
               <div className="space-y-3">
                 <p className="text-xs font-semibold text-purple-400 uppercase tracking-wider">Web3 Authentication</p>
@@ -163,13 +312,6 @@ export default function AuthPage() {
                     </div>
                   </div>
                 </button>
-              </div>
-
-              {/* Divider */}
-              <div className="relative flex items-center gap-3">
-                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-purple-500/30 to-transparent" />
-                <span className="text-xs text-purple-400/50">or</span>
-                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
               </div>
 
               {/* Google Option */}
@@ -204,7 +346,7 @@ export default function AuthPage() {
                       <p className="font-semibold text-white text-sm">
                         {isLoading ? "Signing in..." : "Sign in with Google"}
                       </p>
-                      <p className="text-xs text-purple-400">Email authentication</p>
+                      <p className="text-xs text-purple-400">OAuth authentication</p>
                     </div>
                   </div>
                 </button>
@@ -215,11 +357,10 @@ export default function AuthPage() {
                 <p className="text-xs font-semibold text-purple-300">Why authentication?</p>
                 <p className="text-xs text-purple-300/70 leading-relaxed">
                   Your data is securely stored in your personal vault. MetaMask connects you to Web3 rewards on Polygon.
-                  Google login lets you authenticate with email.
+                  Email provides traditional sign-in.
                 </p>
               </div>
 
-              {/* Privacy Notice */}
               <p className="text-xs text-center text-purple-400/50">
                 By signing in, you agree to our{" "}
                 <Link href="/terms" className="text-cyan-400 hover:underline">
@@ -233,7 +374,7 @@ export default function AuthPage() {
             </CardContent>
           </Card>
 
-          {/* Feature Benefits */}
+          {/* ... existing feature benefits ... */}
           <div className="grid grid-cols-2 gap-3">
             <Card className="border-purple-500/30 bg-purple-900/20 backdrop-blur-xl p-4">
               <div className="space-y-2">

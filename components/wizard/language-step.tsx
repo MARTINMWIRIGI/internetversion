@@ -17,6 +17,24 @@ const LANGUAGES = [
   "Samburu",
   "Maasai",
   "Turkana",
+  "Meru",
+  "Embu",
+  "Tharaka",
+  "Kisii",
+  "Luo",
+  "Njemps",
+  "Pokot",
+  "Rendille",
+  "Borana",
+  "Gabbra",
+  "Taita",
+  "Chamus",
+  "El Molo",
+  "Sengwer",
+  "Kurya",
+  "Hadza",
+  "Cushitic",
+  "Oromoo",
   "Other",
 ]
 
@@ -43,10 +61,10 @@ export function LanguageStep({ onNext, data }: LanguageStepProps) {
     <Card className="bg-card/50 border-purple-500/30">
       <CardHeader>
         <CardTitle className="text-purple-400">Select Your Language</CardTitle>
-        <CardDescription>Choose the Kenyan language you'll be contributing in</CardDescription>
+        <CardDescription>Choose the East African language you'll be contributing in</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 max-h-96 overflow-y-auto pr-2">
           {LANGUAGES.map((lang) => (
             <button
               key={lang}
@@ -54,7 +72,7 @@ export function LanguageStep({ onNext, data }: LanguageStepProps) {
                 setSelected(lang)
                 if (lang !== "Other") setCustomLanguage("")
               }}
-              className={`px-4 py-2 rounded-lg border transition-all ${
+              className={`px-3 py-2 rounded-lg border transition-all text-sm whitespace-nowrap ${
                 selected === lang
                   ? "border-cyan-400 bg-cyan-400/20 text-cyan-300 neon-glow-accent"
                   : "border-border hover:border-cyan-400/50 text-muted-foreground hover:text-foreground"
@@ -69,7 +87,7 @@ export function LanguageStep({ onNext, data }: LanguageStepProps) {
           <div>
             <label className="block text-sm font-medium text-purple-400 mb-2">Enter language name</label>
             <Input
-              placeholder="e.g., Rendille, Borana, Somali..."
+              placeholder="e.g., Rendille, Borana, Cushitic..."
               value={customLanguage}
               onChange={(e) => setCustomLanguage(e.target.value)}
               className="border-purple-500/30 bg-input text-foreground placeholder:text-muted-foreground focus:border-purple-400"
