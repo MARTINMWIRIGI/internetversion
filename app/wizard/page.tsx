@@ -73,67 +73,77 @@ export default function WizardPage() {
   }
 
   return (
-    <main className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="border-b border-slate-200 bg-white sticky top-0 z-50 shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between flex-col md:flex-row gap-4">
-          <Link href="/">
-            <Button variant="ghost" className="text-slate-700 hover:text-slate-900 hover:bg-slate-100">
-              ← Back to Home
-            </Button>
-          </Link>
-          <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Contribution Wizard</h1>
-          <div className="w-24" />
-        </div>
-      </header>
+    <main className="min-h-screen bg-gradient-to-b from-blue-50 to-indigo-50">
+      {/* Grid background */}
+      <div className="fixed inset-0 grid-pattern opacity-20 pointer-events-none" />
 
-      {/* Progress Bar */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto">
-          <div className="flex items-center justify-between mb-8 overflow-x-auto pb-2">
-            {STEPS.map((step, idx) => (
-              <div key={step.id} className="flex items-center flex-1 min-w-max">
-                <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all shadow-sm ${
-                    currentStep >= step.id
-                      ? "bg-gradient-to-r from-amber-500 to-orange-600 text-white"
-                      : "bg-slate-100 border border-slate-300 text-slate-600"
-                  }`}
-                >
-                  {step.id}
-                </div>
-                {idx < STEPS.length - 1 && (
-                  <div
-                    className={`flex-1 h-1 mx-2 transition-all ${
-                      currentStep > step.id ? "bg-gradient-to-r from-amber-500 to-orange-600" : "bg-slate-300"
-                    }`}
-                  />
-                )}
-              </div>
-            ))}
-          </div>
-
-          {/* Step Title */}
-          <div className="mb-8 text-center">
-            <h2 className="text-3xl font-bold text-slate-900 mb-2">{STEPS[currentStep - 1].title}</h2>
-            <p className="text-slate-600">
-              Step {currentStep} of {STEPS.length}
-            </p>
-          </div>
-        </div>
+      {/* Scan line */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute inset-0 scan-line bg-gradient-to-b from-transparent via-purple-500 to-transparent opacity-5" />
       </div>
 
-      {/* Wizard Content */}
-      <div className="container mx-auto px-4 pb-12">
-        <div className="max-w-2xl mx-auto">
-          {currentStep === 1 && <LanguageStep onNext={handleNext} data={data} />}
-          {currentStep === 2 && <ContentStep onNext={handleNext} onBack={handleBack} data={data} />}
-          {currentStep === 3 && <AudioStep onNext={handleNext} onBack={handleBack} data={data} />}
-          {currentStep === 4 && <MetadataStep onNext={handleNext} onBack={handleBack} data={data} />}
-          {currentStep === 5 && (
-            <ReviewStep onSubmit={handleSubmit} onBack={handleBack} data={data} isSubmitting={isSubmitting} />
-          )}
-          {currentStep === 6 && <ResultStep data={data} />}
+      <div className="relative z-10">
+        {/* Header */}
+        <header className="border-b border-blue-100 bg-white/80 backdrop-blur-md sticky top-0 z-50 soft-shadow">
+          <div className="container mx-auto px-4 py-4 flex items-center justify-between flex-col md:flex-row gap-4">
+            <Link href="/">
+              <Button variant="ghost" className="text-blue-600 hover:text-blue-700 hover:bg-blue-50">
+                ← Back to Home
+              </Button>
+            </Link>
+            <h1 className="text-2xl font-bold gradient-text">Contribution Wizard</h1>
+            <div className="w-24" />
+          </div>
+        </header>
+
+        {/* Progress Bar */}
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-2xl mx-auto">
+            <div className="flex items-center justify-between mb-8 overflow-x-auto pb-2">
+              {STEPS.map((step, idx) => (
+                <div key={step.id} className="flex items-center flex-1 min-w-max">
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all soft-shadow ${
+                      currentStep >= step.id
+                        ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white"
+                        : "bg-white border border-blue-200 text-muted-foreground"
+                    }`}
+                  >
+                    {step.id}
+                  </div>
+                  {idx < STEPS.length - 1 && (
+                    <div
+                      className={`flex-1 h-1 mx-2 transition-all ${
+                        currentStep > step.id ? "bg-gradient-to-r from-blue-600 to-purple-600" : "bg-blue-200"
+                      }`}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Step Title */}
+            <div className="mb-8 text-center">
+              <h2 className="text-3xl font-bold gradient-text mb-2">{STEPS[currentStep - 1].title}</h2>
+              <p className="text-muted-foreground">
+                Step {currentStep} of {STEPS.length}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Wizard Content */}
+        <div className="container mx-auto px-4 pb-12">
+          <div className="max-w-2xl mx-auto">
+            {currentStep === 1 && <LanguageStep onNext={handleNext} data={data} />}
+            {currentStep === 2 && <ContentStep onNext={handleNext} onBack={handleBack} data={data} />}
+            {currentStep === 3 && <AudioStep onNext={handleNext} onBack={handleBack} data={data} />}
+            {currentStep === 4 && <MetadataStep onNext={handleNext} onBack={handleBack} data={data} />}
+            {currentStep === 5 && (
+              <ReviewStep onSubmit={handleSubmit} onBack={handleBack} data={data} isSubmitting={isSubmitting} />
+            )}
+            {currentStep === 6 && <ResultStep data={data} />}
+          </div>
         </div>
       </div>
     </main>

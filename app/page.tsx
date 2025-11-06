@@ -1,28 +1,37 @@
 "use client"
+
+import { useState } from "react"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { WalletConnectButton } from "@/components/wallet-connect-button"
 
 export default function Home() {
+  const [isHovering, setIsHovering] = useState(false)
+
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen bg-gradient-to-b from-blue-50 to-indigo-50">
       {/* Header */}
-      <header className="border-b border-slate-200 bg-white sticky top-0 z-50 shadow-sm">
-        <div className="container mx-auto px-4 py-4 md:py-6 flex items-center justify-between">
+      <header className="border-b border-blue-100 bg-white/80 backdrop-blur-md sticky top-0 z-50 soft-shadow">
+        <div className="container mx-auto px-4 py-4 md:py-6 flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-md">
-              <span className="text-lg font-bold text-white">SI</span>
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-md">
+              <span className="text-xs font-bold text-white">AIVG</span>
             </div>
             <div>
-              <h1 className="text-lg md:text-xl font-bold text-slate-900">SOUL INTERNET</h1>
-              <p className="text-xs text-slate-500">Vault Guardian</p>
+              <h1 className="text-lg md:text-xl font-bold gradient-text">Soul Internet Vault</h1>
+              <p className="text-xs text-muted-foreground">Preserving humanity's linguistic heritage</p>
             </div>
           </div>
-          <Link href="/vault">
-            <Button variant="outline" className="border-slate-300 text-slate-700 hover:bg-slate-50 bg-transparent">
-              My Vault
-            </Button>
-          </Link>
+
+          <div className="flex items-center gap-3 ml-auto">
+            <WalletConnectButton />
+            <Link href="/vault">
+              <Button variant="outline" className="border-blue-300 text-blue-600 hover:bg-blue-50 bg-transparent">
+                My Vault
+              </Button>
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -32,22 +41,24 @@ export default function Home() {
           {/* Main Title */}
           <div className="space-y-6 text-center">
             <div>
-              <p className="text-sm font-semibold text-amber-600 uppercase tracking-wide mb-2">Welcome to</p>
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 mb-4">
-                SOUL INTERNET
+              <h2 className="text-4xl md:text-6xl font-bold tracking-tight mb-4 gradient-text">
+                Preserve Cultural Heritage
               </h2>
-              <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
-                Redefining the digital experience through decentralized vaults, cultural preservation, and
-                blockchain-verified data. Own, control, and expand your digital presence.
+              <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+                Welcome to the Soul Internet Vault Guardian. Help us preserve linguistic, cultural, and environmental
+                data for future generations through the SoulInternet vaults.
               </p>
             </div>
           </div>
 
+          {/* CTA Buttons */}
           <div className="flex gap-4 justify-center flex-wrap">
             <Link href="/wizard">
               <Button
                 size="lg"
-                className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-md hover:shadow-lg transition-all"
+                onMouseEnter={() => setIsHovering(true)}
+                onMouseLeave={() => setIsHovering(false)}
               >
                 Start Contributing
               </Button>
@@ -56,169 +67,131 @@ export default function Home() {
               <Button
                 size="lg"
                 variant="outline"
-                className="border-slate-300 text-slate-700 hover:bg-slate-50 bg-transparent"
+                className="border-blue-300 text-blue-600 hover:bg-blue-50 bg-transparent"
               >
-                View My Vault
+                View Vault
               </Button>
             </Link>
           </div>
 
           {/* Info Sections */}
           <div className="grid md:grid-cols-2 gap-8 mt-16">
-            {/* What is SOUL INTERNET */}
-            <Card className="bg-gradient-to-br from-slate-50 to-white border-slate-200 shadow-md hover:shadow-lg transition-shadow">
+            {/* What is This */}
+            <Card className="bg-white/80 border-blue-100 card-hover">
               <CardHeader>
-                <CardTitle className="text-slate-900">What is SOUL INTERNET?</CardTitle>
+                <CardTitle className="text-blue-900">What is this?</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3 text-sm leading-relaxed text-slate-700">
+              <CardContent className="space-y-3 text-sm leading-relaxed">
                 <p>
-                  SOUL INTERNET is a decentralized ecosystem that merges cutting-edge blockchain technology, intelligent
-                  AI, and immersive web tools to create a seamless digital experience.
+                  The Soul Internet Vault Guardian is a global preservation initiative dedicated to documenting
+                  linguistic, cultural, and environmental data before it's lost to time.
                 </p>
                 <p>
-                  At its core are <strong>Vaults</strong> - secure, blockchain-powered containers that hold personal,
-                  cultural, or community-driven digital assets. Each vault combines NFTs, multi-layer data (voice,
-                  biometrics, movement, etc.), and decentralized identity tools to create a living record of human
-                  experience.
+                  We believe that every language carries unique wisdom, cultural heritage, and human knowledge that
+                  deserves to be preserved for future generations.
                 </p>
-                <p className="font-semibold text-amber-600">
-                  Through the Vault Guardian, you preserve humanity's cultural and linguistic heritage for generations
-                  to come.
+                <p className="font-semibold text-blue-700">
+                  By contributing, you're not just recording data—you're preserving humanity's soul.
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="bg-gradient-to-br from-slate-50 to-white border-slate-200 shadow-md hover:shadow-lg transition-shadow">
+            {/* How It Works */}
+            <Card className="bg-white/80 border-purple-100 card-hover">
               <CardHeader>
-                <CardTitle className="text-slate-900">The SOUL INTERNET Vaults</CardTitle>
+                <CardTitle className="text-purple-900">How It Works</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
                 <div className="space-y-2">
-                  <p className="font-semibold text-slate-900">Cultural & Linguistic Vault</p>
-                  <p className="text-slate-600">
-                    Preserve languages, traditions, stories, and cultural heritage immutably.
+                  <p className="font-semibold text-purple-700">1. Select Your Language</p>
+                  <p className="text-muted-foreground">Choose the language or dialect you want to preserve.</p>
+                </div>
+                <div className="space-y-2">
+                  <p className="font-semibold text-purple-700">2. Record Audio</p>
+                  <p className="text-muted-foreground">
+                    Submit words, phrases, or cultural sounds with clear audio recordings.
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <p className="font-semibold text-slate-900">Carbon Credits Vault</p>
-                  <p className="text-slate-600">
-                    Track and tokenize measurable climate impact into tradable digital assets.
+                  <p className="font-semibold text-purple-700">3. Get Verified</p>
+                  <p className="text-muted-foreground">
+                    Our AI assigns a MILSA quality score and validates authenticity.
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <p className="font-semibold text-slate-900">Refugee Identity Vault</p>
-                  <p className="text-slate-600">Secure, portable digital IDs for displaced persons.</p>
-                </div>
-                <div className="space-y-2">
-                  <p className="font-semibold text-slate-900">Plus: Time Capsules, Donor Funds & More</p>
-                  <p className="text-slate-600">Legacy preservation and transparent philanthropy.</p>
+                  <p className="font-semibold text-purple-700">4. Earn Rewards</p>
+                  <p className="text-muted-foreground">High-quality contributions earn MILSA tokens.</p>
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* How It Works */}
-          <Card className="bg-white border-slate-200 shadow-md mt-12">
-            <CardHeader>
-              <CardTitle className="text-slate-900">How the Vault Guardian Works</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="space-y-3">
-                  <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center">
-                    <span className="text-xl font-bold text-amber-600">1</span>
-                  </div>
-                  <p className="font-semibold text-slate-900">Select Language</p>
-                  <p className="text-sm text-slate-600">Choose the language or dialect you want to preserve.</p>
+          {/* Features Grid */}
+          <div className="grid md:grid-cols-3 gap-6 mt-12">
+            <Card className="bg-gradient-to-br from-blue-50 to-blue-100/50 border-blue-200 card-hover">
+              <CardHeader>
+                <div className="w-12 h-12 rounded-full bg-blue-600/10 flex items-center justify-center mb-3">
+                  <span className="text-2xl">🌍</span>
                 </div>
-                <div className="space-y-3">
-                  <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
-                    <span className="text-xl font-bold text-orange-600">2</span>
-                  </div>
-                  <p className="font-semibold text-slate-900">Submit Content</p>
-                  <p className="text-sm text-slate-600">Provide words, phrases, definitions, and cultural context.</p>
+                <CardTitle className="text-blue-900 text-lg">Global Reach</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Support for all languages and dialects, creating a truly global linguistic archive.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-purple-50 to-purple-100/50 border-purple-200 card-hover">
+              <CardHeader>
+                <div className="w-12 h-12 rounded-full bg-purple-600/10 flex items-center justify-center mb-3">
+                  <span className="text-2xl">✨</span>
                 </div>
-                <div className="space-y-3">
-                  <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center">
-                    <span className="text-xl font-bold text-amber-600">3</span>
-                  </div>
-                  <p className="font-semibold text-slate-900">Record Audio</p>
-                  <p className="text-sm text-slate-600">Submit high-quality audio recordings of pronunciation.</p>
+                <CardTitle className="text-purple-900 text-lg">AI Quality Scoring</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  MILSA scores evaluate clarity, pronunciation, and authenticity automatically.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-indigo-50 to-indigo-100/50 border-indigo-200 card-hover">
+              <CardHeader>
+                <div className="w-12 h-12 rounded-full bg-indigo-600/10 flex items-center justify-center mb-3">
+                  <span className="text-2xl">💎</span>
                 </div>
-                <div className="space-y-3">
-                  <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
-                    <span className="text-xl font-bold text-orange-600">4</span>
-                  </div>
-                  <p className="font-semibold text-slate-900">Earn Rewards</p>
-                  <p className="text-sm text-slate-600">High-quality submissions get MILSA tokens and NFT mints.</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+                <CardTitle className="text-indigo-900 text-lg">Earn Rewards</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Contributors are rewarded with MILSA tokens for verified high-quality submissions.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
 
           {/* Why This Matters */}
-          <Card className="bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200 mt-12 shadow-md">
+          <Card className="bg-white/80 border-blue-100 mt-12">
             <CardHeader>
-              <CardTitle className="text-slate-900">Why This Matters</CardTitle>
+              <CardTitle className="gradient-text">Why This Matters</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 text-sm leading-relaxed text-slate-700">
-              <div>
-                <p className="font-semibold text-slate-900 mb-1">Language Preservation:</p>
-                <p>
-                  Thousands of languages disappear each year, taking with them unique worldviews, cultural knowledge,
-                  and centuries of human wisdom. We're building a permanent, immutable archive.
-                </p>
-              </div>
-              <div>
-                <p className="font-semibold text-slate-900 mb-1">Cultural Heritage:</p>
-                <p>
-                  Every word carries tradition, stories, and identity. The Vault Guardian ensures future generations can
-                  connect with their roots and understand their heritage.
-                </p>
-              </div>
-              <div>
-                <p className="font-semibold text-slate-900 mb-1">Environmental Knowledge:</p>
-                <p>
-                  Indigenous and local communities possess invaluable ecological knowledge. We're documenting it before
-                  it's lost, preserving both culture and sustainability practices.
-                </p>
-              </div>
-              <div>
-                <p className="font-semibold text-slate-900 mb-1">Your Legacy:</p>
-                <p>
-                  When you contribute, you become part of a global effort to preserve what makes humanity unique. Your
-                  voice becomes part of eternal history, tokenized and verified on blockchain.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white border-slate-200 shadow-md">
-            <CardHeader>
-              <CardTitle className="text-slate-900">MILSA Quality Scoring</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 text-sm text-slate-700">
+            <CardContent className="space-y-4 text-sm leading-relaxed">
               <p>
-                Every submission is evaluated using MILSA (Multilingual Immersive Linguistic Soul Assessment) - an
-                AI-powered quality scoring system that ensures authenticity and clarity.
+                <strong>Language Preservation:</strong> Thousands of languages disappear each year, taking with them
+                unique worldviews and cultural knowledge. We're building a permanent archive.
               </p>
-              <div className="bg-slate-50 p-4 rounded-lg space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="font-semibold">Score ≥ 85:</span>
-                  <span className="text-green-600 font-bold">Auto-Minted NFT + MILSA Tokens</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="font-semibold">Score 70-84:</span>
-                  <span className="text-amber-600 font-bold">Under Review • Eligible for Rewards</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="font-semibold">Score &lt; 70:</span>
-                  <span className="text-slate-600 font-bold">Re-record Suggested</span>
-                </div>
-              </div>
-              <p className="text-xs text-slate-500">
-                MILSA evaluates: clarity, pronunciation accuracy, tempo consistency, tone/emotion fit, noise level, and
-                linguistic purity.
+              <p>
+                <strong>Cultural Heritage:</strong> Every word carries centuries of tradition, stories, and wisdom. This
+                vault ensures future generations can connect with their roots.
+              </p>
+              <p>
+                <strong>Environmental Data:</strong> Indigenous and local communities possess invaluable ecological
+                knowledge. We're documenting it before it's lost.
+              </p>
+              <p>
+                <strong>Your Legacy:</strong> When you contribute, you become part of a global effort to preserve what
+                makes humanity unique.
               </p>
             </CardContent>
           </Card>
@@ -226,15 +199,14 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-gradient-to-r from-amber-500 to-orange-600 text-white py-12 md:py-16 mt-12">
+      <section className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-12 md:py-16 mt-12">
         <div className="container mx-auto px-4 text-center max-w-2xl">
-          <h3 className="text-3xl md:text-4xl font-bold mb-4">Ready to Preserve Humanity's Soul?</h3>
-          <p className="text-lg mb-6 text-amber-50">
-            Join thousands of contributors preserving the world's linguistic and cultural heritage for future
-            generations.
+          <h3 className="text-3xl md:text-4xl font-bold mb-4">Ready to Preserve History?</h3>
+          <p className="text-lg mb-6 text-blue-100">
+            Join thousands of contributors documenting the world's linguistic and cultural heritage.
           </p>
           <Link href="/wizard">
-            <Button size="lg" className="bg-white text-amber-600 hover:bg-amber-50 font-semibold shadow-lg">
+            <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50 font-semibold shadow-lg">
               Start Your Contribution
             </Button>
           </Link>
@@ -242,10 +214,10 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-slate-200 bg-white py-8">
-        <div className="container mx-auto px-4 text-center text-sm text-slate-600 space-y-2">
-          <p>SOUL INTERNET • Vault Guardian | Preserving humanity's linguistic and cultural heritage</p>
-          <p className="text-xs">Powered by MILSA Quality Scoring • Blockchain Verified • Decentralized & Immutable</p>
+      <footer className="border-t border-blue-100 bg-white/50 backdrop-blur-sm py-8">
+        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground space-y-2">
+          <p>Soul Internet Vault Guardian · Preserving humanity's linguistic and cultural heritage</p>
+          <p className="text-xs">Powered by AIVG • MILSA Quality Scoring • Blockchain Verified</p>
         </div>
       </footer>
     </main>
