@@ -1,6 +1,5 @@
 "use client"
 import Link from "next/link"
-import Image from "next/image"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -13,12 +12,9 @@ export function Header() {
     <header className="border-b border-purple-500/20 bg-gradient-to-b from-purple-900/30 to-transparent backdrop-blur-lg sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4 md:py-5 flex items-center justify-between gap-4">
         {/* Logo and Title */}
-        <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity group flex-shrink-0">
-          <div className="w-10 h-10 md:w-12 md:h-12 relative group-hover:scale-105 transition-transform">
-            <Image src="/logo.png" alt="Soul Internet Logo" width={48} height={48} className="rounded-lg" />
-          </div>
-          <div className="hidden sm:block">
-            <h1 className="text-base md:text-lg font-bold gradient-text">Soul Internet</h1>
+        <Link href="/" className="hover:opacity-80 transition-opacity flex-shrink-0">
+          <div>
+            <h1 className="text-xl md:text-2xl font-bold gradient-text">Soul Internet</h1>
             <p className="text-xs text-cyan-400/70">Unlock Your MultiSoul</p>
           </div>
         </Link>
