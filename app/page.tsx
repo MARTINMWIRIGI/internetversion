@@ -1,9 +1,7 @@
 "use client"
 import Link from "next/link"
-import Image from "next/image"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { WalletConnectButton } from "@/components/wallet-connect-button"
 import { useEffect, useState } from "react"
 
 export default function Home() {
@@ -17,41 +15,6 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-background overflow-hidden">
-      <header className="border-b border-purple-500/20 bg-gradient-to-b from-purple-900/30 to-transparent backdrop-blur-lg sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 md:py-5 flex items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
-            <div className="w-10 h-10 md:w-12 md:h-12 relative flex-shrink-0 group-hover:scale-105 transition-transform">
-              <Image src="/logo.png" alt="Soul Internet Logo" width={48} height={48} className="rounded-lg" />
-            </div>
-            <div className="hidden sm:block">
-              <h1 className="text-base md:text-lg font-bold gradient-text">Soul Internet</h1>
-              <p className="text-xs text-cyan-400/70">Unlock Your MultiSoul</p>
-            </div>
-          </Link>
-
-          <nav className="hidden md:flex gap-6 items-center flex-1 justify-center text-sm">
-            <Link href="/gallery" className="text-gray-300 hover:text-cyan-400 transition-colors">
-              Gallery
-            </Link>
-            <Link href="/contribute" className="text-gray-300 hover:text-cyan-400 transition-colors">
-              Contribute
-            </Link>
-            <Link href="/docs" className="text-gray-300 hover:text-cyan-400 transition-colors">
-              Learn
-            </Link>
-          </nav>
-
-          <div className="flex items-center gap-2 md:gap-3 ml-auto">
-            <Link href="/vault" className="hidden sm:block">
-              <Button variant="ghost" className="text-cyan-400 hover:bg-cyan-500/10">
-                My Vault
-              </Button>
-            </Link>
-            <WalletConnectButton />
-          </div>
-        </div>
-      </header>
-
       <section className="relative min-h-screen flex items-center justify-center py-16 md:py-0 px-4 overflow-hidden">
         {/* Animated background elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
