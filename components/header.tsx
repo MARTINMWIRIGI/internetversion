@@ -65,28 +65,28 @@ export function Header() {
               <nav className="space-y-2">
                 <Link
                   href="/gallery"
-                  className="block text-gray-300 hover:text-cyan-400 transition-colors py-3 px-3 rounded-lg hover:bg-purple-500/10"
+                  className="block text-gray-300 hover:text-cyan-400 transition-colors py-4 px-4 rounded-lg hover:bg-purple-500/10"
                   onClick={() => setIsOpen(false)}
                 >
                   Gallery
                 </Link>
                 <Link
                   href="/contribute"
-                  className="block text-gray-300 hover:text-cyan-400 transition-colors py-3 px-3 rounded-lg hover:bg-purple-500/10"
+                  className="block text-gray-300 hover:text-cyan-400 transition-colors py-4 px-4 rounded-lg hover:bg-purple-500/10"
                   onClick={() => setIsOpen(false)}
                 >
                   Contribute
                 </Link>
                 <Link
                   href="/docs"
-                  className="block text-gray-300 hover:text-cyan-400 transition-colors py-3 px-3 rounded-lg hover:bg-purple-500/10"
+                  className="block text-gray-300 hover:text-cyan-400 transition-colors py-4 px-4 rounded-lg hover:bg-purple-500/10"
                   onClick={() => setIsOpen(false)}
                 >
                   Learn
                 </Link>
                 <Link
                   href="/vault"
-                  className="block text-gray-300 hover:text-cyan-400 transition-colors py-3 px-3 rounded-lg hover:bg-purple-500/10"
+                  className="block text-gray-300 hover:text-cyan-400 transition-colors py-4 px-4 rounded-lg hover:bg-purple-500/10"
                   onClick={() => setIsOpen(false)}
                 >
                   My Vault
@@ -94,13 +94,13 @@ export function Header() {
               </nav>
 
               <div className="pt-6 border-t border-purple-500/20 space-y-3">
-                <p className="text-xs text-purple-400 font-semibold px-3">CONNECT & AUTHENTICATE</p>
-                <Link href="/auth" onClick={() => setIsOpen(false)} className="block w-full px-2">
+                <p className="text-xs text-purple-400 font-semibold px-4">CONNECT & AUTHENTICATE</p>
+                <Link href="/auth" onClick={() => setIsOpen(false)} className="block w-full px-3">
                   <Button className="w-full gradient-accent text-white mb-2 hover:shadow-lg hover:shadow-purple-500/50">
                     Connect Wallet
                   </Button>
                 </Link>
-                <Link href="/auth" onClick={() => setIsOpen(false)} className="block w-full px-2">
+                <Link href="/auth" onClick={() => setIsOpen(false)} className="block w-full px-3">
                   <Button
                     variant="outline"
                     className="w-full border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 bg-transparent"

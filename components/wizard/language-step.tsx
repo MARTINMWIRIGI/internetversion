@@ -8,20 +8,15 @@ import type { WizardData } from "@/app/wizard/page"
 
 const LANGUAGES = [
   "English",
-  "Spanish",
-  "Mandarin",
-  "Hindi",
-  "Arabic",
-  "Portuguese",
-  "Russian",
-  "Japanese",
-  "French",
-  "German",
-  "Korean",
-  "Italian",
-  "Turkish",
   "Swahili",
-  "Bengali",
+  "Kikuyu",
+  "Luhya",
+  "Kalenjin",
+  "Kamba",
+  "Somali",
+  "Samburu",
+  "Maasai",
+  "Turkana",
   "Other",
 ]
 
@@ -48,10 +43,10 @@ export function LanguageStep({ onNext, data }: LanguageStepProps) {
     <Card className="bg-card/50 border-purple-500/30">
       <CardHeader>
         <CardTitle className="text-purple-400">Select Your Language</CardTitle>
-        <CardDescription>Choose the language you'll be contributing in</CardDescription>
+        <CardDescription>Choose the Kenyan language you'll be contributing in</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
           {LANGUAGES.map((lang) => (
             <button
               key={lang}
@@ -74,7 +69,7 @@ export function LanguageStep({ onNext, data }: LanguageStepProps) {
           <div>
             <label className="block text-sm font-medium text-purple-400 mb-2">Enter language name</label>
             <Input
-              placeholder="e.g., Swahili, Tamil, Welsh..."
+              placeholder="e.g., Rendille, Borana, Somali..."
               value={customLanguage}
               onChange={(e) => setCustomLanguage(e.target.value)}
               className="border-purple-500/30 bg-input text-foreground placeholder:text-muted-foreground focus:border-purple-400"

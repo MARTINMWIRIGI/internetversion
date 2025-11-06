@@ -11,16 +11,85 @@ interface AudioStepProps {
   data: Partial<WizardData>
 }
 
+function AudioWaveform({ isRecording, audioContext }: { isRecording: boolean; audioContext: AudioContext | null }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const analyserRef = useRef<AnalyserNode | null>(null)
+  const animationIdRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    if (!isRecording || !audioContext) return
+
+    analyserRef.current = audioContext.createAnalyser()
+    analyserRef.current.fftSize = 256
+
+    const draw = () => {
+      if (!canvasRef.current || !analyserRef.current) return
+
+      const canvas = canvasRef.current
+      const ctx = canvas.getContext("2d")
+      if (!ctx) return
+
+      const bufferLength = analyserRef.current.frequencyBinCount
+      const dataArray = new Uint8Array(bufferLength)
+      analyserRef.current.getByteFrequencyData(dataArray)
+
+      ctx.fillStyle = "rgba(6, 20, 30, 0.2)"
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+      const barWidth = (canvas.width / bufferLength) * 2.5
+      let barHeight
+      let x = 0
+
+      const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0)
+      gradient.addColorStop(0, "#00D9FF")
+      gradient.addColorStop(0.5, "#A855F7")
+      gradient.addColorStop(1, "#00D9FF")
+
+      for (let i = 0; i < bufferLength; i++) {
+        barHeight = (dataArray[i] / 255) * canvas.height
+
+        ctx.fillStyle = gradient
+        ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight)
+        x += barWidth + 1
+      }
+
+      animationIdRef.current = requestAnimationFrame(draw)
+    }
+
+    draw()
+
+    return () => {
+      if (animationIdRef.current) {
+        cancelAnimationFrame(animationIdRef.current)
+      }
+    }
+  }, [isRecording, audioContext])
+
+  return (
+    <canvas
+      ref={canvasRef}
+      width={400}
+      height={100}
+      className="w-full border border-cyan-400/30 rounded-lg bg-gradient-to-b from-slate-950 to-purple-950/20"
+    />
+  )
+}
+
 export function AudioStep({ onNext, onBack, data }: AudioStepProps) {
   const [isRecording, setIsRecording] = useState(false)
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null)
   const [audioUrl, setAudioUrl] = useState<string>("")
+  const [audioContext, setAudioContext] = useState<AudioContext | null>(null)
   const mediaRecorder = useRef<MediaRecorder | null>(null)
   const audioChunks = useRef<Blob[]>([])
 
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+
+      const context = new (window.AudioContext || (window as any).webkitAudioContext)()
+      setAudioContext(context)
+
       mediaRecorder.current = new MediaRecorder(stream)
       audioChunks.current = []
 
@@ -32,6 +101,10 @@ export function AudioStep({ onNext, onBack, data }: AudioStepProps) {
         const blob = new Blob(audioChunks.current, { type: "audio/webm" })
         setAudioBlob(blob)
         setAudioUrl(URL.createObjectURL(blob))
+        if (audioContext) {
+          audioContext.close()
+          setAudioContext(null)
+        }
       }
 
       mediaRecorder.current.start()
@@ -51,8 +124,8 @@ export function AudioStep({ onNext, onBack, data }: AudioStepProps) {
   }
 
   const handleNext = () => {
-    if (audioUrl) {
-      onNext({ audioUrl })
+    if (audioUrl && audioBlob) {
+      onNext({ audioUrl, audioBlob: audioBlob as any })
     }
   }
 
@@ -69,6 +142,14 @@ export function AudioStep({ onNext, onBack, data }: AudioStepProps) {
         <CardDescription>Record a clear pronunciation of your contribution</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Waveform Visualization */}
+        {isRecording && audioContext && (
+          <div className="space-y-2">
+            <label className="block text-xs font-semibold text-cyan-400">Live Waveform</label>
+            <AudioWaveform isRecording={isRecording} audioContext={audioContext} />
+          </div>
+        )}
+
         {/* Recording Area */}
         <div className="border-2 border-dashed border-green-400/40 rounded-lg p-8 text-center space-y-4">
           <div className="flex justify-center">
@@ -90,7 +171,7 @@ export function AudioStep({ onNext, onBack, data }: AudioStepProps) {
             </p>
           </div>
 
-          <div className="flex gap-4 justify-center">
+          <div className="flex gap-4 justify-center flex-wrap">
             {!isRecording && !audioUrl && (
               <Button
                 onClick={startRecording}
@@ -127,7 +208,7 @@ export function AudioStep({ onNext, onBack, data }: AudioStepProps) {
             <label className="block text-sm font-medium text-cyan-400">Playback</label>
             <audio src={audioUrl} controls className="w-full h-10 rounded-lg bg-card border border-cyan-400/30" />
             <p className="text-xs text-muted-foreground">
-              Review your recording and re-record if needed for better quality
+              Review your recording and re-record if needed for better quality. This will be minted as an NFT.
             </p>
           </div>
         )}
