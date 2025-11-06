@@ -8,9 +8,12 @@ const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Soul Internet Vault Guardian",
-  description: "Preserve linguistic and cultural heritage through the SoulInternet vaults",
+  title: "Soul Internet - Unlock Your MultiSoul",
+  description: "Preserve linguistic and cultural heritage through the SoulInternet vaults with Web3 rewards",
   generator: "v0.app",
+  icons: {
+    icon: "/logo.png",
+  },
 }
 
 export default function RootLayout({
@@ -20,6 +23,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="icon" href="/logo.png" />
+      </head>
       <body className={`font-sans antialiased bg-background text-foreground`}>
         {children}
         <Analytics />
