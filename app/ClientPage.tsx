@@ -3,6 +3,7 @@ import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react"
+import { TooltipHelp } from "@/components/tooltip-help"
 
 export default function Home() {
   const [mounted, setMounted] = useState(false)
@@ -172,6 +173,54 @@ export default function Home() {
                 </CardContent>
               </Card>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Explanation Section with Tooltips */}
+      <section className="py-12 md:py-16 lg:py-24 px-4 md:px-6 lg:px-8">
+        <div className="container mx-auto max-w-4xl">
+          <div className="bg-gradient-to-br from-purple-500/10 to-cyan-500/10 border border-purple-500/20 rounded-2xl p-6 md:p-8 space-y-4">
+            <h3 className="text-xl md:text-2xl font-bold text-cyan-300">Key Terms Explained</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+              <div>
+                <p className="text-gray-300 text-sm md:text-base">
+                  Your personal{" "}
+                  <TooltipHelp
+                    term="Vault"
+                    description="Your secure storage space on Soul Internet where all your recorded contributions and earned NFTs are stored. Only you can access it with your wallet."
+                  />{" "}
+                  contains your contributions and minted NFTs.
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-300 text-sm md:text-base">
+                  <TooltipHelp
+                    term="MultiSoul"
+                    description="Your complete linguistic and cultural identity stored on blockchain. It includes all your language recordings, heritage data, and earned rewards across multiple platforms."
+                  />{" "}
+                  is your blockchain-verified linguistic identity.
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-300 text-sm md:text-base">
+                  <TooltipHelp
+                    term="MILSA"
+                    description="Multi-Linguistic Soul Authentication. Our AI-powered quality scoring system that evaluates audio clarity, pronunciation accuracy, cultural authenticity, and linguistic purity (0-100 scale)."
+                  />{" "}
+                  scores reward your contributions.
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-300 text-sm md:text-base">
+                  <TooltipHelp
+                    term="NFT"
+                    description="Non-Fungible Token. A unique digital certificate of ownership for your recorded words. Each NFT is one-of-a-kind and represents your authentic linguistic contribution."
+                  />{" "}
+                  tokens prove authenticity.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
