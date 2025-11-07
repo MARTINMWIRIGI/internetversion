@@ -22,6 +22,13 @@ export function Header() {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex gap-8 items-center flex-1 justify-center text-sm">
+          <Link
+            href="/"
+            className="text-gray-300 hover:text-cyan-400 transition-colors py-2 px-3 rounded-lg hover:bg-purple-500/10"
+          >
+            Home
+          </Link>
+
           {/* Explore Dropdown */}
           <div className="relative group">
             <button className="flex items-center gap-1 text-gray-300 hover:text-cyan-400 transition-colors py-2 px-3 rounded-lg hover:bg-purple-500/10">
