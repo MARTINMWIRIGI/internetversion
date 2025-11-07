@@ -3,10 +3,11 @@ import Link from "next/link"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Menu } from "lucide-react"
+import { Menu, ChevronDown } from "lucide-react"
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false)
+  const [isExploreOpen, setIsExploreOpen] = useState(false)
 
   return (
     <header className="border-b border-purple-500/20 bg-gradient-to-b from-purple-900/30 to-transparent backdrop-blur-lg sticky top-0 z-50">
@@ -20,16 +21,42 @@ export function Header() {
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex gap-6 items-center flex-1 justify-center text-sm">
-          <Link href="/gallery" className="text-gray-300 hover:text-cyan-400 transition-colors">
-            Gallery
-          </Link>
-          <Link href="/contribute" className="text-gray-300 hover:text-cyan-400 transition-colors">
-            Contribute
-          </Link>
-          <Link href="/docs" className="text-gray-300 hover:text-cyan-400 transition-colors">
-            Learn
-          </Link>
+        <nav className="hidden md:flex gap-8 items-center flex-1 justify-center text-sm">
+          {/* Explore Dropdown */}
+          <div className="relative group">
+            <button className="flex items-center gap-1 text-gray-300 hover:text-cyan-400 transition-colors py-2 px-3 rounded-lg hover:bg-purple-500/10">
+              Explore
+              <ChevronDown className="w-4 h-4 group-hover:rotate-180 transition-transform" />
+            </button>
+            <div className="absolute left-0 mt-0 w-48 bg-gradient-to-br from-purple-900/90 to-purple-950/90 border border-purple-500/30 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 backdrop-blur-xl py-2">
+              <Link
+                href="/gallery"
+                className="block px-4 py-2 text-gray-300 hover:text-cyan-400 hover:bg-purple-500/20 transition-colors"
+              >
+                Gallery
+              </Link>
+              <Link
+                href="/wizard"
+                className="block px-4 py-2 text-gray-300 hover:text-cyan-400 hover:bg-purple-500/20 transition-colors"
+              >
+                Contribute
+              </Link>
+              <Link
+                href="/docs"
+                className="block px-4 py-2 text-gray-300 hover:text-cyan-400 hover:bg-purple-500/20 transition-colors"
+              >
+                Learn
+              </Link>
+              <a
+                href="https://opensea.io"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block px-4 py-2 text-gray-300 hover:text-cyan-400 hover:bg-purple-500/20 transition-colors"
+              >
+                View NFTs on OpenSea
+              </a>
+            </div>
+          </div>
         </nav>
 
         {/* Desktop Right Actions */}
@@ -40,7 +67,7 @@ export function Header() {
             </Button>
           </Link>
           <Link href="/auth">
-            <Button className="gradient-accent text-white hover:shadow-lg hover:shadow-purple-500/50">
+            <Button className="gradient-accent text-white hover:shadow-lg hover:shadow-purple-500/50 pulse-glow">
               Connect Wallet
             </Button>
           </Link>
@@ -59,6 +86,7 @@ export function Header() {
           >
             <div className="space-y-6 mt-8 px-2">
               <nav className="space-y-2">
+                <p className="text-xs text-purple-400 font-semibold px-4 mb-3">EXPLORE</p>
                 <Link
                   href="/gallery"
                   className="block text-gray-300 hover:text-cyan-400 transition-colors py-4 px-4 rounded-lg hover:bg-purple-500/10"
@@ -67,7 +95,7 @@ export function Header() {
                   Gallery
                 </Link>
                 <Link
-                  href="/contribute"
+                  href="/wizard"
                   className="block text-gray-300 hover:text-cyan-400 transition-colors py-4 px-4 rounded-lg hover:bg-purple-500/10"
                   onClick={() => setIsOpen(false)}
                 >
@@ -80,28 +108,30 @@ export function Header() {
                 >
                   Learn
                 </Link>
-                <Link
-                  href="/vault"
+                <a
+                  href="https://opensea.io"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="block text-gray-300 hover:text-cyan-400 transition-colors py-4 px-4 rounded-lg hover:bg-purple-500/10"
                   onClick={() => setIsOpen(false)}
                 >
-                  My Vault
-                </Link>
+                  View NFTs on OpenSea
+                </a>
               </nav>
 
               <div className="pt-6 border-t border-purple-500/20 space-y-3">
-                <p className="text-xs text-purple-400 font-semibold px-4">CONNECT & AUTHENTICATE</p>
-                <Link href="/auth" onClick={() => setIsOpen(false)} className="block w-full px-3">
-                  <Button className="w-full gradient-accent text-white mb-2 hover:shadow-lg hover:shadow-purple-500/50">
-                    Connect Wallet
+                <p className="text-xs text-purple-400 font-semibold px-4">MY ACCOUNT</p>
+                <Link href="/vault" onClick={() => setIsOpen(false)} className="block w-full px-3">
+                  <Button
+                    variant="outline"
+                    className="w-full border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 bg-transparent mb-2"
+                  >
+                    My Vault
                   </Button>
                 </Link>
                 <Link href="/auth" onClick={() => setIsOpen(false)} className="block w-full px-3">
-                  <Button
-                    variant="outline"
-                    className="w-full border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 bg-transparent"
-                  >
-                    Sign In
+                  <Button className="w-full gradient-accent text-white hover:shadow-lg hover:shadow-purple-500/50">
+                    Connect Wallet
                   </Button>
                 </Link>
               </div>
