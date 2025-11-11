@@ -1,0 +1,28 @@
+User-agent: *
+Allow: /
+Allow: /gallery
+Allow: /auth
+Disallow: /wizard
+Disallow: /vault
+Disallow: /auth/callback
+Disallow: /api/
+
+Sitemap: https://soul-internet-vault-guardian.vercel.app/sitemap.xml
+
+User-agent: Googlebot
+Allow: /
+Allow: /gallery
+Allow: /auth
+Disallow: /wizard
+Disallow: /vault
+Disallow: /api/
+
+User-agent: Bingbot
+Allow: /
+Allow: /gallery
+Allow: /auth
+Disallow: /wizard
+Disallow: /vault
+Disallow: /api/
+
+Crawl-delay: 1
