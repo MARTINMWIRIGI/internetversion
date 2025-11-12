@@ -1,7 +1,10 @@
 "use client"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { WalletMintAdmin } from "./components/WalletMintAdmin"
+
+// inside render/return where you want it:
+<WalletMintAdmin />
 import { useEffect, useState } from "react"
 import { TooltipHelp } from "@/components/tooltip-help"
 
