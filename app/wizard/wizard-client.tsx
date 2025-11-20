@@ -9,6 +9,9 @@ import { ReviewStep } from "@/components/wizard/review-step"
 import { ResultStep } from "@/components/wizard/result-step"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import { NFTStorage, File } from "nft.storage"
+import { ThirdwebSDK } from "@thirdweb-dev/sdk"
+import { ethers } from "ethers"
 
 export type WizardData = {
   language: string
@@ -49,87 +52,104 @@ export default function WizardPageClient() {
     setCurrentStep((prev) => Math.max(1, prev - 1))
   }
 
-  // -----------------------------
-  // NFT Minting Helper
-  // -----------------------------
-  async function mintNFT(data: Partial<WizardData>): Promise<string> {
+  // ---------------- NFT Minting Function ----------------
+  const mintNFT = async (wizardData: Partial<WizardData>) => {
     try {
-      const metadata = {
-        name: data.words,
-        description: data.definition,
-        attributes: [
-          { trait_type: "Language", value: data.language },
-          { trait_type: "Content Type", value: data.contentType },
-          { trait_type: "Pronunciation", value: data.pronunciation },
-        ],
-        image: data.audioUrl, // storing audio URL for simplicity
-      }
+      if (!wizardData.audioUrl || !wizardData.walletAddress)
+        throw new Error("Missing audio or wallet address")
 
-      const response = await fetch("/api/mint-nft", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ metadata, walletAddress: data.walletAddress }),
+      const nftStorageClient = new NFTStorage({
+        token: process.env.NEXT_PUBLIC_NFT_STORAGE_KEY!,
       })
 
-      if (!response.ok) throw new Error("NFT minting failed")
-      const result = await response.json()
-      return result.nftMetadataUrl
+      // Prepare metadata
+      const metadata = {
+        name: wizardData.words,
+        description: wizardData.definition,
+        properties: {
+          language: wizardData.language,
+          contentType: wizardData.contentType,
+          context: wizardData.context,
+          pronunciation: wizardData.pronunciation,
+        },
+        audio: wizardData.audioUrl,
+        video: wizardData.videoUrl || undefined,
+      }
+
+      // Store metadata on IPFS
+      const metadataBlob = new Blob([JSON.stringify(metadata)], { type: "application/json" })
+      const metadataFile = new File([metadataBlob], "metadata.json")
+      const cid = await nftStorageClient.storeBlob(metadataFile)
+      const nftMetadataUrl = `https://ipfs.io/ipfs/${cid}`
+
+      // Connect to MetaMask and mint NFT
+      const provider = new ethers.providers.Web3Provider((window as any).ethereum)
+      await provider.send("eth_requestAccounts", [])
+      const signer = provider.getSigner()
+      const sdk = new ThirdwebSDK(signer)
+      const contract = await sdk.getContract(
+        process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!,
+        "nft-collection"
+      )
+
+      await contract.mintTo(wizardData.walletAddress, {
+        name: wizardData.words,
+        description: wizardData.definition,
+        image: nftMetadataUrl,
+        properties: metadata.properties,
+      })
+
+      return nftMetadataUrl
     } catch (err) {
-      console.error("Mint NFT error:", err)
+      console.error("Minting failed:", err)
       throw err
     }
   }
 
-  // -----------------------------
-  // Submit Wizard Data
-  // -----------------------------
+  // ---------------- Submit Handler ----------------
   const handleSubmit = async (finalData: Partial<WizardData>) => {
     setIsSubmitting(true)
     try {
       const submission = { ...data, ...finalData }
 
-      // 1️⃣ Mint NFT
+      // Mint NFT
       const nftMetadataUrl = await mintNFT(submission)
 
-      // 2️⃣ Send submission to backend
+      // Send submission + NFT URL to backend
       const response = await fetch("/api/submissions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...submission, nftMetadataUrl }),
       })
-
       if (!response.ok) throw new Error("Submission failed")
-      const result = await response.json()
 
-      setData((prev) => ({ ...prev, ...result, nftMetadataUrl }))
+      const result = await response.json()
+      setData({ ...submission, nftMetadataUrl, ...result })
       setCurrentStep(6)
     } catch (error) {
       console.error("Submission error:", error)
-      alert("Error submitting to vault. Please try again.")
+      alert("Error minting or submitting to vault. Please try again.")
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  // -----------------------------
-  // Render Wizard Steps
-  // -----------------------------
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-900 to-slate-950 overflow-hidden">
-      {/* Animated background */}
+      {/* Background and particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 right-0 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-cyan-600/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }}></div>
         <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
-      </div>
-
-      {/* Floating particles */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {[...Array(20)].map((_, i) => (
           <div
             key={i}
             className="absolute w-1 h-1 bg-cyan-400/30 rounded-full animate-pulse"
-            style={{ left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%`, animationDelay: `${Math.random() * 2}s` }}
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 2}s`,
+            }}
           ></div>
         ))}
       </div>
