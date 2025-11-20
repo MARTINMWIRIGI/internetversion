@@ -1,45 +1,49 @@
 "use client"
+
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Menu, ChevronDown } from "lucide-react"
-import WalletConnectionModal from "./wallet-connection-modal"
 import { useMetamask, useDisconnect, useAddress } from "@thirdweb-dev/react"
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false)
-  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false)
 
   // Thirdweb wallet hooks
   const connectWithMetamask = useMetamask()
   const disconnect = useDisconnect()
   const address = useAddress()
 
+  // Automatically connect wallet on mount if already authorized
+  useEffect(() => {
+    if (!address) connectWithMetamask().catch(() => {})
+  }, [])
+
   const handleConnectWallet = async () => {
     if (!address) {
       try {
-        await connectWithMetamask() // triggers MetaMask popup
-        console.log("[v0] Wallet connected:", address)
-        setIsWalletModalOpen(false)
+        await connectWithMetamask()
       } catch (error) {
         console.error("Wallet connection failed:", error)
+        alert("Failed to connect MetaMask.")
       }
     } else {
       disconnect()
-      console.log("[v0] Wallet disconnected")
     }
+  }
+
+  // OpenSea link for the connected wallet or general collection
+  const getOpenSeaLink = () => {
+    const collectionSlug = "soul-internet"
+    if (address) {
+      return `https://opensea.io/${address}?search[collections][0]=${collectionSlug}`
+    }
+    return `https://opensea.io/collection/${collectionSlug}`
   }
 
   return (
     <>
-      {/* Wallet Modal */}
-      <WalletConnectionModal
-        isOpen={isWalletModalOpen}
-        onOpenChange={setIsWalletModalOpen}
-        onConnect={handleConnectWallet}
-      />
-
       <header className="border-b border-purple-500/20 bg-gradient-to-b from-purple-900/30 to-transparent backdrop-blur-lg sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 md:py-5 flex items-center justify-between gap-4">
           {/* Logo */}
@@ -53,56 +57,44 @@ export function Header() {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex gap-8 items-center flex-1 justify-center text-sm">
             <Link
-              href="/"
+              href="/gallery"
               className="text-gray-300 hover:text-cyan-400 transition-colors py-2 px-3 rounded-lg hover:bg-purple-500/10"
             >
-              Home
+              Gallery
             </Link>
 
-            {/* Explore Dropdown */}
-            <div className="relative group">
-              <button className="flex items-center gap-1 text-gray-300 hover:text-cyan-400 transition-colors py-2 px-3 rounded-lg hover:bg-purple-500/10">
-                Explore
-                <ChevronDown className="w-4 h-4 group-hover:rotate-180 transition-transform" />
-              </button>
-              <div className="absolute left-0 mt-0 w-48 bg-gradient-to-br from-purple-900/90 to-purple-950/90 border border-purple-500/30 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 backdrop-blur-xl py-2">
-                <Link
-                  href="/gallery"
-                  className="block px-4 py-2 text-gray-300 hover:text-cyan-400 hover:bg-purple-500/20 transition-colors"
-                >
-                  Gallery
-                </Link>
-                <Link
-                  href="/wizard"
-                  className="block px-4 py-2 text-gray-300 hover:text-cyan-400 hover:bg-purple-500/20 transition-colors"
-                >
-                  Contribute
-                </Link>
-                <Link
-                  href="/docs"
-                  className="block px-4 py-2 text-gray-300 hover:text-cyan-400 hover:bg-purple-500/20 transition-colors"
-                >
-                  Learn
-                </Link>
-                <a
-                  href="https://opensea.io"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block px-4 py-2 text-gray-300 hover:text-cyan-400 hover:bg-purple-500/20 transition-colors"
-                >
-                  View NFTs on OpenSea
-                </a>
-              </div>
-            </div>
+            <Link
+              href="/wizard"
+              className="text-gray-300 hover:text-cyan-400 transition-colors py-2 px-3 rounded-lg hover:bg-purple-500/10"
+            >
+              Contribute
+            </Link>
+
+            <Link
+              href="/docs"
+              className="text-gray-300 hover:text-cyan-400 transition-colors py-2 px-3 rounded-lg hover:bg-purple-500/10"
+            >
+              Learn
+            </Link>
+
+            <a
+              href={getOpenSeaLink()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-300 hover:text-cyan-400 transition-colors py-2 px-3 rounded-lg hover:bg-purple-500/10"
+            >
+              View NFTs on OpenSea
+            </a>
           </nav>
 
           {/* Desktop Right Actions */}
           <div className="hidden md:flex items-center gap-3">
-            <Link href="/vault">
+            <Link href={address ? `/vault?wallet=${address}` : "/vault"}>
               <Button variant="ghost" className="text-cyan-400 hover:bg-cyan-500/10">
                 My Vault
               </Button>
             </Link>
+
             <Button
               onClick={handleConnectWallet}
               className="gradient-accent text-white hover:shadow-lg hover:shadow-purple-500/50 pulse-glow"
@@ -125,23 +117,20 @@ export function Header() {
               <div className="space-y-6 mt-8 px-2">
                 <nav className="space-y-2">
                   <p className="text-xs text-purple-400 font-semibold px-4 mb-3">EXPLORE</p>
-                  <Link href="/gallery" className="block text-gray-300 hover:text-cyan-400 transition-colors py-4 px-4 rounded-lg hover:bg-purple-500/10" onClick={() => setIsOpen(false)}>Gallery</Link>
-                  <Link href="/wizard" className="block text-gray-300 hover:text-cyan-400 transition-colors py-4 px-4 rounded-lg hover:bg-purple-500/10" onClick={() => setIsOpen(false)}>Contribute</Link>
-                  <Link href="/docs" className="block text-gray-300 hover:text-cyan-400 transition-colors py-4 px-4 rounded-lg hover:bg-purple-500/10" onClick={() => setIsOpen(false)}>Learn</Link>
-                  <a href="https://opensea.io" target="_blank" rel="noopener noreferrer" className="block text-gray-300 hover:text-cyan-400 transition-colors py-4 px-4 rounded-lg hover:bg-purple-500/10" onClick={() => setIsOpen(false)}>View NFTs on OpenSea</a>
+                  <Link href="/gallery" className="block text-gray-300 hover:text-cyan-400 py-4 px-4 rounded-lg hover:bg-purple-500/10" onClick={() => setIsOpen(false)}>Gallery</Link>
+                  <Link href="/wizard" className="block text-gray-300 hover:text-cyan-400 py-4 px-4 rounded-lg hover:bg-purple-500/10" onClick={() => setIsOpen(false)}>Contribute</Link>
+                  <Link href="/docs" className="block text-gray-300 hover:text-cyan-400 py-4 px-4 rounded-lg hover:bg-purple-500/10" onClick={() => setIsOpen(false)}>Learn</Link>
+                  <a href={getOpenSeaLink()} target="_blank" rel="noopener noreferrer" className="block text-gray-300 hover:text-cyan-400 py-4 px-4 rounded-lg hover:bg-purple-500/10" onClick={() => setIsOpen(false)}>View NFTs on OpenSea</a>
                 </nav>
 
                 <div className="pt-6 border-t border-purple-500/20 space-y-3">
                   <p className="text-xs text-purple-400 font-semibold px-4">MY ACCOUNT</p>
-                  <Link href="/vault" onClick={() => setIsOpen(false)} className="block w-full px-3">
+                  <Link href={address ? `/vault?wallet=${address}` : "/vault"} onClick={() => setIsOpen(false)}>
                     <Button variant="outline" className="w-full border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 bg-transparent mb-2">My Vault</Button>
                   </Link>
                   <div className="px-3 w-full">
                     <Button
-                      onClick={() => {
-                        handleConnectWallet()
-                        setIsOpen(false)
-                      }}
+                      onClick={() => { handleConnectWallet(); setIsOpen(false) }}
                       className="w-full gradient-accent text-white hover:shadow-lg hover:shadow-purple-500/50"
                     >
                       {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "Connect Wallet"}
