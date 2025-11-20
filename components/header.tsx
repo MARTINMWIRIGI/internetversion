@@ -1,9 +1,10 @@
 "use client"
+
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Menu, ChevronDown } from "lucide-react"
+import { Menu } from "lucide-react"
 import { useMetamask, useDisconnect, useAddress } from "@thirdweb-dev/react"
 
 export function Header() {
@@ -12,7 +13,6 @@ export function Header() {
   const disconnect = useDisconnect()
   const address = useAddress()
 
-  // Auto-connect on page load if user already connected
   useEffect(() => {
     if (address) console.log("[v0] Wallet connected:", address)
   }, [address])
@@ -28,6 +28,9 @@ export function Header() {
       disconnect()
     }
   }
+
+  // OpenSea URL for the connected wallet
+  const openSeaUrl = address ? `https://opensea.io/${address}` : "#"
 
   return (
     <header className="border-b border-purple-500/20 bg-gradient-to-b from-purple-900/30 to-transparent backdrop-blur-lg sticky top-0 z-50">
@@ -47,22 +50,22 @@ export function Header() {
           <Link href="/docs" className="text-gray-300 hover:text-cyan-400 transition-colors py-2 px-3 rounded-lg hover:bg-purple-500/10">
             Learn
           </Link>
-          <Link
-            href={address ? `/vault?wallet=${address}` : "#"}
-            target={address ? "_blank" : "_self"}
-            className="text-gray-300 hover:text-cyan-400 transition-colors py-2 px-3 rounded-lg hover:bg-purple-500/10"
-          >
-            View NFTs on OpenSea
-          </Link>
+          {address && (
+            <Link href={openSeaUrl} target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-cyan-400 transition-colors py-2 px-3 rounded-lg hover:bg-purple-500/10">
+              View NFTs on OpenSea
+            </Link>
+          )}
         </nav>
 
         {/* Desktop Right Actions */}
         <div className="hidden md:flex items-center gap-3">
-          <Link href="/vault">
-            <Button variant="ghost" className="text-cyan-400 hover:bg-cyan-500/10">
-              My Vault
-            </Button>
-          </Link>
+          {address && (
+            <Link href="/vault">
+              <Button variant="ghost" className="text-cyan-400 hover:bg-cyan-500/10">
+                My Vault
+              </Button>
+            </Link>
+          )}
           <Button
             onClick={handleConnectWallet}
             className="gradient-accent text-white hover:shadow-lg hover:shadow-purple-500/50"
@@ -85,21 +88,26 @@ export function Header() {
                 <Link href="/gallery" className="block text-gray-300 hover:text-cyan-400 py-4 px-4 rounded-lg" onClick={() => setIsOpen(false)}>Gallery</Link>
                 <Link href="/wizard" className="block text-gray-300 hover:text-cyan-400 py-4 px-4 rounded-lg" onClick={() => setIsOpen(false)}>Contribute</Link>
                 <Link href="/docs" className="block text-gray-300 hover:text-cyan-400 py-4 px-4 rounded-lg" onClick={() => setIsOpen(false)}>Learn</Link>
-                <Link
-                  href={address ? `/vault?wallet=${address}` : "#"}
-                  target={address ? "_blank" : "_self"}
-                  className="block text-gray-300 hover:text-cyan-400 py-4 px-4 rounded-lg"
-                  onClick={() => setIsOpen(false)}
-                >
-                  View NFTs on OpenSea
-                </Link>
+                {address && (
+                  <Link
+                    href={openSeaUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-gray-300 hover:text-cyan-400 py-4 px-4 rounded-lg"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    View NFTs on OpenSea
+                  </Link>
+                )}
               </nav>
 
               <div className="pt-6 border-t border-purple-500/20 space-y-3">
                 <p className="text-xs text-purple-400 font-semibold px-4">MY ACCOUNT</p>
-                <Link href="/vault" onClick={() => setIsOpen(false)}>
-                  <Button variant="outline" className="w-full border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 mb-2">My Vault</Button>
-                </Link>
+                {address && (
+                  <Link href="/vault" onClick={() => setIsOpen(false)}>
+                    <Button variant="outline" className="w-full border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 mb-2">My Vault</Button>
+                  </Link>
+                )}
                 <Button
                   onClick={() => {
                     handleConnectWallet()
