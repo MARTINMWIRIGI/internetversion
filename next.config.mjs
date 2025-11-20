@@ -1,16 +1,17 @@
-import { defineNextConfig } from 'next';
-
-export default defineNextConfig({
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   reactStrictMode: true,          // Recommended for catching potential issues
-  swcMinify: true,                 // Use SWC for faster minification
+  swcMinify: true,                // Use SWC for faster minification
   experimental: {
-    turbo: false,                  // Disable Turbopack, force Webpack
+    turbo: false,                 // Disable Turbopack, use Webpack
   },
   images: {
-    domains: ['your-domain.com'],  // Add any external image domains you use
+    domains: ['your-domain.com'], // Add any external image domains you use
   },
   eslint: {
-    ignoreDuringBuilds: true,      // Optional: skip ESLint during production builds
+    ignoreDuringBuilds: true,     // Optional: skip ESLint during production builds
   },
   // Optional: any other Next.js settings go here
-});
+};
+
+export default nextConfig;
