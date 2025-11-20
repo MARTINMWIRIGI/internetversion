@@ -23,6 +23,7 @@ export type WizardData = {
   milsaScore?: number
   feedback?: string
   status?: string
+  nftMetadataUrl?: string
 }
 
 const STEPS = [
@@ -48,21 +49,59 @@ export default function WizardPageClient() {
     setCurrentStep((prev) => Math.max(1, prev - 1))
   }
 
+  // -----------------------------
+  // NFT Minting Helper
+  // -----------------------------
+  async function mintNFT(data: Partial<WizardData>): Promise<string> {
+    try {
+      const metadata = {
+        name: data.words,
+        description: data.definition,
+        attributes: [
+          { trait_type: "Language", value: data.language },
+          { trait_type: "Content Type", value: data.contentType },
+          { trait_type: "Pronunciation", value: data.pronunciation },
+        ],
+        image: data.audioUrl, // storing audio URL for simplicity
+      }
+
+      const response = await fetch("/api/mint-nft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ metadata, walletAddress: data.walletAddress }),
+      })
+
+      if (!response.ok) throw new Error("NFT minting failed")
+      const result = await response.json()
+      return result.nftMetadataUrl
+    } catch (err) {
+      console.error("Mint NFT error:", err)
+      throw err
+    }
+  }
+
+  // -----------------------------
+  // Submit Wizard Data
+  // -----------------------------
   const handleSubmit = async (finalData: Partial<WizardData>) => {
     setIsSubmitting(true)
     try {
       const submission = { ...data, ...finalData }
 
+      // 1️⃣ Mint NFT
+      const nftMetadataUrl = await mintNFT(submission)
+
+      // 2️⃣ Send submission to backend
       const response = await fetch("/api/submissions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(submission),
+        body: JSON.stringify({ ...submission, nftMetadataUrl }),
       })
 
       if (!response.ok) throw new Error("Submission failed")
-
       const result = await response.json()
-      setData((prev) => ({ ...prev, ...result }))
+
+      setData((prev) => ({ ...prev, ...result, nftMetadataUrl }))
       setCurrentStep(6)
     } catch (error) {
       console.error("Submission error:", error)
@@ -72,15 +111,15 @@ export default function WizardPageClient() {
     }
   }
 
+  // -----------------------------
+  // Render Wizard Steps
+  // -----------------------------
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-900 to-slate-950 overflow-hidden">
-      {/* Animated background elements */}
+      {/* Animated background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 right-0 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl animate-pulse"></div>
-        <div
-          className="absolute bottom-0 left-0 w-96 h-96 bg-cyan-600/20 rounded-full blur-3xl animate-pulse"
-          style={{ animationDelay: "1s" }}
-        ></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-cyan-600/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }}></div>
         <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
       </div>
 
@@ -90,11 +129,7 @@ export default function WizardPageClient() {
           <div
             key={i}
             className="absolute w-1 h-1 bg-cyan-400/30 rounded-full animate-pulse"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 2}s`,
-            }}
+            style={{ left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%`, animationDelay: `${Math.random() * 2}s` }}
           ></div>
         ))}
       </div>
