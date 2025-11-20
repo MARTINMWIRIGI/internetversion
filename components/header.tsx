@@ -4,28 +4,45 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Menu, ChevronDown } from "lucide-react"
-import { WalletConnectionModal } from "./wallet-connection-modal"
+import WalletConnectionModal from "./wallet-connection-modal"
+import { useMetamask, useDisconnect, useAddress } from "@thirdweb-dev/react"
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false)
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false)
 
+  // Thirdweb wallet hooks
+  const connectWithMetamask = useMetamask()
+  const disconnect = useDisconnect()
+  const address = useAddress()
+
   const handleConnectWallet = async () => {
-    // Connect wallet logic
-    console.log("[v0] Wallet connection initiated")
+    if (!address) {
+      try {
+        await connectWithMetamask() // triggers MetaMask popup
+        console.log("[v0] Wallet connected:", address)
+        setIsWalletModalOpen(false)
+      } catch (error) {
+        console.error("Wallet connection failed:", error)
+      }
+    } else {
+      disconnect()
+      console.log("[v0] Wallet disconnected")
+    }
   }
 
   return (
     <>
+      {/* Wallet Modal */}
       <WalletConnectionModal
-        open={isWalletModalOpen}
+        isOpen={isWalletModalOpen}
         onOpenChange={setIsWalletModalOpen}
         onConnect={handleConnectWallet}
       />
 
       <header className="border-b border-purple-500/20 bg-gradient-to-b from-purple-900/30 to-transparent backdrop-blur-lg sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 md:py-5 flex items-center justify-between gap-4">
-          {/* Logo and Title */}
+          {/* Logo */}
           <Link href="/" className="hover:opacity-80 transition-opacity flex-shrink-0">
             <div>
               <h1 className="text-xl md:text-2xl font-bold gradient-text">Soul Internet</h1>
@@ -87,10 +104,10 @@ export function Header() {
               </Button>
             </Link>
             <Button
-              onClick={() => setIsWalletModalOpen(true)}
+              onClick={handleConnectWallet}
               className="gradient-accent text-white hover:shadow-lg hover:shadow-purple-500/50 pulse-glow"
             >
-              Connect Wallet
+              {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "Connect Wallet"}
             </Button>
           </div>
 
@@ -108,57 +125,26 @@ export function Header() {
               <div className="space-y-6 mt-8 px-2">
                 <nav className="space-y-2">
                   <p className="text-xs text-purple-400 font-semibold px-4 mb-3">EXPLORE</p>
-                  <Link
-                    href="/gallery"
-                    className="block text-gray-300 hover:text-cyan-400 transition-colors py-4 px-4 rounded-lg hover:bg-purple-500/10"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Gallery
-                  </Link>
-                  <Link
-                    href="/wizard"
-                    className="block text-gray-300 hover:text-cyan-400 transition-colors py-4 px-4 rounded-lg hover:bg-purple-500/10"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Contribute
-                  </Link>
-                  <Link
-                    href="/docs"
-                    className="block text-gray-300 hover:text-cyan-400 transition-colors py-4 px-4 rounded-lg hover:bg-purple-500/10"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Learn
-                  </Link>
-                  <a
-                    href="https://opensea.io"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block text-gray-300 hover:text-cyan-400 transition-colors py-4 px-4 rounded-lg hover:bg-purple-500/10"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    View NFTs on OpenSea
-                  </a>
+                  <Link href="/gallery" className="block text-gray-300 hover:text-cyan-400 transition-colors py-4 px-4 rounded-lg hover:bg-purple-500/10" onClick={() => setIsOpen(false)}>Gallery</Link>
+                  <Link href="/wizard" className="block text-gray-300 hover:text-cyan-400 transition-colors py-4 px-4 rounded-lg hover:bg-purple-500/10" onClick={() => setIsOpen(false)}>Contribute</Link>
+                  <Link href="/docs" className="block text-gray-300 hover:text-cyan-400 transition-colors py-4 px-4 rounded-lg hover:bg-purple-500/10" onClick={() => setIsOpen(false)}>Learn</Link>
+                  <a href="https://opensea.io" target="_blank" rel="noopener noreferrer" className="block text-gray-300 hover:text-cyan-400 transition-colors py-4 px-4 rounded-lg hover:bg-purple-500/10" onClick={() => setIsOpen(false)}>View NFTs on OpenSea</a>
                 </nav>
 
                 <div className="pt-6 border-t border-purple-500/20 space-y-3">
                   <p className="text-xs text-purple-400 font-semibold px-4">MY ACCOUNT</p>
                   <Link href="/vault" onClick={() => setIsOpen(false)} className="block w-full px-3">
-                    <Button
-                      variant="outline"
-                      className="w-full border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 bg-transparent mb-2"
-                    >
-                      My Vault
-                    </Button>
+                    <Button variant="outline" className="w-full border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 bg-transparent mb-2">My Vault</Button>
                   </Link>
                   <div className="px-3 w-full">
                     <Button
                       onClick={() => {
-                        setIsWalletModalOpen(true)
+                        handleConnectWallet()
                         setIsOpen(false)
                       }}
                       className="w-full gradient-accent text-white hover:shadow-lg hover:shadow-purple-500/50"
                     >
-                      Connect Wallet
+                      {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "Connect Wallet"}
                     </Button>
                   </div>
                 </div>
