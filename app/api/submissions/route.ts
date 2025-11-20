@@ -1,86 +1,74 @@
-import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+// app/api/submissions/route.ts
+import { NextRequest, NextResponse } from "next/server";
 import { NFTStorage, File } from "nft.storage";
 import { ThirdwebSDK } from "@thirdweb-dev/sdk";
 
-export async function POST(req: Request) {
+const NFT_STORAGE_KEY = process.env.NEXT_PUBLIC_NFT_STORAGE_KEY!;
+const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!;
+
+export async function POST(req: NextRequest) {
   try {
-    const { walletAddress, text } = await req.json();
+    const data = await req.json();
 
-    // Validate
-    if (!walletAddress || !text) {
-      return NextResponse.json({ error: "Missing walletAddress or text" }, { status: 400 });
+    const {
+      language,
+      contentType,
+      words,
+      definition,
+      context,
+      pronunciation,
+      audioUrl,
+      videoUrl,
+      walletAddress,
+    } = data;
+
+    if (!walletAddress || !audioUrl) {
+      return NextResponse.json(
+        { status: "error", message: "Wallet address and audio required" },
+        { status: 400 }
+      );
     }
 
-    // 1️⃣ Insert submission into Supabase
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE!
-    );
+    // 1️⃣ Upload audio + metadata to NFT.Storage
+    const nftStorage = new NFTStorage({ token: NFT_STORAGE_KEY });
+    const audioBlob = await fetch(audioUrl).then(res => res.blob());
 
-    const { data: inserted, error: insertErr } = await supabase
-      .from("wizard_submissions")
-      .insert({
-        wallet_address: walletAddress,
-        user_text: text,
-        minted: false, // a field to mark later
-      })
-      .select()
-      .single();
-
-    if (insertErr) {
-      console.error("Supabase insert error:", insertErr);
-      return NextResponse.json({ error: insertErr.message }, { status: 500 });
-    }
-
-    const submissionId = inserted.id;
-
-    // 2️⃣ Upload metadata to NFT.Storage
-    const client = new NFTStorage({ token: process.env.NFT_STORAGE_KEY! });
-
-    const metadata = await client.store({
-      name: "Soul Internet Contribution",
-      description: text,
-      image: new File(
-        [Buffer.from(text)],   // using text as image (or you can change)
-        "contribution.txt",
-        { type: "text/plain" }
-      ),
+    const metadata = await nftStorage.store({
+      name: words,
+      description: `Language contribution in ${language}`,
+      image: new File([audioBlob], "audio.webm", { type: "audio/webm" }),
       properties: {
-        contributed_text: text,
+        language,
+        contentType,
+        pronunciation,
+        definition,
+        context,
+        videoUrl: videoUrl || null,
+        walletAddress,
       },
     });
 
-    const metadataURI = metadata.url; // ipfs://...
+    // 2️⃣ Mint NFT on Polygon via Thirdweb
+    const sdk = new ThirdwebSDK("polygon");
+    const contract = await sdk.getContract(CONTRACT_ADDRESS);
 
-    // 3️⃣ Mint via Thirdweb
-    const sdk = ThirdwebSDK.fromPrivateKey(process.env.MINTER_PRIVATE_KEY!, "polygon");
-    const contract = await sdk.getContract(process.env.CONTRACT_ADDRESS!);
-
-    const mintResult = await contract.erc721.mintTo(walletAddress, {
-      uri: metadataURI,
+    const tx = await contract.erc721.mintTo(walletAddress, {
+      name: words,
+      description: `Language contribution in ${language}`,
+      image: metadata.url, // IPFS URL
     });
 
-    // 4️⃣ Update Supabase row to include minted info
-    await supabase
-      .from("wizard_submissions")
-      .update({
-        minted: true,
-        token_uri: metadataURI,
-        // if your contract returns an ID or you want to fetch it, store it
-        token_id: mintResult.id ?? null,
-      })
-      .eq("id", submissionId);
-
-    // 5️⃣ Return success
+    // 3️⃣ Return NFT info to client
     return NextResponse.json({
-      success: true,
-      submissionId,
-      metadataURI,
-      mintResult,
+      nftMetadataUrl: metadata.url,
+      txHash: tx.receipt.transactionHash,
+      status: "success",
     });
-  } catch (err: any) {
-    console.error("Error in /api/submissions:", err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (error: any) {
+    console.error("Submission / Minting error:", error);
+    return NextResponse.json(
+      { status: "error", message: error.message },
+      { status: 500 }
+    );
   }
 }
