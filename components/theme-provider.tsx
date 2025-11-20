@@ -1,11 +1,17 @@
-'use client'
+// theme-provider.tsx
+"use client";
 
-import * as React from 'react'
-import {
-  ThemeProvider as NextThemesProvider,
-  type ThemeProviderProps,
-} from 'next-themes'
+import { ReactNode } from "react";
+import { ThirdwebProvider, metamaskWallet } from "@thirdweb-dev/react";
+import { ChainId } from "@thirdweb-dev/sdk";
 
-export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
-  return <NextThemesProvider {...props}>{children}</NextThemesProvider>
+export default function ThemeProvider({ children }: { children: ReactNode }) {
+  return (
+    <ThirdwebProvider
+      activeChain={ChainId.Polygon} // Polygon mainnet
+      supportedWallets={[metamaskWallet()]}
+    >
+      {children}
+    </ThirdwebProvider>
+  );
 }
