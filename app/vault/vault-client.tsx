@@ -5,7 +5,6 @@ import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { useAddress } from "@thirdweb-dev/react"
 
 interface NFTSubmission {
   id: string
@@ -25,7 +24,26 @@ export default function VaultClientPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [filterLanguage, setFilterLanguage] = useState("")
   const [showOnlyMyVault, setShowOnlyMyVault] = useState(false)
-  const address = useAddress()
+  const [address, setAddress] = useState<string | null>(null)
+
+  useEffect(() => {
+    // Get connected wallet address
+    const getAddress = async () => {
+      if (window.ethereum) {
+        try {
+          const accounts = await window.ethereum.request({
+            method: "eth_accounts"
+          })
+          if (accounts && accounts.length > 0) {
+            setAddress(accounts[0])
+          }
+        } catch (error) {
+          console.error("Error getting address:", error)
+        }
+      }
+    }
+    getAddress()
+  }, [])
 
   useEffect(() => {
     const fetchSubmissions = async () => {
