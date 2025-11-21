@@ -1,17 +1,21 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,          // Recommended for catching potential issues
-  swcMinify: true,                // Use SWC for faster minification
-  experimental: {
-    turbo: false,                 // Disable Turbopack, use Webpack
-  },
+  reactStrictMode: true,
+
   images: {
-    domains: ['your-domain.com'], // Add any external image domains you use
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "your-domain.com",
+      },
+    ],
   },
-  eslint: {
-    ignoreDuringBuilds: true,     // Optional: skip ESLint during production builds
+
+  experimental: {
+    serverActions: {
+      allowedOrigins: ["*"],
+    },
   },
-  // Optional: any other Next.js settings go here
 };
 
 export default nextConfig;
