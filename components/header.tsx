@@ -5,31 +5,80 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Menu } from "lucide-react"
-import { useMetamask, useDisconnect, useAddress } from "@thirdweb-dev/react"
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false)
-  const connectWithMetamask = useMetamask()
-  const disconnect = useDisconnect()
-  const address = useAddress()
+  const [address, setAddress] = useState<string | null>(null)
 
   useEffect(() => {
-    if (address) console.log("[v0] Wallet connected:", address)
-  }, [address])
+    // Check if wallet was previously connected
+    const checkConnection = async () => {
+      if (window.ethereum) {
+        try {
+          const accounts = await window.ethereum.request({
+            method: "eth_accounts"
+          })
+          if (accounts && accounts.length > 0) {
+            setAddress(accounts[0])
+          }
+        } catch (error) {
+          console.error("Error checking wallet connection:", error)
+        }
+      }
+    }
+    checkConnection()
+  }, [])
 
   const handleConnectWallet = async () => {
     if (!address) {
       try {
-        await connectWithMetamask()
+        if (!window.ethereum) {
+          alert("Please install MetaMask to continue")
+          window.open("https://metamask.io/download/", "_blank")
+          return
+        }
+
+        const accounts = await window.ethereum.request({
+          method: "eth_requestAccounts"
+        })
+
+        if (accounts && accounts.length > 0) {
+          setAddress(accounts[0])
+          
+          // Switch to Polygon
+          try {
+            await window.ethereum.request({
+              method: "wallet_switchEthereumChain",
+              params: [{ chainId: "0x89" }]
+            })
+          } catch (switchError: any) {
+            if (switchError.code === 4902) {
+              await window.ethereum.request({
+                method: "wallet_addEthereumChain",
+                params: [{
+                  chainId: "0x89",
+                  chainName: "Polygon Mainnet",
+                  nativeCurrency: {
+                    name: "MATIC",
+                    symbol: "MATIC",
+                    decimals: 18
+                  },
+                  rpcUrls: ["https://polygon-rpc.com/"],
+                  blockExplorerUrls: ["https://polygonscan.com"]
+                }]
+              })
+            }
+          }
+        }
       } catch (error) {
         console.error("Wallet connection failed:", error)
+        alert("Failed to connect wallet")
       }
     } else {
-      disconnect()
+      setAddress(null)
     }
   }
 
-  // OpenSea URL for the connected wallet
   const openSeaUrl = address ? `https://opensea.io/${address}` : "#"
 
   return (
@@ -46,9 +95,6 @@ export function Header() {
           </Link>
           <Link href="/wizard" className="text-gray-300 hover:text-cyan-400 transition-colors py-2 px-3 rounded-lg hover:bg-purple-500/10">
             Contribute
-          </Link>
-          <Link href="/docs" className="text-gray-300 hover:text-cyan-400 transition-colors py-2 px-3 rounded-lg hover:bg-purple-500/10">
-            Learn
           </Link>
           {address && (
             <Link href={openSeaUrl} target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-cyan-400 transition-colors py-2 px-3 rounded-lg hover:bg-purple-500/10">
@@ -87,15 +133,8 @@ export function Header() {
                 <p className="text-xs text-purple-400 font-semibold px-4 mb-3">EXPLORE</p>
                 <Link href="/gallery" className="block text-gray-300 hover:text-cyan-400 py-4 px-4 rounded-lg" onClick={() => setIsOpen(false)}>Gallery</Link>
                 <Link href="/wizard" className="block text-gray-300 hover:text-cyan-400 py-4 px-4 rounded-lg" onClick={() => setIsOpen(false)}>Contribute</Link>
-                <Link href="/docs" className="block text-gray-300 hover:text-cyan-400 py-4 px-4 rounded-lg" onClick={() => setIsOpen(false)}>Learn</Link>
                 {address && (
-                  <Link
-                    href={openSeaUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block text-gray-300 hover:text-cyan-400 py-4 px-4 rounded-lg"
-                    onClick={() => setIsOpen(false)}
-                  >
+                  <Link href={openSeaUrl} target="_blank" rel="noopener noreferrer" className="block text-gray-300 hover:text-cyan-400 py-4 px-4 rounded-lg" onClick={() => setIsOpen(false)}>
                     View NFTs on OpenSea
                   </Link>
                 )}
