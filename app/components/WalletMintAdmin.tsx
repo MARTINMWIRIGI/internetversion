@@ -5,7 +5,7 @@ import { Web3Provider } from "ethers";
 import CONTRACT_ABI from "../data/contractABI.json";
 
 const CONTRACT_ADDRESS =
-  process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || "0x0000000000000000000000000000000000000000";
+  process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || "0x202934e4dF29E57Ab7498bB31946174d7C95eDc7";
 
 export const WalletMintAdmin: React.FC = () => {
   const [address, setAddress] = useState<string | null>(null);
