@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import type { WizardData } from "@/app/wizard/page"
+import type { WizardData } from "./types"
 
 const CONTENT_TYPES = ["Word", "Phrase", "Sound", "Expression", "Proverb"]
 
