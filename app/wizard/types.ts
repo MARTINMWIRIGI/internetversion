@@ -1,9 +1,7 @@
-// app/wizard/types.ts
-export type WizardData = {
+export interface WizardData {
+  audioUrl?: string
+  audioBlob?: Blob
   nftName?: string
   nftDescription?: string
-  imageData?: string | null
-  metadataUrl?: string | null
-  audioBlob?: Blob
-  audioUrl?: string
+  // add more fields here for other steps in your wizard
 }
