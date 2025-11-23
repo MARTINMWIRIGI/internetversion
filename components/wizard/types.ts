@@ -1,7 +1,10 @@
+// components/wizard/types.ts
 export interface WizardData {
-  audioUrl?: string
-  audioBlob?: Blob
-  nftName?: string
-  nftDescription?: string
-  // add more fields here for other steps in your wizard
+  audio?: any;
+  content?: {
+    type: string;
+    text: string;
+    description: string;
+  };
+  // Add other wizard step data here
 }
