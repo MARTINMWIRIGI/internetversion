@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import type { WizardData } from "@/app/wizard/page"
+import type { WizardData } from "./types"
 import { useState } from "react"
 
 interface ReviewStepProps {
