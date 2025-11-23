@@ -1,26 +1,29 @@
 // types/wizard.ts
 export interface WizardData {
-  // Audio step properties
+  // Audio Step
   audioUrl?: string;
   audioBlob?: Blob;
   
-  // Content step properties
+  // Content Step
   contentType?: string;
   words?: string;
   definition?: string;
   context?: string;
   language?: string;
   
-  // You can keep the nested structure too if needed elsewhere
+  // Metadata Step
+  pronunciation?: string;
+  walletAddress?: string;
+  videoUrl?: string;
+  
+  // Optional nested structure
   content?: {
     type: string;
     text: string;
     description: string;
   };
   
-  // Add any other common wizard properties that might be needed
-  // step?: number;
-  // completed?: boolean;
-  // name?: string;
-  // etc.
+  // Common properties that might be useful
+  step?: number;
+  completed?: boolean;
 }
