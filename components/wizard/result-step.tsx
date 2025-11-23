@@ -3,8 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import type { WizardData } from "@/app/wizard/page"
-
+import type { WizardData } from "./types"
 interface ResultStepProps {
   data: Partial<WizardData> & {
     nftMetadataUrl?: string
