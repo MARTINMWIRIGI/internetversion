@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TooltipHelp } from "@/components/tooltip-help";
-import { WalletMintAdmin } from "./components/WalletMintAdmin"; // Correct import
+import WalletMintAdmin from "./components/WalletMintAdmin"; // Correct import
 import { Button } from "@/components/ui/button"; // Assuming you have Button component
 
 export default function Home() {
