@@ -9,6 +9,7 @@ export interface WizardData {
   words?: string;
   definition?: string;
   context?: string;
+  language?: string;
   
   // You can keep the nested structure too if needed elsewhere
   content?: {
@@ -16,4 +17,10 @@ export interface WizardData {
     text: string;
     description: string;
   };
+  
+  // Add any other common wizard properties that might be needed
+  // step?: number;
+  // completed?: boolean;
+  // name?: string;
+  // etc.
 }
