@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import type { WizardData } from "@/app/wizard/page"
+import type { WizardData } from "./types"
 
 interface AudioStepProps {
   onNext: (data: Partial<WizardData>) => void
@@ -19,8 +19,9 @@ function AudioWaveform({ isRecording, audioContext }: { isRecording: boolean; au
   useEffect(() => {
     if (!isRecording || !audioContext) return
 
-    analyserRef.current = audioContext.createAnalyser()
-    analyserRef.current.fftSize = 256
+    const analyser = audioContext.createAnalyser()
+    analyser.fftSize = 256
+    analyserRef.current = analyser
 
     const draw = () => {
       if (!canvasRef.current || !analyserRef.current) return
@@ -37,7 +38,6 @@ function AudioWaveform({ isRecording, audioContext }: { isRecording: boolean; au
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
       const barWidth = (canvas.width / bufferLength) * 2.5
-      let barHeight
       let x = 0
 
       const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0)
@@ -45,13 +45,12 @@ function AudioWaveform({ isRecording, audioContext }: { isRecording: boolean; au
       gradient.addColorStop(0.5, "#A855F7")
       gradient.addColorStop(1, "#00D9FF")
 
-      for (let i = 0; i < bufferLength; i++) {
-        barHeight = (dataArray[i] / 255) * canvas.height
-
+      dataArray.forEach((value) => {
+        const barHeight = (value / 255) * canvas.height
         ctx.fillStyle = gradient
         ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight)
         x += barWidth + 1
-      }
+      })
 
       animationIdRef.current = requestAnimationFrame(draw)
     }
@@ -59,9 +58,7 @@ function AudioWaveform({ isRecording, audioContext }: { isRecording: boolean; au
     draw()
 
     return () => {
-      if (animationIdRef.current) {
-        cancelAnimationFrame(animationIdRef.current)
-      }
+      if (animationIdRef.current) cancelAnimationFrame(animationIdRef.current)
     }
   }, [isRecording, audioContext])
 
@@ -86,31 +83,29 @@ export function AudioStep({ onNext, onBack, data }: AudioStepProps) {
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-
       const context = new (window.AudioContext || (window as any).webkitAudioContext)()
       setAudioContext(context)
 
-      mediaRecorder.current = new MediaRecorder(stream)
+      const recorder = new MediaRecorder(stream)
+      mediaRecorder.current = recorder
       audioChunks.current = []
 
-      mediaRecorder.current.ondataavailable = (e) => {
-        audioChunks.current.push(e.data)
-      }
+      recorder.ondataavailable = (e) => audioChunks.current.push(e.data)
 
-      mediaRecorder.current.onstop = () => {
+      recorder.onstop = () => {
         const blob = new Blob(audioChunks.current, { type: "audio/webm" })
         setAudioBlob(blob)
         setAudioUrl(URL.createObjectURL(blob))
-        if (audioContext) {
-          audioContext.close()
+        if (context) {
+          context.close()
           setAudioContext(null)
         }
       }
 
-      mediaRecorder.current.start()
+      recorder.start()
       setIsRecording(true)
-    } catch (error) {
-      console.error("Error accessing microphone:", error)
+    } catch (err) {
+      console.error("Microphone error:", err)
       alert("Unable to access microphone. Please check permissions.")
     }
   }
@@ -125,7 +120,7 @@ export function AudioStep({ onNext, onBack, data }: AudioStepProps) {
 
   const handleNext = () => {
     if (audioUrl && audioBlob) {
-      onNext({ audioUrl, audioBlob: audioBlob as any })
+      onNext({ ...data, audioUrl, audioBlob })
     }
   }
 
@@ -142,7 +137,6 @@ export function AudioStep({ onNext, onBack, data }: AudioStepProps) {
         <CardDescription>Record a clear pronunciation of your contribution</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Waveform Visualization */}
         {isRecording && audioContext && (
           <div className="space-y-2">
             <label className="block text-xs font-semibold text-cyan-400">Live Waveform</label>
@@ -150,7 +144,6 @@ export function AudioStep({ onNext, onBack, data }: AudioStepProps) {
           </div>
         )}
 
-        {/* Recording Area */}
         <div className="border-2 border-dashed border-green-400/40 rounded-lg p-8 text-center space-y-4">
           <div className="flex justify-center">
             <div
@@ -162,14 +155,12 @@ export function AudioStep({ onNext, onBack, data }: AudioStepProps) {
             </div>
           </div>
 
-          <div>
-            <p className="text-foreground font-semibold mb-1">
-              {isRecording ? "Recording..." : audioUrl ? "Recording saved" : "Ready to record"}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {isRecording ? "Speak clearly and naturally" : "Click record to begin"}
-            </p>
-          </div>
+          <p className="text-foreground font-semibold mb-1">
+            {isRecording ? "Recording..." : audioUrl ? "Recording saved" : "Ready to record"}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            {isRecording ? "Speak clearly and naturally" : "Click record to begin"}
+          </p>
 
           <div className="flex gap-4 justify-center flex-wrap">
             {!isRecording && !audioUrl && (
@@ -186,45 +177,40 @@ export function AudioStep({ onNext, onBack, data }: AudioStepProps) {
               </Button>
             )}
             {audioUrl && (
-              <>
-                <Button
-                  onClick={() => {
-                    setAudioUrl("")
-                    setAudioBlob(null)
-                  }}
-                  variant="outline"
-                  className="border-purple-500/30 text-purple-400 hover:bg-purple-500/10"
-                >
-                  Re-record
-                </Button>
-              </>
+              <Button
+                onClick={() => {
+                  setAudioUrl("")
+                  setAudioBlob(null)
+                }}
+                variant="outline"
+                className="border-purple-500/30 text-purple-400 hover:bg-purple-500/10"
+              >
+                Re-record
+              </Button>
             )}
           </div>
         </div>
 
-        {/* Audio Playback */}
         {audioUrl && (
           <div className="space-y-3">
             <label className="block text-sm font-medium text-cyan-400">Playback</label>
             <audio src={audioUrl} controls className="w-full h-10 rounded-lg bg-card border border-cyan-400/30" />
             <p className="text-xs text-muted-foreground">
-              Review your recording and re-record if needed for better quality. This will be minted as an NFT.
+              Review your recording and re-record if needed. This will be minted as an NFT.
             </p>
           </div>
         )}
 
-        {/* Pronunciation Guide */}
         <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4 space-y-2">
           <p className="text-sm font-medium text-purple-400">Pronunciation Tips:</p>
           <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
             <li>Speak clearly and at a natural pace</li>
             <li>Minimize background noise</li>
-            <li>Pronounce words as they would naturally be spoken</li>
+            <li>Pronounce words naturally</li>
             <li>Record in a quiet environment for best quality</li>
           </ul>
         </div>
 
-        {/* Navigation */}
         <div className="flex justify-between">
           <Button
             onClick={onBack}
