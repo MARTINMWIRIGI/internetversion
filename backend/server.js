@@ -13,3 +13,6 @@ app.get("/", (req, res) => {
 
 const PORT = process.env.PORT || 4000
 app.listen(PORT, () => console.log(`Backend running on port ${PORT}`))
+import submissionsRouter from "./routes/submissions.js"
+
+app.use("/submissions", submissionsRouter)
