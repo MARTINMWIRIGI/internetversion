@@ -1,0 +1,14 @@
+name = "soul-internet-vault-guardian"
+type = "javascript"
+
+account_id = "<YOUR_CLOUDFLARE_ACCOUNT_ID>"
+workers_dev = true
+compatibility_date = "2025-11-26"
+
+main = "functions/index.js"
+
+[build]
+command = "npm install && npm run build"
+upload_format = "service-worker"
+[build.upload]
+dir = ".next"
