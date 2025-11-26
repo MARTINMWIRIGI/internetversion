@@ -1,11 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_ANON_KEY
-);
+export async function onRequestGet({ env }) {
+  const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY);
 
-export async function onRequestGet() {
   try {
     const { data, error } = await supabase.from("submissions").select("*");
     if (error) throw error;
