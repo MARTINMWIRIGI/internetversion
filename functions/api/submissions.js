@@ -1,38 +1,30 @@
-// /functions/submissions.ts
-import type { RequestHandler } from '@cloudflare/pages-types'
-import { NFTStorage, File as NFTFile } from 'nft.storage'
+// /functions/api/submissions.js
 
-interface NFTSubmission {
-  id: string
-  language: string
-  words_phrases: string
-  content_type: string
-  milsa_score: number
-  quality_status: string
-  created_at: string
-  wallet_address: string
-  nftMetadataUrl?: string
-}
+// Example: simulate fetching NFTs from IPFS or some storage
+// Replace with your actual fetching logic
 
-// Initialize NFT.storage client
-const NFT_STORAGE_KEY = process.env.NFT_STORAGE_KEY || ''
-const client = new NFTStorage({ token: NFT_STORAGE_KEY })
-
-export const onRequest: RequestHandler = async () => {
+export async function onRequest() {
   try {
-    // Example: fetch all stored NFTs from NFT.storage (replace with real source)
-    // Here we simulate fetching the metadata URLs
+    // Example NFT metadata array
     const storedNFTs = [
       'ipfs://bafybeifakedata1',
-      'ipfs://bafybeifakedata2'
+      'ipfs://bafybeifakedata2',
     ]
 
-    // Fetch metadata from IPFS
-    const submissions: NFTSubmission[] = await Promise.all(
+    // Map IPFS URLs to metadata objects
+    const submissions = await Promise.all(
       storedNFTs.map(async (url, index) => {
+        // Convert IPFS URL to HTTP URL
         const ipfsUrl = url.replace('ipfs://', 'https://ipfs.io/ipfs/')
-        const res = await fetch(ipfsUrl)
-        const metadata = await res.json()
+
+        // Fetch metadata from IPFS
+        let metadata = {}
+        try {
+          const res = await fetch(ipfsUrl)
+          metadata = await res.json()
+        } catch (err) {
+          console.warn(`Failed to fetch metadata for ${ipfsUrl}:`, err)
+        }
 
         return {
           id: (index + 1).toString(),
