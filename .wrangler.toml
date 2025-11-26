@@ -1,5 +1,5 @@
 name = "soul-internet-vault-guardian"
-main = "functions/index.js"
+
 type = "javascript"
 account_id = "308bd3e37d926a2f21eeebc897d92ff6"
 workers_dev = true
