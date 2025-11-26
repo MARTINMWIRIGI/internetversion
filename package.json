@@ -2,20 +2,18 @@
   "name": "soul-internet-vault-guardian",
   "version": "0.1.0",
   "private": true,
+
+  "engines": {
+    "node": ">=20.9.0"
+  },
+
   "scripts": {
     "build": "next build",
     "dev": "next dev",
     "lint": "eslint .",
     "start": "next start"
   },
-  "engines": {
-      "node": ">=20.9.0"
-      },
-"scripts": {
-  "build": "next build",
-  "export": "next export",
-  "build:all": "next build && next export"
-},
+
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "1.2.2",
@@ -52,6 +50,7 @@
     "tailwindcss-animate": "^1.0.7",
     "zod": "3.25.76"
   },
+
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.9",
     "@types/node": "^22",
