@@ -17,7 +17,7 @@ const nextConfig = {
     },
   },
 
-  // This replaces next export
+  // The important part for Cloudflare Pages
   output: "export",
 };
 
