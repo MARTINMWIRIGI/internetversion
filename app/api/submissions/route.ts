@@ -1,104 +1,62 @@
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
+// app/api/submissions/route.ts
+import type { NextRequest } from "next/server"
+import { NextResponse } from "next/server"
 
-import { NextRequest, NextResponse } from "next/server";
-import { NFTStorage } from "nft.storage";
-// REMOVE POLYFILL — Node runtime already provides File & Blob
-import { ethers } from "ethers";
-import CONTRACT_ABI from "@/app/data/contractABI.json";
-
-const NFT_STORAGE_KEY = process.env.NEXT_PUBLIC_NFT_STORAGE_KEY!;
-const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!;
-
-export async function POST(req: NextRequest) {
-  try {
-    const data = await req.json();
-
-    const {
-      language,
-      contentType,
-      words,
-      definition,
-      context,
-      pronunciation,
-      audioUrl,
-      videoUrl,
-      walletAddress,
-    } = data;
-
-    if (!walletAddress || !audioUrl) {
-      return NextResponse.json(
-        { status: "error", message: "Wallet address and audio required" },
-        { status: 400 }
-      );
-    }
-
-    // Cloudflare-safe: convert to arrayBuffer → Blob
-    const audioArrayBuffer = await fetch(audioUrl).then(r => r.arrayBuffer());
-    const audioBlob = new Blob([audioArrayBuffer], { type: "audio/webm" });
-
-    const nftStorage = new NFTStorage({ token: NFT_STORAGE_KEY });
-
-    const metadata = await nftStorage.store({
-      name: words,
-      description: `Language contribution in ${language}`,
-      image: new File([audioBlob], "audio.webm", { type: "audio/webm" }),
-      properties: {
-        language,
-        contentType,
-        pronunciation,
-        definition,
-        context,
-        videoUrl: videoUrl || null,
-        walletAddress,
-      },
-    });
-
-    const privateKey = process.env.MINTER_PRIVATE_KEY;
-    if (!privateKey) {
-      return NextResponse.json({
-        nftMetadataUrl: metadata.url,
-        status: "metadata_uploaded",
-        message: "NFT metadata uploaded. Manual minting required.",
-      });
-    }
-
-    const provider = new ethers.JsonRpcProvider("https://polygon-rpc.com");
-    const wallet = new ethers.Wallet(privateKey, provider);
-    const contract = new ethers.Contract(
-      CONTRACT_ADDRESS,
-      CONTRACT_ABI,
-      wallet
-    );
-
-    const tx = await contract.safeMint(walletAddress, metadata.url);
-    const receipt = await tx.wait();
-
-    return NextResponse.json({
-      nftMetadataUrl: metadata.url,
-      txHash: receipt.hash,
-      status: "success",
-    });
-  } catch (error: any) {
-    console.error("Submission / Minting error:", error);
-    return NextResponse.json(
-      { status: "error", message: error.message },
-      { status: 500 }
-    );
-  }
+interface NFTSubmission {
+  id: string
+  language: string
+  words_phrases: string
+  content_type: string
+  milsa_score: number
+  quality_status: string
+  created_at: string
+  wallet_address: string
+  nftMetadataUrl?: string
 }
 
-export async function GET() {
-  return NextResponse.json([
-    {
-      id: "1",
-      language: "Swahili",
-      words_phrases: "Jambo",
-      content_type: "Word",
-      milsa_score: 85,
-      quality_status: "approved",
-      created_at: new Date().toISOString(),
-      wallet_address: "0x0000000000000000000000000000000000000000",
-    },
-  ]);
+// Dummy data fallback
+const dummySubmissions: NFTSubmission[] = [
+  {
+    id: "1",
+    language: "Kikuyu",
+    words_phrases: "Habari",
+    content_type: "word",
+    milsa_score: 95,
+    quality_status: "approved",
+    created_at: new Date().toISOString(),
+    wallet_address: "0x123",
+    nftMetadataUrl: undefined,
+  },
+  {
+    id: "2",
+    language: "Swahili",
+    words_phrases: "Jambo",
+    content_type: "phrase",
+    milsa_score: 88,
+    quality_status: "approved",
+    created_at: new Date().toISOString(),
+    wallet_address: "0x456",
+    nftMetadataUrl: undefined,
+  },
+]
+
+export async function GET(req: NextRequest) {
+  try {
+    // If you want to fetch from Supabase, uncomment and configure below
+    /*
+    const supabase = createClient()
+    const { data, error } = await supabase.from("nft_submissions").select("*")
+    if (error) {
+      console.error("Supabase fetch error:", error)
+      return NextResponse.json(dummySubmissions)
+    }
+    return NextResponse.json(data || dummySubmissions)
+    */
+
+    // Currently returning dummy data
+    return NextResponse.json(dummySubmissions)
+  } catch (error) {
+    console.error("API /submissions error:", error)
+    return NextResponse.json(dummySubmissions)
+  }
 }
