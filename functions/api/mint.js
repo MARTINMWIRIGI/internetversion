@@ -1,21 +1,23 @@
-export async function onRequest(context) {
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
+);
+
+export async function onRequestPost({ request }) {
   try {
-    // Example: Mint API logic
-    const requestBody = await context.request.json();
+    const body = await request.json();
+    const { data, error } = await supabase.from("submissions").insert([body]);
+    if (error) throw error;
 
-    // Your minting logic here (stub example)
-    const result = {
-      success: true,
-      message: `Mint request received for ${requestBody.user || 'unknown user'}`,
-    };
-
-    return new Response(JSON.stringify(result), {
-      headers: { 'Content-Type': 'application/json' },
+    return new Response(JSON.stringify({ success: true, data }), {
+      headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
-    return new Response(JSON.stringify({ success: false, error: err.message }), {
-      headers: { 'Content-Type': 'application/json' },
+    return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
+      headers: { "Content-Type": "application/json" },
     });
   }
 }
