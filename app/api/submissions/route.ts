@@ -2,7 +2,8 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { NFTStorage, File } from "nft.storage";
+import { NFTStorage } from "nft.storage";
+import { File } from "web-file-polyfill"; // ensures compatibility
 import { ethers } from "ethers";
 import CONTRACT_ABI from "@/app/data/contractABI.json";
 
@@ -32,8 +33,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Cloudflare-safe fetch → arrayBuffer → Blob
+    const audioArrayBuffer = await fetch(audioUrl).then((r) => r.arrayBuffer());
+    const audioBlob = new Blob([audioArrayBuffer], { type: "audio/webm" });
+
     const nftStorage = new NFTStorage({ token: NFT_STORAGE_KEY });
-    const audioBlob = await fetch(audioUrl).then((res) => res.blob());
 
     const metadata = await nftStorage.store({
       name: words,
