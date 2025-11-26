@@ -5,7 +5,6 @@ import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { createClient } from "@/lib/supabase/client"
 
 interface NFTSubmission {
   id: string
@@ -19,29 +18,6 @@ interface NFTSubmission {
   nftMetadataUrl?: string
 }
 
-const dummySubmissions: NFTSubmission[] = [
-  {
-    id: "1",
-    language: "Kikuyu",
-    words_phrases: "Habari",
-    content_type: "word",
-    milsa_score: 95,
-    quality_status: "approved",
-    created_at: new Date().toISOString(),
-    wallet_address: "0x123",
-  },
-  {
-    id: "2",
-    language: "Swahili",
-    words_phrases: "Jambo",
-    content_type: "phrase",
-    milsa_score: 88,
-    quality_status: "approved",
-    created_at: new Date().toISOString(),
-    wallet_address: "0x456",
-  },
-]
-
 export default function VaultClientPage() {
   const [submissions, setSubmissions] = useState<NFTSubmission[]>([])
   const [loading, setLoading] = useState(true)
@@ -50,52 +26,43 @@ export default function VaultClientPage() {
   const [showOnlyMyVault, setShowOnlyMyVault] = useState(false)
   const [address, setAddress] = useState<string | null>(null)
 
-  const supabase = createClient()
-
+  // Load wallet/email from storage
   useEffect(() => {
-    // Get connected wallet address
-    const getAddress = async () => {
-      if (window.ethereum) {
-        try {
-          const accounts = await window.ethereum.request({ method: "eth_accounts" })
-          if (accounts && accounts.length > 0) setAddress(accounts[0])
-        } catch (error) {
-          console.error("Error getting address:", error)
-        }
-      }
-    }
-    getAddress()
+    const storedWallet = localStorage.getItem("walletAddress") || sessionStorage.getItem("walletAddress")
+    if (storedWallet) setAddress(storedWallet)
+
+    const storedEmail = localStorage.getItem("userEmail") || sessionStorage.getItem("userEmail")
+    if (!storedWallet && storedEmail) setAddress(storedEmail) // treat email as identifier
   }, [])
 
+  // Fetch NFT submissions
   useEffect(() => {
     const fetchSubmissions = async () => {
-      setLoading(true)
       try {
-        // Try fetching from Supabase
-        const { data, error } = await supabase.from("nft_submissions").select("*")
-        if (error) {
-          console.error("Supabase error:", error)
-          setSubmissions(dummySubmissions)
-        } else {
-          setSubmissions(data?.length ? (data as NFTSubmission[]) : dummySubmissions)
-        }
+        const response = await fetch("/api/submissions")
+        const data = await response.json()
+        setSubmissions(data)
       } catch (error) {
         console.error("Error fetching submissions:", error)
-        setSubmissions(dummySubmissions)
       } finally {
         setLoading(false)
       }
     }
 
     fetchSubmissions()
-  }, [supabase])
+  }, [])
 
+  // Filter submissions
   const filteredSubmissions = submissions.filter((sub) => {
     const matchesSearch =
       sub.words_phrases.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (sub.language?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false)
     const matchesLanguage = !filterLanguage || sub.language === filterLanguage
-    const matchesVault = !showOnlyMyVault || (address && sub.wallet_address.toLowerCase() === address.toLowerCase())
+    const matchesVault =
+      !showOnlyMyVault ||
+      (address &&
+        (sub.wallet_address.toLowerCase() === address.toLowerCase() ||
+          sub.wallet_address.toLowerCase() === (address as string).toLowerCase()))
     return matchesSearch && matchesLanguage && matchesVault
   })
 
@@ -123,8 +90,18 @@ export default function VaultClientPage() {
         <header className="flex flex-col md:flex-row items-center justify-between gap-4 mb-8">
           <h1 className="text-2xl font-bold gradient-text">My Vault / Gallery</h1>
           <div className="flex gap-3 flex-wrap">
-            <Button variant={showOnlyMyVault ? "default" : "outline"} onClick={() => setShowOnlyMyVault(true)}>My Vault</Button>
-            <Button variant={!showOnlyMyVault ? "default" : "outline"} onClick={() => setShowOnlyMyVault(false)}>Gallery</Button>
+            <Button
+              variant={showOnlyMyVault ? "default" : "outline"}
+              onClick={() => setShowOnlyMyVault(true)}
+            >
+              My Vault
+            </Button>
+            <Button
+              variant={!showOnlyMyVault ? "default" : "outline"}
+              onClick={() => setShowOnlyMyVault(false)}
+            >
+              Gallery
+            </Button>
           </div>
         </header>
 
@@ -134,10 +111,12 @@ export default function VaultClientPage() {
             placeholder="Search by word or language..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            className="border-blue-200 bg-white text-foreground placeholder:text-muted-foreground focus:border-blue-400 focus:ring-blue-500/20"
           />
           <select
             value={filterLanguage}
             onChange={(e) => setFilterLanguage(e.target.value)}
+            className="px-4 py-2 rounded-lg border border-blue-200 bg-white text-foreground focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
           >
             <option value="">All Languages</option>
             {languages.map((lang) => (
@@ -167,7 +146,9 @@ export default function VaultClientPage() {
                     {getStatusBadge(sub.quality_status)}
                   </div>
                   {sub.nftMetadataUrl && (
-                    <Link href={sub.nftMetadataUrl} target="_blank" className="text-cyan-400 underline mt-2 block">View on OpenSea/IPFS</Link>
+                    <Link href={sub.nftMetadataUrl} target="_blank" className="text-cyan-400 underline mt-2 block">
+                      View on OpenSea/IPFS
+                    </Link>
                   )}
                   <p className="text-xs text-muted-foreground mt-1">
                     Submitted {new Date(sub.created_at).toLocaleDateString()}
