@@ -2,14 +2,11 @@
 const nextConfig = {
   reactStrictMode: true,
 
-  // 👇 THIS is the missing part that enables static export in Next.js 13–16
-  output: 'export',
-
   images: {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "your-domain.com",
+        hostname: "**",
       },
     ],
   },
@@ -19,6 +16,9 @@ const nextConfig = {
       allowedOrigins: ["*"],
     },
   },
+
+  // This replaces next export
+  output: "export",
 };
 
 export default nextConfig;
