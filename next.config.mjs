@@ -1,12 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: "standalone",  // 🔥 allows API routes
   reactStrictMode: true,
-
+  output: 'standalone', // required for server-side functions on Cloudflare
   experimental: {
-    serverActions: {
-      allowedOrigins: ["*"],
-    },
+    serverActions: true, // if using server actions
   },
 };
 
