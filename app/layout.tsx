@@ -1,12 +1,11 @@
-import type React from "react"
-import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
-import { Analytics } from "@vercel/analytics/next"
-import { Header } from "@/components/header"
-import "./globals.css"
+import type React from "react";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
+import { Header } from "@/components/header";
+import "./globals.css";
 
-const _geist = Geist({ subsets: ["latin"] })
-const _geistMono = Geist_Mono({ subsets: ["latin"] })
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Soul Internet - Preserve Vernacular Languages with Web3 Rewards",
@@ -37,7 +36,8 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Soul Internet - Preserve Vernacular Languages",
-    description: "Contribute linguistic and cultural data, mint NFTs, earn Web3 rewards",
+    description:
+      "Contribute linguistic and cultural data, mint NFTs, earn Web3 rewards",
     images: ["/logo.png"],
   },
   robots: {
@@ -62,12 +62,12 @@ export const metadata: Metadata = {
     email: false,
     telephone: false,
   },
-}
+};
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode;
 }>) {
   return (
     <html lang="en">
@@ -76,7 +76,10 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/logo.png" />
         <link rel="apple-touch-icon" href="/logo.png" />
-        <link rel="canonical" href="https://soul-internet-vault-guardian.vercel.app" />
+        <link
+          rel="canonical"
+          href="https://soul-internet-vault-guardian.vercel.app"
+        />
 
         <script
           type="application/ld+json"
@@ -85,7 +88,8 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "WebApplication",
               name: "Soul Internet",
-              description: "A Web3 platform for preserving vernacular languages through blockchain technology",
+              description:
+                "A Web3 platform for preserving vernacular languages through blockchain technology",
               url: "https://soul-internet-vault-guardian.vercel.app",
               applicationCategory: "SocialNetworking",
               offers: {
@@ -109,11 +113,11 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`font-sans antialiased bg-background text-foreground`}>
+      <body className={`${inter.className} font-sans antialiased bg-background text-foreground`}>
         <Header />
         {children}
         <Analytics />
       </body>
     </html>
-  )
+  );
 }
