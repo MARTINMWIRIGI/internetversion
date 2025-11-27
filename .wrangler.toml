@@ -1,6 +1,5 @@
 name = "soul-internet-vault-guardian"
+compatibility_date = "2024-11-26"
+compatibility_flags = ["nodejs_compat"]
 
-type = "javascript"
-account_id = "308bd3e37d926a2f21eeebc897d92ff6"
-workers_dev = true
-compatibility_date = "2025-11-26"
+pages_build_output_dir = ".vercel/output/static"
