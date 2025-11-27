@@ -1,6 +1,6 @@
 import type React from "react";
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter } from "next/font/google"; // Replacing Geist with Inter
 import { Analytics } from "@vercel/analytics/next";
 import { Header } from "@/components/header";
 import "./globals.css";
@@ -36,39 +36,19 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Soul Internet - Preserve Vernacular Languages",
-    description:
-      "Contribute linguistic and cultural data, mint NFTs, earn Web3 rewards",
+    description: "Contribute linguistic and cultural data, mint NFTs, earn Web3 rewards",
     images: ["/logo.png"],
   },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-snippet": -1,
-      "max-image-preview": "large",
-      "max-video-preview": -1,
-    },
-  },
-  icons: {
-    icon: "/logo.png",
-    shortcut: "/logo.png",
-    apple: "/logo.png",
-  },
+  robots: { index: true, follow: true },
+  icons: { icon: "/logo.png", shortcut: "/logo.png", apple: "/logo.png" },
   generator: "v0.app",
   referrer: "origin-when-cross-origin",
-  formatDetection: {
-    email: false,
-    telephone: false,
-  },
+  formatDetection: { email: false, telephone: false },
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
       <head>
@@ -80,40 +60,8 @@ export default function RootLayout({
           rel="canonical"
           href="https://soul-internet-vault-guardian.vercel.app"
         />
-
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "WebApplication",
-              name: "Soul Internet",
-              description:
-                "A Web3 platform for preserving vernacular languages through blockchain technology",
-              url: "https://soul-internet-vault-guardian.vercel.app",
-              applicationCategory: "SocialNetworking",
-              offers: {
-                "@type": "Offer",
-                price: "0",
-                priceCurrency: "USD",
-              },
-              creator: {
-                "@type": "Organization",
-                name: "Imperial Enterprise",
-              },
-              datePublished: "2024-01-01",
-              inLanguage: "en-US",
-              isAccessibleForFree: true,
-              aggregateRating: {
-                "@type": "AggregateRating",
-                ratingValue: "5",
-                ratingCount: "100",
-              },
-            }),
-          }}
-        />
       </head>
-      <body className={`${inter.className} font-sans antialiased bg-background text-foreground`}>
+      <body className={`${inter.className} antialiased bg-background text-foreground`}>
         <Header />
         {children}
         <Analytics />
