@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { BrowserProvider, Contract } from "ethers";
-import CONTRACT_ABI from "../data/contractABI.json";
+import CONTRACT_ABI from "@/app/data/contractABI.json";
 
 const CONTRACT_ADDRESS =
   process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ||
