@@ -1,5 +1,6 @@
 // app/api/mint-nft/route.ts
 import { NextRequest, NextResponse } from "next/server"
+import { NFTStorage } from "nft.storage"
 
 const NFT_STORAGE_KEY = process.env.NFT_STORAGE_KEY!
 
@@ -11,8 +12,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing metadata or walletAddress" }, { status: 400 })
     }
 
-    // Dynamic import to avoid TypeScript issues
-    const { NFTStorage } = await import('nft.storage')
     const client = new NFTStorage({ token: NFT_STORAGE_KEY })
 
     const cid = await client.store(metadata)
