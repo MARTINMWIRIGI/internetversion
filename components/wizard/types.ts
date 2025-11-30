@@ -4,6 +4,9 @@ export interface WizardData {
   words?: string
   definition?: string
   context?: string
+  pronunciation?: string
+  walletAddress?: string
+  videoUrl?: string
   audioUrl?: string
   audioBlob?: Blob
   nftName?: string
