@@ -6,14 +6,16 @@ import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Menu } from "lucide-react"
 
-// Add Ethereum type definitions
+// Use interface merging instead of declare global to avoid conflicts
+interface EthereumProvider {
+  request: (args: { method: string; params?: any[] }) => Promise<any>
+  on: (event: string, callback: (...args: any[]) => void) => void
+  removeListener: (event: string, callback: (...args: any[]) => void) => void
+}
+
 declare global {
   interface Window {
-    ethereum?: {
-      request: (args: { method: string; params?: any[] }) => Promise<any>
-      on: (event: string, callback: (...args: any[]) => void) => void
-      removeListener: (event: string, callback: (...args: any[]) => void) => void
-    }
+    ethereum?: EthereumProvider
   }
 }
 
