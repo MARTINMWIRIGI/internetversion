@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server"
-import { NFTStorage, File } from "nft.storage"
 
-const NFT_STORAGE_KEY = process.env.NFT_STORAGE_KEY! // Add this in Vercel secrets
+const NFT_STORAGE_KEY = process.env.NFT_STORAGE_KEY!
 
 export async function POST(req: Request) {
   try {
@@ -11,6 +10,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
+    // Dynamic import
+    const { NFTStorage, File } = await import('nft.storage')
     const nftStorage = new NFTStorage({ token: NFT_STORAGE_KEY })
 
     // Convert base64 image to a File object
