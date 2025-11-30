@@ -6,19 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Menu } from "lucide-react"
 
-// Use interface merging instead of declare global to avoid conflicts
-interface EthereumProvider {
-  request: (args: { method: string; params?: any[] }) => Promise<any>
-  on: (event: string, callback: (...args: any[]) => void) => void
-  removeListener: (event: string, callback: (...args: any[]) => void) => void
-}
-
-declare global {
-  interface Window {
-    ethereum?: EthereumProvider
-  }
-}
-
 export function Header() {
   const [isOpen, setIsOpen] = useState(false)
   const [address, setAddress] = useState<string | null>(null)
@@ -26,7 +13,7 @@ export function Header() {
   useEffect(() => {
     // Check if wallet was previously connected
     const checkConnection = async () => {
-      if (window.ethereum) {
+      if (typeof window !== 'undefined' && window.ethereum) {
         try {
           const accounts = await window.ethereum.request({
             method: "eth_accounts"
@@ -45,7 +32,7 @@ export function Header() {
   const handleConnectWallet = async () => {
     if (!address) {
       try {
-        if (!window.ethereum) {
+        if (typeof window === 'undefined' || !window.ethereum) {
           alert("Please install MetaMask to continue")
           window.open("https://metamask.io/download/", "_blank")
           return
