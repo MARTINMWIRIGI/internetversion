@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TooltipHelp } from "@/components/tooltip-help";
-import WalletMintAdmin from "@/components/WalletMintAdmin"; // Adjusted path
-import { Button } from "@/components/ui/button"; // Assuming you have this component
+import WalletMintAdmin from "@/components/WalletMintAdmin";
+import { Button } from "@/components/ui/button";
 
 export default function ClientPage() {
   const [mounted, setMounted] = useState(false);
