@@ -30,7 +30,7 @@ export function MintStep({ wizardData, onBack }: MintStepProps) {
 
     try {
       setError(null)
-      
+
       const accounts = await window.ethereum.request({
         method: "eth_requestAccounts"
       })
@@ -81,48 +81,48 @@ export function MintStep({ wizardData, onBack }: MintStepProps) {
     return new Promise((resolve) => {
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
       const fileReader = new FileReader()
-      
+
       fileReader.onload = async (e) => {
         const arrayBuffer = e.target?.result as ArrayBuffer
         const audioBuffer = await audioContext.decodeAudioData(arrayBuffer)
         const channelData = audioBuffer.getChannelData(0)
-        
+
         // Create canvas for waveform
         const canvas = document.createElement('canvas')
         canvas.width = 800
         canvas.height = 400
         const ctx = canvas.getContext('2d')!
-        
+
         // Draw gradient background
         const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height)
         gradient.addColorStop(0, '#8b5cf6')
         gradient.addColorStop(1, '#06b6d4')
         ctx.fillStyle = gradient
         ctx.fillRect(0, 0, canvas.width, canvas.height)
-        
+
         // Draw waveform
         ctx.strokeStyle = '#ffffff'
         ctx.lineWidth = 3
         ctx.beginPath()
-        
+
         const sliceWidth = canvas.width / channelData.length
         let x = 0
-        
+
         for (let i = 0; i < channelData.length; i++) {
           const v = channelData[i] * (canvas.height / 2)
           const y = canvas.height / 2 + v
-          
+
           if (i === 0) {
             ctx.moveTo(x, y)
           } else {
             ctx.lineTo(x, y)
           }
-          
+
           x += sliceWidth
         }
-        
+
         ctx.stroke()
-        
+
         // Add text overlay
         ctx.fillStyle = 'rgba(255, 255, 255, 0.9)'
         ctx.font = 'bold 24px Arial'
@@ -131,10 +131,10 @@ export function MintStep({ wizardData, onBack }: MintStepProps) {
         ctx.font = '18px Arial'
         ctx.fillText(`${wizardData.language} • ${wizardData.contentType}`, canvas.width / 2, 80)
         ctx.fillText('Soul Internet Vault Guardian', canvas.width / 2, canvas.height - 30)
-        
+
         resolve(canvas.toDataURL('image/png'))
       }
-      
+
       fileReader.readAsArrayBuffer(audioBlob)
     })
   }
@@ -145,11 +145,11 @@ export function MintStep({ wizardData, onBack }: MintStepProps) {
       // Convert data URL to blob
       const response = await fetch(imageDataUrl)
       const imageBlob = await response.blob()
-      
+
       // Upload to NFT.Storage
       const formData = new FormData()
       formData.append('file', imageBlob, 'waveform.png')
-      
+
       // First upload image
       const imageUpload = await fetch('https://api.nft.storage/upload', {
         method: 'POST',
@@ -158,10 +158,10 @@ export function MintStep({ wizardData, onBack }: MintStepProps) {
         },
         body: formData
       })
-      
+
       const imageResult = await imageUpload.json()
       const imageCID = imageResult.value.cid
-      
+
       // Then upload metadata
       const metadataWithImage = {
         ...metadata,
@@ -172,7 +172,7 @@ export function MintStep({ wizardData, onBack }: MintStepProps) {
           recorded_at: new Date().toISOString()
         }
       }
-      
+
       const metadataUpload = await fetch('https://api.nft.storage/upload', {
         method: 'POST',
         headers: {
@@ -181,10 +181,10 @@ export function MintStep({ wizardData, onBack }: MintStepProps) {
         },
         body: JSON.stringify(metadataWithImage)
       })
-      
+
       const metadataResult = await metadataUpload.json()
       return `ipfs://${metadataResult.value.cid}`
-      
+
     } catch (error) {
       console.error('IPFS upload error:', error)
       throw new Error('Failed to upload to IPFS')
@@ -277,31 +277,26 @@ export function MintStep({ wizardData, onBack }: MintStepProps) {
       const ipfsUrl = await uploadToIPFS(imageDataUrl, metadata)
 
       // 4. Mint on blockchain using Thirdweb DropERC1155 contract
+      // FIXED: Added proper null check for window.ethereum
+      if (!window.ethereum) {
+        throw new Error('Ethereum provider not found. Please install MetaMask.')
+      }
+      
       const provider = new BrowserProvider(window.ethereum)
       const signer = await provider.getSigner()
       const contract = new Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer)
 
-      // Use the claim function for Thirdweb DropERC1155
-      // Parameters: receiver, tokenId, quantity, currency, pricePerToken, allowlistProof, data
-      const tx = await contract.claim(
-        userAddress,                    // _receiver
-        0,                             // _tokenId (use 0 for first token)
-        1,                             // _quantity (1 NFT)
-        "0x0000000000000000000000000000000000000000", // _currency (native token)
-        0,                             // _pricePerToken (free)
-        {                              // _allowlistProof
-          proof: [],
-          quantityLimitPerWallet: 0,
-          pricePerToken: 0,
-          currency: "0x0000000000000000000000000000000000000000"
-        },
-        "0x"                           // _data
+      // IMPORTANT: Your contract is an ERC721, not ERC1155 - use safeMint instead of claim
+      // The safeMint function in your contract takes (to, uri) parameters
+      const tx = await contract.safeMint(
+        userAddress,                    // to: address to mint to
+        ipfsUrl                        // uri: token URI (IPFS URL)
       )
-      
+
       const receipt = await tx.wait()
-      
+
       setTxHash(receipt.hash)
-      // For ERC1155, OpenSea URL format is different
+      // For ERC721, OpenSea URL format is standard
       setNftUrl(`https://opensea.io/assets/matic/${CONTRACT_ADDRESS}/0`)
 
       // 5. Save to Supabase
@@ -338,9 +333,9 @@ export function MintStep({ wizardData, onBack }: MintStepProps) {
           quality_status: 'approved'
         })
       })
-      
+
       if (!response.ok) throw new Error('Failed to save to database')
-      
+
     } catch (error) {
       console.error('Supabase save error:', error)
       // Continue even if Supabase save fails
@@ -439,7 +434,7 @@ export function MintStep({ wizardData, onBack }: MintStepProps) {
           >
             ← Back to Review
           </Button>
-          
+
           {txHash && (
             <Button
               onClick={() => window.location.href = '/vault'}
