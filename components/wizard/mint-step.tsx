@@ -20,7 +20,61 @@ export function MintStep({ wizardData, onBack }: MintStepProps) {
   const [txHash, setTxHash] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [nftUrl, setNftUrl] = useState<string | null>(null)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  // Connect to Polygon and prepare for minting
+  const connectAndPrepare = async (): Promise<boolean> => {
+    if (!window.ethereum) {
+      setError("MetaMask not detected! Please install MetaMask.")
+      return false
+    }
+
+    try {
+      setError(null)
+      
+      const accounts = await window.ethereum.request({
+        method: "eth_requestAccounts"
+      })
+
+      if (accounts.length === 0) {
+        setError("Please connect your MetaMask wallet")
+        return false
+      }
+
+      // Switch to Polygon Mainnet
+      try {
+        await window.ethereum.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: "0x89" }]
+        })
+      } catch (switchError: any) {
+        if (switchError.code === 4902) {
+          await window.ethereum.request({
+            method: "wallet_addEthereumChain",
+            params: [
+              {
+                chainId: "0x89",
+                chainName: "Polygon Mainnet",
+                nativeCurrency: {
+                  name: "MATIC",
+                  symbol: "MATIC",
+                  decimals: 18
+                },
+                rpcUrls: ["https://polygon-rpc.com/"],
+                blockExplorerUrls: ["https://polygonscan.com/"]
+              }
+            ]
+          })
+        } else {
+          throw switchError
+        }
+      }
+
+      return true
+    } catch (error: any) {
+      setError(`Wallet connection failed: ${error.message}`)
+      return false
+    }
+  }
 
   // Generate waveform image from audio
   const generateWaveformImage = async (audioBlob: Blob): Promise<string> => {
@@ -137,37 +191,6 @@ export function MintStep({ wizardData, onBack }: MintStepProps) {
     }
   }
 
-  // Save to Supabase
-  const saveToSupabase = async (metadata: any, ipfsUrl: string, txHash: string) => {
-    try {
-      const response = await fetch('/api/submissions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          language: wizardData.language,
-          content_type: wizardData.contentType,
-          words_phrases: wizardData.words,
-          definition: wizardData.definition,
-          context: wizardData.context,
-          audio_url: wizardData.audioUrl,
-          wallet_address: await getWalletAddress(),
-          nft_metadata_url: ipfsUrl,
-          transaction_hash: txHash,
-          milsa_score: calculateMILSAscore(),
-          quality_status: 'approved'
-        })
-      })
-      
-      if (!response.ok) throw new Error('Failed to save to database')
-      
-    } catch (error) {
-      console.error('Supabase save error:', error)
-      // Continue even if Supabase save fails
-    }
-  }
-
   const getWalletAddress = async (): Promise<string> => {
     if (!window.ethereum) throw new Error('MetaMask not connected')
     const accounts = await window.ethereum.request({ method: 'eth_accounts' })
@@ -175,66 +198,11 @@ export function MintStep({ wizardData, onBack }: MintStepProps) {
   }
 
   const calculateMILSAscore = (): number => {
-    // Simple scoring based on data completeness
     let score = 50
     if (wizardData.audioUrl) score += 20
     if (wizardData.definition) score += 15
     if (wizardData.context) score += 15
     return Math.min(score, 100)
-  }
-
-  const connectAndPrepare = async (): Promise<boolean> => {
-    if (!window.ethereum) {
-      setError("MetaMask not detected! Please install MetaMask.")
-      return false
-    }
-
-    try {
-      setError(null)
-      
-      const accounts = await window.ethereum.request({
-        method: "eth_requestAccounts"
-      })
-
-      if (accounts.length === 0) {
-        setError("Please connect your MetaMask wallet")
-        return false
-      }
-
-      // Switch to Polygon Mainnet
-      try {
-        await window.ethereum.request({
-          method: "wallet_switchEthereumChain",
-          params: [{ chainId: "0x89" }]
-        })
-      } catch (switchError: any) {
-        if (switchError.code === 4902) {
-          await window.ethereum.request({
-            method: "wallet_addEthereumChain",
-            params: [
-              {
-                chainId: "0x89",
-                chainName: "Polygon Mainnet",
-                nativeCurrency: {
-                  name: "MATIC",
-                  symbol: "MATIC",
-                  decimals: 18
-                },
-                rpcUrls: ["https://polygon-rpc.com/"],
-                blockExplorerUrls: ["https://polygonscan.com/"]
-              }
-            ]
-          })
-        } else {
-          throw switchError
-        }
-      }
-
-      return true
-    } catch (error: any) {
-      setError(`Wallet connection failed: ${error.message}`)
-      return false
-    }
   }
 
   const mintNFT = async () => {
@@ -245,6 +213,8 @@ export function MintStep({ wizardData, onBack }: MintStepProps) {
     setError(null)
 
     try {
+      const userAddress = await getWalletAddress()
+
       // 1. Generate waveform image from audio
       let imageDataUrl = ''
       if (wizardData.audioBlob) {
@@ -305,19 +275,34 @@ export function MintStep({ wizardData, onBack }: MintStepProps) {
 
       // 3. Upload to IPFS
       const ipfsUrl = await uploadToIPFS(imageDataUrl, metadata)
-      const openSeaUrl = `https://opensea.io/assets/matic/${CONTRACT_ADDRESS}/`
 
-      // 4. Mint on blockchain
+      // 4. Mint on blockchain using Thirdweb DropERC1155 contract
       const provider = new BrowserProvider(window.ethereum)
       const signer = await provider.getSigner()
       const contract = new Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer)
 
-      // Use the mint function from your contract
-      const tx = await contract.mintNewVaults(ipfsUrl, ipfsUrl, { value: 0 })
+      // Use the claim function for Thirdweb DropERC1155
+      // Parameters: receiver, tokenId, quantity, currency, pricePerToken, allowlistProof, data
+      const tx = await contract.claim(
+        userAddress,                    // _receiver
+        0,                             // _tokenId (use 0 for first token)
+        1,                             // _quantity (1 NFT)
+        "0x0000000000000000000000000000000000000000", // _currency (native token)
+        0,                             // _pricePerToken (free)
+        {                              // _allowlistProof
+          proof: [],
+          quantityLimitPerWallet: 0,
+          pricePerToken: 0,
+          currency: "0x0000000000000000000000000000000000000000"
+        },
+        "0x"                           // _data
+      )
+      
       const receipt = await tx.wait()
       
       setTxHash(receipt.hash)
-      setNftUrl(openSeaUrl)
+      // For ERC1155, OpenSea URL format is different
+      setNftUrl(`https://opensea.io/assets/matic/${CONTRACT_ADDRESS}/0`)
 
       // 5. Save to Supabase
       await saveToSupabase(metadata, ipfsUrl, receipt.hash)
@@ -327,6 +312,38 @@ export function MintStep({ wizardData, onBack }: MintStepProps) {
       setError(`Minting failed: ${error.message || "Unknown error"}`)
     } finally {
       setIsMinting(false)
+    }
+  }
+
+  // Save to Supabase
+  const saveToSupabase = async (metadata: any, ipfsUrl: string, txHash: string) => {
+    try {
+      const walletAddress = await getWalletAddress()
+      const response = await fetch('/api/submissions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          language: wizardData.language,
+          content_type: wizardData.contentType,
+          words_phrases: wizardData.words,
+          definition: wizardData.definition,
+          context: wizardData.context,
+          audio_url: wizardData.audioUrl,
+          wallet_address: walletAddress,
+          nft_metadata_url: ipfsUrl,
+          transaction_hash: txHash,
+          milsa_score: calculateMILSAscore(),
+          quality_status: 'approved'
+        })
+      })
+      
+      if (!response.ok) throw new Error('Failed to save to database')
+      
+    } catch (error) {
+      console.error('Supabase save error:', error)
+      // Continue even if Supabase save fails
     }
   }
 
