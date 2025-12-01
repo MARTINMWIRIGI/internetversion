@@ -10,14 +10,14 @@ export function Header() {
   const [isOpen, setIsOpen] = useState(false)
   const [address, setAddress] = useState<string | null>(null)
   const [isConnecting, setIsConnecting] = useState(false)
-
-  // Check if MetaMask is installed
   const [hasMetaMask, setHasMetaMask] = useState(false)
 
   useEffect(() => {
     // Check for MetaMask
     if (typeof window !== 'undefined') {
-      setHasMetaMask(!!window.ethereum && window.ethereum.isMetaMask)
+      // Fix: Check if ethereum exists AND has isMetaMask property
+      const hasMM = !!(window.ethereum && window.ethereum.isMetaMask)
+      setHasMetaMask(hasMM)
       
       // Check if wallet was previously connected
       const checkConnection = async () => {
@@ -41,7 +41,7 @@ export function Header() {
   // Function to switch or add Polygon network
   const switchToPolygon = async () => {
     try {
-      await window.ethereum.request({
+      await window.ethereum!.request({
         method: "wallet_switchEthereumChain",
         params: [{ chainId: "0x89" }] // Polygon Mainnet
       })
@@ -50,7 +50,7 @@ export function Header() {
       // This error code indicates that the chain has not been added to MetaMask
       if (switchError.code === 4902) {
         try {
-          await window.ethereum.request({
+          await window.ethereum!.request({
             method: "wallet_addEthereumChain",
             params: [{
               chainId: "0x89",
