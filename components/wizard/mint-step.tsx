@@ -20,34 +20,43 @@ export function MintStep({ wizardData, onBack }: MintStepProps) {
   const [txHash, setTxHash] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [nftUrl, setNftUrl] = useState<string | null>(null)
+  const [isConnecting, setIsConnecting] = useState(false)
 
-  // Connect to Polygon and prepare for minting
+  // AUTO-CONNECT: Connect to Polygon and prepare for minting
   const connectAndPrepare = async (): Promise<boolean> => {
     if (!window.ethereum) {
       setError("MetaMask not detected! Please install MetaMask.")
+      // Auto-open MetaMask install page
+      window.open("https://metamask.io/download/", "_blank")
       return false
     }
 
-    try {
-      setError(null)
+    setIsConnecting(true)
+    setError(null)
 
+    try {
+      // 1. AUTO-POPUP: Request account access (triggers MetaMask popup)
       const accounts = await window.ethereum.request({
         method: "eth_requestAccounts"
       })
 
       if (accounts.length === 0) {
         setError("Please connect your MetaMask wallet")
+        setIsConnecting(false)
         return false
       }
 
-      // Switch to Polygon Mainnet
+      // 2. AUTO-CONNECT to Polygon Mainnet
       try {
+        // First try to switch to Polygon
         await window.ethereum.request({
           method: "wallet_switchEthereumChain",
-          params: [{ chainId: "0x89" }]
+          params: [{ chainId: "0x89" }] // Polygon Mainnet
         })
       } catch (switchError: any) {
+        // This error code indicates that the chain has not been added to MetaMask
         if (switchError.code === 4902) {
+          // AUTO-ADD Polygon to MetaMask
           await window.ethereum.request({
             method: "wallet_addEthereumChain",
             params: [
@@ -69,8 +78,10 @@ export function MintStep({ wizardData, onBack }: MintStepProps) {
         }
       }
 
+      setIsConnecting(false)
       return true
     } catch (error: any) {
+      setIsConnecting(false)
       setError(`Wallet connection failed: ${error.message}`)
       return false
     }
@@ -206,13 +217,17 @@ export function MintStep({ wizardData, onBack }: MintStepProps) {
   }
 
   const mintNFT = async () => {
-    const isReady = await connectAndPrepare()
-    if (!isReady) return
-
     setIsMinting(true)
     setError(null)
 
     try {
+      // AUTO-CONNECT before minting
+      const isReady = await connectAndPrepare()
+      if (!isReady) {
+        setIsMinting(false)
+        return
+      }
+
       const userAddress = await getWalletAddress()
 
       // 1. Generate waveform image from audio
@@ -281,7 +296,7 @@ export function MintStep({ wizardData, onBack }: MintStepProps) {
       if (!window.ethereum) {
         throw new Error('Ethereum provider not found. Please install MetaMask.')
       }
-      
+
       const provider = new BrowserProvider(window.ethereum)
       const signer = await provider.getSigner()
       const contract = new Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer)
@@ -370,11 +385,20 @@ export function MintStep({ wizardData, onBack }: MintStepProps) {
           </div>
         </div>
 
-        {/* Mint Button */}
-        <div className="text-center">
+        {/* Mint Button with Connection Status */}
+        <div className="text-center space-y-3">
+          {isConnecting && (
+            <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
+              <div className="flex items-center justify-center gap-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                <p className="text-blue-400 text-sm">Connecting wallet to Polygon Mainnet...</p>
+              </div>
+            </div>
+          )}
+          
           <Button
             onClick={mintNFT}
-            disabled={isMinting}
+            disabled={isMinting || isConnecting}
             className="bg-gradient-to-r from-purple-500 to-cyan-400 hover:from-purple-600 hover:to-cyan-500 text-black font-semibold text-lg py-3 px-8 disabled:opacity-50"
           >
             {isMinting ? (
@@ -382,6 +406,8 @@ export function MintStep({ wizardData, onBack }: MintStepProps) {
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black mr-2"></div>
                 Creating NFT...
               </>
+            ) : isConnecting ? (
+              "Connecting Wallet..."
             ) : (
               "🎨 Create Language NFT"
             )}
