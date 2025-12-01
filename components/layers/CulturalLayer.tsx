@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import CulturalFormSimple from '@/components/CulturalFormSimple';
+import CulturalFormReal from '@/components/CulturalFormReal';
 
 export default function CulturalLayer() {
   const [showCulturalForm, setShowCulturalForm] = useState(false);
@@ -47,13 +47,13 @@ export default function CulturalLayer() {
           onClick={() => setShowCulturalForm(!showCulturalForm)}
           className="w-full bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-700 hover:to-cyan-600 text-white font-medium py-3 rounded-xl transition-all duration-200 active:scale-95"
         >
-          {showCulturalForm ? 'Hide Form' : 'Add More Culture'}
+          {showCulturalForm ? 'Preserve Language' : 'Add More Culture'}
         </button>
 
         {/* Cultural Form - Conditionally Rendered */}
         {showCulturalForm && (
           <div className="mt-4 animate-fadeIn">
-            <CulturalFormSimple />
+            <CulturalFormReal />
           </div>
         )}
       </div>
