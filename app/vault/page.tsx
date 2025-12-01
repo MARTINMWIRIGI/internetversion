@@ -8,7 +8,7 @@ import EconomicLayer from '@/components/layers/EconomicLayer';
 import CulturalFormSimple from '@/components/CulturalFormSimple';
 
 // Inside your return statement, add:
-<CulturalFormSimple />
+
 
 export default function VaultPage() {
   return (
@@ -65,6 +65,7 @@ export default function VaultPage() {
           <CulturalLayer />
           <BiometricLayer />
           <EnvironmentalLayer />
+<CulturalFormSimple />
         </div>
         
         {/* Row 2: Last two layers */}
