@@ -9,6 +9,7 @@ import { Menu } from "lucide-react"
 export function Header() {
   const [isOpen, setIsOpen] = useState(false)
   const [address, setAddress] = useState<string | null>(null)
+  const [isConnecting, setIsConnecting] = useState(false)
 
   useEffect(() => {
     // Check if wallet was previously connected
@@ -31,28 +32,34 @@ export function Header() {
 
   const handleConnectWallet = async () => {
     if (!address) {
+      setIsConnecting(true)
       try {
         if (typeof window === 'undefined' || !window.ethereum) {
           alert("Please install MetaMask to continue")
           window.open("https://metamask.io/download/", "_blank")
+          setIsConnecting(false)
           return
         }
 
+        // 1. AUTO-POPUP: Request account access
         const accounts = await window.ethereum.request({
           method: "eth_requestAccounts"
         })
 
         if (accounts && accounts.length > 0) {
           setAddress(accounts[0])
-          
-          // Switch to Polygon
+
+          // 2. AUTO-CONNECT to Polygon Mainnet
           try {
+            // First try to switch to Polygon
             await window.ethereum.request({
               method: "wallet_switchEthereumChain",
-              params: [{ chainId: "0x89" }]
+              params: [{ chainId: "0x89" }] // Polygon Mainnet
             })
           } catch (switchError: any) {
+            // This error code indicates that the chain has not been added to MetaMask
             if (switchError.code === 4902) {
+              // AUTO-ADD Polygon to MetaMask
               await window.ethereum.request({
                 method: "wallet_addEthereumChain",
                 params: [{
@@ -72,7 +79,9 @@ export function Header() {
         }
       } catch (error) {
         console.error("Wallet connection failed:", error)
-        alert("Failed to connect wallet")
+        alert("Failed to connect wallet. Please try again.")
+      } finally {
+        setIsConnecting(false)
       }
     } else {
       setAddress(null)
@@ -114,9 +123,19 @@ export function Header() {
           )}
           <Button
             onClick={handleConnectWallet}
-            className="gradient-accent text-white hover:shadow-lg hover:shadow-purple-500/50"
+            disabled={isConnecting}
+            className="gradient-accent text-white hover:shadow-lg hover:shadow-purple-500/50 disabled:opacity-50"
           >
-            {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "Connect Wallet"}
+            {isConnecting ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Connecting...
+              </>
+            ) : address ? (
+              `${address.slice(0, 6)}...${address.slice(-4)}`
+            ) : (
+              "Connect Wallet"
+            )}
           </Button>
         </div>
 
@@ -152,9 +171,19 @@ export function Header() {
                     handleConnectWallet()
                     setIsOpen(false)
                   }}
-                  className="w-full gradient-accent text-white hover:shadow-lg hover:shadow-purple-500/50"
+                  disabled={isConnecting}
+                  className="w-full gradient-accent text-white hover:shadow-lg hover:shadow-purple-500/50 disabled:opacity-50"
                 >
-                  {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "Connect Wallet"}
+                  {isConnecting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Connecting...
+                    </>
+                  ) : address ? (
+                    `${address.slice(0, 6)}...${address.slice(-4)}`
+                  ) : (
+                    "Connect Wallet"
+                  )}
                 </Button>
               </div>
             </div>
