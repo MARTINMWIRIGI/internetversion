@@ -2,22 +2,19 @@
 
 import { useState } from 'react'
 
-// We'll import supabase later when file exists
-// import { supabase } from '@/lib/supabase/client'
-
 export default function CulturalFormReal() {
-  const [language, setLanguage] = useState('')
-  const [story, setStory] = useState('')
-  const [tribe, setTribe] = useState('')
-  const [saving, setSaving] = useState(false)
+  const [language, setLanguage] = useState('');
+  const [story, setStory] = useState('');
+  const [tribe, setTribe] = useState('');
+  const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
     if (!language.trim() || !story.trim()) {
-      alert('Please fill in both language and story!')
-      return
+      alert('Please fill in both language and story!');
+      return;
     }
 
-    setSaving(true)
+    setSaving(true);
     
     try {
       // For now, just simulate saving
@@ -27,25 +24,25 @@ export default function CulturalFormReal() {
         story: story,
         tribe: tribe || 'Not specified',
         created_at: new Date().toISOString()
-      })
+      });
       
       // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
-      alert(`✅ "${language}" story saved! (Demo mode)`)
+      alert(`✅ "${language}" story saved! (Demo mode)`);
       
       // Clear form
-      setLanguage('')
-      setStory('')
-      setTribe('')
+      setLanguage('');
+      setStory('');
+      setTribe('');
 
     } catch (error) {
-      console.error('Error:', error)
-      alert('❌ Demo error occurred.')
+      console.error('Error:', error);
+      alert('❌ Demo error occurred.');
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   return (
     <div className="p-6 bg-gradient-to-br from-purple-900/30 to-cyan-900/30 rounded-2xl border border-purple-500/30">
@@ -97,4 +94,7 @@ export default function CulturalFormReal() {
             Check browser console (F12) to see what would be saved
           </p>
         </div>
-      </div
+      </div>
+    </div>
+  );
+}
