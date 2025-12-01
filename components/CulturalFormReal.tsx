@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
 
 export default function CulturalFormReal() {
   const [language, setLanguage] = useState('');
@@ -17,19 +18,34 @@ export default function CulturalFormReal() {
     setSaving(true);
     
     try {
-      // For now, just simulate saving
-      console.log('Would save to Supabase:', {
-        wallet_address: '0x123...test',
-        language_name: language,
-        story: story,
-        tribe: tribe || 'Not specified',
-        created_at: new Date().toISOString()
-      });
+      // Create Supabase client
+      const supabase = createClient();
       
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // For testing - get user's wallet address from somewhere
+      // For now, use a test address
+      const testWalletAddress = '0x1234567890123456789012345678901234567890';
       
-      alert(`✅ "${language}" story saved! (Demo mode)`);
+      // Save to Supabase
+      const { data, error } = await supabase
+        .from('cultural_data')
+        .insert({
+          wallet_address: testWalletAddress,
+          language_name: language,
+          story: story,
+          tribe: tribe || 'Not specified',
+          ipfs_cid: null,
+          created_at: new Date().toISOString()
+        })
+        .select();
+      
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+      
+      console.log('✅ Saved to Supabase:', data);
+      
+      alert(`✅ "${language}" story saved to database!`);
       
       // Clear form
       setLanguage('');
@@ -37,8 +53,8 @@ export default function CulturalFormReal() {
       setTribe('');
 
     } catch (error) {
-      console.error('Error:', error);
-      alert('❌ Demo error occurred.');
+      console.error('Error saving:', error);
+      alert('❌ Failed to save. Please check: 1) Supabase URL 2) Table exists 3) Network');
     } finally {
       setSaving(false);
     }
@@ -79,19 +95,19 @@ export default function CulturalFormReal() {
           {saving ? (
             <span className="flex items-center justify-center">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-              Saving (Demo)...
+              Saving to Database...
             </span>
           ) : (
-            '✨ Save Story (Demo Mode)'
+            '✨ Save to Supabase Database'
           )}
         </button>
         
         <div className="text-center">
           <p className="text-sm text-gray-400">
-            ⚠️ Working in demo mode
+            Your story will be saved to: <span className="text-cyan-300">rnfyixypahzfxwvgryja.supabase.co</span>
           </p>
           <p className="text-xs text-gray-500 mt-1">
-            Check browser console (F12) to see what would be saved
+            Check Supabase Dashboard to see your saved stories
           </p>
         </div>
       </div>
