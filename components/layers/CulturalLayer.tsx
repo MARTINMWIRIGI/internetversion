@@ -1,6 +1,9 @@
-'use client';
+import { useState } from 'react';
+import CulturalFormSimple from '@/components/CulturalFormSimple';
 
 export default function CulturalLayer() {
+  const [showCulturalForm, setShowCulturalForm] = useState(false);
+
   return (
     <div className="glow-card p-6 rounded-2xl">
       <div className="flex items-center gap-3 mb-4">
@@ -15,7 +18,7 @@ export default function CulturalLayer() {
           Active
         </div>
       </div>
-      
+
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -24,7 +27,7 @@ export default function CulturalLayer() {
           </div>
           <div className="text-cyan-300 font-medium">2</div>
         </div>
-        
+
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="h-3 w-3 rounded-full bg-purple-400"></span>
@@ -32,16 +35,27 @@ export default function CulturalLayer() {
           </div>
           <div className="text-purple-300 font-medium">5</div>
         </div>
-        
+
         <div className="bg-gradient-to-r from-purple-900/30 to-cyan-900/30 p-4 rounded-xl">
           <div className="text-sm text-gray-300">Cultural Value</div>
           <div className="text-2xl font-bold text-white">1,200 SOUL</div>
           <div className="text-xs mt-1 text-gray-400">AI Training Rights: $25/month</div>
         </div>
-        
-        <button className="w-full bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-700 hover:to-cyan-600 text-white font-medium py-3 rounded-xl transition-all duration-200 active:scale-95">
-          Add More Culture
+
+        {/* Add More Culture Button */}
+        <button
+          onClick={() => setShowCulturalForm(!showCulturalForm)}
+          className="w-full bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-700 hover:to-cyan-600 text-white font-medium py-3 rounded-xl transition-all duration-200 active:scale-95"
+        >
+          {showCulturalForm ? 'Hide Form' : 'Add More Culture'}
         </button>
+
+        {/* Cultural Form - Conditionally Rendered */}
+        {showCulturalForm && (
+          <div className="mt-4 animate-fadeIn">
+            <CulturalFormSimple />
+          </div>
+        )}
       </div>
     </div>
   );
