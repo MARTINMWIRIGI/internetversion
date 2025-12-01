@@ -5,6 +5,11 @@ import { LayerCard } from "@/components/vault/layer-card"
 import { SoulScoreDisplay } from "@/components/vault/soulscore-display"
 import { CompositeView } from "@/components/vault/composite-view"
 import { InheritanceBadge } from "@/components/vault/inheritance-badge"
+// Add this import at the top
+import { MobileVaultNav } from "@/components/vault/mobile-nav"
+
+// Add this component before the closing </main> tag
+<MobileVaultNav />
 
 // Sample data - will be replaced with real data later
 const initialLayers = [
