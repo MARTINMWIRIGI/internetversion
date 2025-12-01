@@ -5,8 +5,7 @@ import BiometricLayer from '@/components/layers/BiometricLayer';
 import EnvironmentalLayer from '@/components/layers/EnvironmentalLayer';
 import ExperientialLayer from '@/components/layers/ExperientialLayer';
 import EconomicLayer from '@/components/layers/EconomicLayer';
-import CulturalFormSimple from '@/components/CulturalFormSimple';
-
+import CulturalFormReal from '@/components/CulturalFormReal'
 // Inside your return statement, add:
 
 
