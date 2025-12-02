@@ -1,4 +1,5 @@
 'use client';
+import BiometricFormSimplefrom '@/components/BiometricFormSimple';
 
 export default function BiometricLayer() {
   return (
