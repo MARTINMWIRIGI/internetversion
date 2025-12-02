@@ -1,8 +1,21 @@
 // lib/supabase.ts
-import { createClient } from './client'
+import { createBrowserClient } from '@supabase/ssr'
 
-// Re-export the client
-export const supabase = createClient()
+// Create Supabase client with environment variables only (no hardcoded values)
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+// Validate environment variables
+if (!supabaseUrl) {
+  throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL environment variable')
+}
+
+if (!supabaseAnonKey) {
+  throw new Error('Missing NEXT_PUBLIC_SUPABASE_ANON_KEY environment variable')
+}
+
+// Create and export the Supabase client
+export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey)
 
 // Types for biometric data
 export interface VoiceBiometric {
@@ -45,4 +58,22 @@ export interface BiometricSession {
   nft_token_id?: string
   transaction_hash?: string
   created_at?: string
+}
+
+// Helper functions for common operations
+export const supabaseHelpers = {
+  // Check if Supabase is properly initialized
+  isInitialized: () => !!supabaseUrl && !!supabaseAnonKey,
+  
+  // Get the current session
+  getSession: async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+    return session
+  },
+  
+  // Get current user
+  getCurrentUser: async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    return user
+  }
 }
