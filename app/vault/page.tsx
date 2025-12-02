@@ -5,13 +5,15 @@ import BiometricLayer from '@/components/layers/BiometricLayer';
 import EnvironmentalLayer from '@/components/layers/EnvironmentalLayer';
 import ExperientialLayer from '@/components/layers/ExperientialLayer';
 import EconomicLayer from '@/components/layers/EconomicLayer';
-import CulturalFormReal from '@/components/CulturalFormReal'
+import CulturalFormReal from '@/components/CulturalFormReal';
+import BiometricFormSimple from
+'@/components/BiometricFormSimple'
 // Inside your return statement, add:
 
 
 export default function VaultPage() {
   return (
-    <div className="min-h-screen p-4 md:p-8 bg-gradient-to-b from-[#0a0e27] to-[#1a1f3a]">
+    <div className="min-hbi-screen p-4 md:p-8 bg-gradient-to-b from-[#0a0e27] to-[#1a1f3a]">
       {/* Header */}
       <div className="max-w-6xl mx-auto mb-8">
         <h1 className="text-3xl md:text-4xl font-bold mb-2">
