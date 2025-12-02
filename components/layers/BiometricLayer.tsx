@@ -46,10 +46,10 @@ export default function BiometricLayer() {
         
                 {/* Add More Culture Button */}
         <button
-          onClick={() => setShowCulturalForm(!showCulturalForm)}
+          onClick={() => setShowBiometricFormSimple(!showBiometricFormSimple)}
           className="w-full bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-700 hover:to-cyan-600 text-white font-medium py-3 rounded-xl transition-all duration-200 active:scale-95"
         >
-          {showCulturalForm ? 'Preserve Identity' : 'Complete Biometrics Scan'}
+          {showBiometricFormSimple ? 'Preserve Identity' : 'Complete Biometrics Scan'}
         </button>
 
         {/* Cultural Form - Conditionally Rendered */}
