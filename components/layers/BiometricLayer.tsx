@@ -69,7 +69,7 @@ export default function BiometricLayer() {
           {/* Right Column - Biometric Interface */}
           <div className="space-y-8">
             {showBiometricFormSimple ? (
-              <BiometricFormSimple />
+              <BiometricFormSimple onClose={() => setShowBiometricFormSimple(false)} />
             ) : (
               <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 border border-gray-700">
                 <div className="text-center mb-8">
@@ -94,7 +94,7 @@ export default function BiometricLayer() {
                     </div>
                     <span className="text-gray-400">~60 seconds</span>
                   </div>
-                  
+
                   <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-xl">
                     <div className="flex items-center">
                       <div className="w-10 h-10 bg-purple-900/30 rounded-lg flex items-center justify-center mr-4">
@@ -104,7 +104,7 @@ export default function BiometricLayer() {
                     </div>
                     <span className="text-gray-400">~30 seconds</span>
                   </div>
-                  
+
                   <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-xl">
                     <div className="flex items-center">
                       <div className="w-10 h-10 bg-green-900/30 rounded-lg flex items-center justify-center mr-4">
