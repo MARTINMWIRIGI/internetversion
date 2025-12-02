@@ -150,44 +150,235 @@ export default function BiometricFormSimple({ onClose, onComplete, userId }: Bio
   }
 
   // Device Fingerprinting
-  const collectFingerprint = async () => {
-    setScanStatus(prev => ({ ...prev, fingerprint: 'processing' }))
+  // Device Fingerprinting - PRODUCTION READY
+const collectFingerprint = async () => {
+  console.log('[Fingerprint] Starting collection...');
+  setScanStatus(prev => ({ ...prev, fingerprint: 'processing' }));
+  setError(null);
 
-    try {
-      // Collect basic device info
-      const deviceInfo = {
-        userAgent: navigator.userAgent,
-        platform: navigator.platform,
-        language: navigator.language,
-        screenResolution: `${window.screen.width}x${window.screen.height}`,
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        hardwareConcurrency: navigator.hardwareConcurrency || 'unknown',
-        deviceMemory: (navigator as any).deviceMemory || 'unknown'
+  try {
+    // ====================
+    // 1. COLLECT DEVICE DATA
+    // ====================
+    const deviceInfo: Record<string, any> = {
+      // Browser Identity
+      userAgent: navigator.userAgent,
+      platform: navigator.platform,
+      vendor: navigator.vendor,
+      
+      // Language & Time
+      language: navigator.language,
+      languages: JSON.stringify(navigator.languages || []),
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      timezoneOffset: new Date().getTimezoneOffset(),
+      
+      // Screen Details
+      screenWidth: window.screen.width,
+      screenHeight: window.screen.height,
+      screenColorDepth: window.screen.colorDepth,
+      screenPixelDepth: window.screen.pixelDepth,
+      devicePixelRatio: window.devicePixelRatio,
+      
+      // Hardware (if available)
+      hardwareConcurrency: navigator.hardwareConcurrency || null,
+      deviceMemory: (navigator as any).deviceMemory || null,
+      maxTouchPoints: navigator.maxTouchPoints || 0,
+      
+      // Connection
+      connectionType: (navigator as any).connection?.effectiveType || 'unknown',
+      connectionDownlink: (navigator as any).connection?.downlink || null,
+      
+      // WebGL Fingerprint (advanced)
+      webglRenderer: await getWebGLRenderer(),
+      
+      // Canvas Fingerprint
+      canvasHash: await getCanvasFingerprint(),
+      
+      // Fonts (sampled)
+      fonts: await getFontList(),
+      
+      // Timestamps
+      sessionStart: sessionStartTime,
+      collectionTime: Date.now(),
+      userTimezone: new Date().toString().match(/\((.*?)\)/)?.[1] || 'unknown'
+    };
+
+    // Clean up data for JSON
+    Object.keys(deviceInfo).forEach(key => {
+      if (deviceInfo[key] === undefined || deviceInfo[key] === null) {
+        delete deviceInfo[key];
       }
+    });
 
-      const fingerprint = await hashData(JSON.stringify(deviceInfo))
+    console.log('[Fingerprint] Device info collected:', deviceInfo);
 
-      // Store in database
-      const { error } = await supabase
-        .from('device_fingerprints')
+    // ====================
+    // 2. GENERATE FINGERPRINT HASH
+    // ====================
+    const fingerprintString = JSON.stringify({
+      ua: deviceInfo.userAgent,
+      pl: deviceInfo.platform,
+      tz: deviceInfo.timezone,
+      res: `${deviceInfo.screenWidth}x${deviceInfo.screenHeight}`,
+      lang: deviceInfo.language,
+      canvas: deviceInfo.canvasHash,
+      webgl: deviceInfo.webglRenderer
+    });
+
+    const fingerprint = await hashData(fingerprintString);
+    console.log('[Fingerprint] Generated hash:', fingerprint);
+
+    // ====================
+    // 3. INSERT INTO SUPABASE
+    // ====================
+    console.log('[Fingerprint] Inserting into database...');
+    
+    const { data, error } = await supabase
+      .from('device_fingerprints')
+      .insert({
+        user_id: effectiveUserId,
+        device_info: deviceInfo,
+        fingerprint_hash: fingerprint,
+        collected_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('[Fingerprint] Database error:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      });
+      
+      // Try alternative table name (case sensitivity)
+      console.log('[Fingerprint] Trying alternative table name...');
+      const { data: altData, error: altError } = await supabase
+        .from('DeviceFingerprints')  // Try capitalized
         .insert({
           user_id: effectiveUserId,
           device_info: deviceInfo,
           fingerprint_hash: fingerprint,
           collected_at: new Date().toISOString()
         })
-
-      if (error) throw error
-
-      setCollectedData(prev => ({ ...prev, deviceFingerprint: fingerprint }))
-      setScanStatus(prev => ({ ...prev, fingerprint: 'completed' }))
-
-    } catch (err) {
-      console.error('Fingerprint error:', err)
-      setError('Failed to collect device fingerprint')
-      setScanStatus(prev => ({ ...prev, fingerprint: 'error' }))
+        .select()
+        .single();
+      
+      if (altError) {
+        throw new Error(`Database insert failed: ${error.message}. Also tried alternative table.`);
+      }
+      
+      console.log('[Fingerprint] Inserted via alternative table:', altData);
+      setCollectedData(prev => ({ ...prev, deviceFingerprint: fingerprint }));
+      setScanStatus(prev => ({ ...prev, fingerprint: 'completed' }));
+      
+    } else {
+      console.log('[Fingerprint] Successfully inserted:', data);
+      setCollectedData(prev => ({ ...prev, deviceFingerprint: fingerprint }));
+      setScanStatus(prev => ({ ...prev, fingerprint: 'completed' }));
     }
+
+    console.log('[Fingerprint] ✅ Collection completed successfully');
+
+  } catch (err: any) {
+    console.error('[Fingerprint] ❌ Collection failed:', err);
+    
+    // User-friendly error message
+    let errorMsg = 'Failed to collect device fingerprint';
+    
+    if (err.message?.includes('permission denied')) {
+      errorMsg = 'Database permission denied. Please check Supabase RLS policies.';
+    } else if (err.message?.includes('does not exist')) {
+      errorMsg = 'Database table not found. Please create device_fingerprints table.';
+    } else if (err.message?.includes('network')) {
+      errorMsg = 'Network error. Please check your connection.';
+    }
+    
+    setError(errorMsg);
+    setScanStatus(prev => ({ ...prev, fingerprint: 'error' }));
   }
+};
+
+// ====================
+// HELPER FUNCTIONS
+// ====================
+
+// Get WebGL Renderer
+const getWebGLRenderer = async (): Promise<string> => {
+  try {
+    const canvas = document.createElement('canvas');
+    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    if (!gl) return 'no-webgl';
+    
+    const debugInfo = (gl as any).getExtension('WEBGL_debug_renderer_info');
+    if (debugInfo) {
+      const renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+      return renderer ? String(renderer).substring(0, 100) : 'unknown';
+    }
+    return 'no-debug-info';
+  } catch {
+    return 'error';
+  }
+};
+
+// Get Canvas Fingerprint
+const getCanvasFingerprint = async (): Promise<string> => {
+  try {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return 'no-canvas';
+    
+    canvas.width = 200;
+    canvas.height = 50;
+    
+    // Draw text
+    ctx.textBaseline = 'top';
+    ctx.font = '14px Arial';
+    ctx.fillStyle = '#f60';
+    ctx.fillRect(0, 0, 200, 50);
+    ctx.fillStyle = '#069';
+    ctx.fillText('BiometricFingerprint', 10, 10);
+    
+    // Get data URL
+    const dataUrl = canvas.toDataURL();
+    return await hashData(dataUrl.substring(0, 100));
+  } catch {
+    return 'error';
+  }
+};
+
+// Get Font List (sampled)
+const getFontList = async (): Promise<string> => {
+  try {
+    const fonts = [
+      'Arial', 'Helvetica', 'Times New Roman', 'Times', 'Courier New',
+      'Courier', 'Verdana', 'Georgia', 'Palatino', 'Garamond',
+      'Bookman', 'Comic Sans MS', 'Trebuchet MS', 'Arial Black', 'Impact'
+    ];
+    
+    const available = [];
+    for (const font of fonts.slice(0, 5)) { // Check first 5 only
+      if (document.fonts.check(`12px "${font}"`)) {
+        available.push(font);
+      }
+    }
+    
+    return available.join(',');
+  } catch {
+    return 'unknown';
+  }
+};
+
+// Hash function (already in your code, ensure it exists)
+const hashData = async (data: any): Promise<string> => {
+  const dataString = typeof data === 'string' ? data : JSON.stringify(data);
+  const encoder = new TextEncoder();
+  const dataBuffer = encoder.encode(dataString);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+};
 
   // Emotional Pattern Collection
   const collectEmotionalPattern = async () => {
