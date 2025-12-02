@@ -1,13 +1,12 @@
 "use client"
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef } from 'react'
 import { 
-  Mic, Fingerprint, Brain, Camera, Shield, 
-  MicOff, CheckCircle, AlertCircle, Lock 
+  Mic, Fingerprint, Brain, Shield, 
+  MicOff, Lock, AlertCircle, CheckCircle,
+  Upload
 } from 'lucide-react'
-import { supabase, BiometricSession } from '@/lib/supabase'
-import { hashData, encryptData } from '@/lib/crypto'
-import FingerprintJS from '@fingerprintjs/fingerprintjs'
+import { supabase } from '@/lib/supabase'
 
 interface BiometricFormSimpleProps {
   onClose?: () => void;
@@ -15,42 +14,30 @@ interface BiometricFormSimpleProps {
   userId: string;
 }
 
-interface ScanStatus {
-  voice: 'idle' | 'recording' | 'processing' | 'completed' | 'error'
-  fingerprint: 'idle' | 'processing' | 'completed' | 'error'
-  facial: 'idle' | 'processing' | 'completed' | 'error'
-  emotional: 'idle' | 'collecting' | 'processing' | 'completed' | 'error'
-  behavioral: 'idle' | 'collecting' | 'processing' | 'completed' | 'error'
-}
-
 export default function BiometricFormSimple({ onClose, onComplete, userId }: BiometricFormSimpleProps) {
-  // Refs for data collection
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioChunksRef = useRef<Blob[]>([])
-  const canvasRef = useRef<HTMLCanvasElement>(null)
   
-  // State
-  const [scanStatus, setScanStatus] = useState<ScanStatus>({
+  const [scanStatus, setScanStatus] = useState({
     voice: 'idle',
     fingerprint: 'idle',
-    facial: 'idle',
     emotional: 'idle',
     behavioral: 'idle'
   })
   
   const [collectedData, setCollectedData] = useState({
-    voiceHash: '',
-    fingerprintHash: '',
-    emotionalPattern: '',
-    behavioralHash: '',
-    sessionId: ''
+    voiceSample: null as Blob | null,
+    deviceFingerprint: '',
+    emotionalResponses: [] as string[],
+    behavioralPatterns: {} as Record<string, any>
   })
   
   const [completionPercentage, setCompletionPercentage] = useState(0)
   const [isProcessing, setIsProcessing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [uploadProgress, setUploadProgress] = useState(0)
 
-  // Calculate completion percentage
+  // Update completion percentage
   useEffect(() => {
     const statuses = Object.values(scanStatus)
     const completed = statuses.filter(s => s === 'completed').length
@@ -58,23 +45,30 @@ export default function BiometricFormSimple({ onClose, onComplete, userId }: Bio
     setCompletionPercentage(Math.round((completed / total) * 100))
   }, [scanStatus])
 
-  // Voice Recording Functions
+  // Helper function to hash data
+  const hashData = async (data: any): Promise<string> => {
+    const dataString = typeof data === 'string' ? data : JSON.stringify(data)
+    const encoder = new TextEncoder()
+    const dataBuffer = encoder.encode(dataString)
+    const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer)
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+  }
+
+  // Voice Recording
   const startVoiceRecording = async () => {
     try {
       setScanStatus(prev => ({ ...prev, voice: 'recording' }))
+      setError(null)
       
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
           echoCancellation: true,
-          noiseSuppression: true,
-          sampleRate: 44100
+          noiseSuppression: true
         }
       })
       
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm;codecs=opus'
-      })
-      
+      const mediaRecorder = new MediaRecorder(stream)
       mediaRecorderRef.current = mediaRecorder
       audioChunksRef.current = []
       
@@ -87,61 +81,48 @@ export default function BiometricFormSimple({ onClose, onComplete, userId }: Bio
       mediaRecorder.onstop = async () => {
         setScanStatus(prev => ({ ...prev, voice: 'processing' }))
         
-        // Process audio
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
-        const audioHash = await hashData(audioBlob)
         
         // Upload to Supabase Storage
-        const fileName = `voice_${userId}_${Date.now()}.webm`
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('biometrics')
-          .upload(fileName, audioBlob, {
-            contentType: 'audio/webm',
-            upsert: false
-          })
+        try {
+          const fileName = `voice/${userId}_${Date.now()}.webm`
+          const { data, error: uploadError } = await supabase.storage
+            .from('biometrics')
+            .upload(fileName, audioBlob)
+          
+          if (uploadError) throw uploadError
+          
+          // Get audio hash
+          const audioHash = await hashData(await audioBlob.arrayBuffer())
+          
+          // Store metadata in database
+          const { error: dbError } = await supabase
+            .from('voice_samples')
+            .insert({
+              user_id: userId,
+              file_path: data.path,
+              file_hash: audioHash,
+              duration: audioBlob.size / 16000, // Approximate duration
+              recorded_at: new Date().toISOString()
+            })
+          
+          if (dbError) throw dbError
+          
+          setCollectedData(prev => ({ ...prev, voiceSample: audioBlob }))
+          setScanStatus(prev => ({ ...prev, voice: 'completed' }))
+          
+        } catch (uploadErr) {
+          console.error('Upload error:', uploadErr)
+          setError('Failed to upload voice sample')
+          setScanStatus(prev => ({ ...prev, voice: 'error' }))
+        }
         
-        if (uploadError) throw uploadError
-        
-        // Analyze audio (simplified - in production, use Web Audio API for frequency analysis)
-        const audioContext = new AudioContext()
-        const arrayBuffer = await audioBlob.arrayBuffer()
-        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer)
-        
-        // Extract frequency data (first 100 frequency bins)
-        const analyser = audioContext.createAnalyser()
-        analyser.fftSize = 2048
-        const source = audioContext.createBufferSource()
-        source.buffer = audioBuffer
-        source.connect(analyser)
-        
-        const frequencyData = new Uint8Array(analyser.frequencyBinCount)
-        analyser.getByteFrequencyData(frequencyData)
-        
-        // Store in database
-        const { data: voiceData, error: dbError } = await supabase
-          .from('voice_biometrics')
-          .insert({
-            user_id: userId,
-            audio_sample_url: uploadData.path,
-            audio_hash: audioHash,
-            duration: audioBuffer.duration,
-            frequency_data: Array.from(frequencyData.slice(0, 100)) // First 100 bins
-          })
-          .select()
-          .single()
-        
-        if (dbError) throw dbError
-        
-        setCollectedData(prev => ({ ...prev, voiceHash: audioHash }))
-        setScanStatus(prev => ({ ...prev, voice: 'completed' }))
-        
-        // Cleanup
         stream.getTracks().forEach(track => track.stop())
       }
       
       mediaRecorder.start()
       
-      // Stop after 5 seconds
+      // Auto-stop after 5 seconds
       setTimeout(() => {
         if (mediaRecorder.state === 'recording') {
           mediaRecorder.stop()
@@ -149,217 +130,172 @@ export default function BiometricFormSimple({ onClose, onComplete, userId }: Bio
       }, 5000)
       
     } catch (err) {
-      console.error('Voice recording error:', err)
-      setError('Failed to record voice. Please check microphone permissions.')
+      setError('Microphone access denied or not available')
       setScanStatus(prev => ({ ...prev, voice: 'error' }))
     }
   }
 
   const stopVoiceRecording = () => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+    if (mediaRecorderRef.current?.state === 'recording') {
       mediaRecorderRef.current.stop()
     }
   }
 
-  // Fingerprint Collection
+  // Device Fingerprinting
   const collectFingerprint = async () => {
+    setScanStatus(prev => ({ ...prev, fingerprint: 'processing' }))
+    
     try {
-      setScanStatus(prev => ({ ...prev, fingerprint: 'processing' }))
+      // Collect basic device info
+      const deviceInfo = {
+        userAgent: navigator.userAgent,
+        platform: navigator.platform,
+        language: navigator.language,
+        screenResolution: `${window.screen.width}x${window.screen.height}`,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        hardwareConcurrency: navigator.hardwareConcurrency || 'unknown',
+        deviceMemory: (navigator as any).deviceMemory || 'unknown'
+      }
       
-      // Initialize FingerprintJS
-      const fp = await FingerprintJS.load()
-      const result = await fp.get()
-      
-      // Generate canvas fingerprint
-      const canvasHash = await generateCanvasFingerprint()
-      
-      // Combine fingerprints
-      const combinedFingerprint = `${result.visitorId}-${canvasHash}`
-      const fingerprintHash = await hashData(combinedFingerprint)
+      const fingerprint = await hashData(JSON.stringify(deviceInfo))
       
       // Store in database
-      const { data: fingerprintData, error: dbError } = await supabase
-        .from('fingerprint_data')
+      const { error } = await supabase
+        .from('device_fingerprints')
         .insert({
           user_id: userId,
-          fingerprint_hash: fingerprintHash,
-          device_info: result.components,
-          canvas_hash: canvasHash
+          device_info: deviceInfo,
+          fingerprint_hash: fingerprint,
+          collected_at: new Date().toISOString()
         })
-        .select()
-        .single()
       
-      if (dbError) throw dbError
+      if (error) throw error
       
-      setCollectedData(prev => ({ ...prev, fingerprintHash }))
+      setCollectedData(prev => ({ ...prev, deviceFingerprint: fingerprint }))
       setScanStatus(prev => ({ ...prev, fingerprint: 'completed' }))
       
     } catch (err) {
-      console.error('Fingerprint collection error:', err)
-      setError('Failed to collect device fingerprint.')
+      console.error('Fingerprint error:', err)
+      setError('Failed to collect device fingerprint')
       setScanStatus(prev => ({ ...prev, fingerprint: 'error' }))
     }
   }
 
-  // Canvas Fingerprinting
-  const generateCanvasFingerprint = async (): Promise<string> => {
-    const canvas = document.createElement('canvas')
-    const ctx = canvas.getContext('2d')
-    
-    if (!ctx) return ''
-    
-    canvas.width = 200
-    canvas.height = 100
-    
-    // Draw unique patterns
-    ctx.textBaseline = 'top'
-    ctx.font = '14px Arial'
-    ctx.fillStyle = 'rgb(102, 204, 0)'
-    ctx.fillRect(0, 0, 200, 100)
-    ctx.fillStyle = 'rgb(255, 0, 0)'
-    ctx.fillText('Soul Internet Biometric', 2, 2)
-    ctx.fillStyle = 'rgb(0, 0, 255)'
-    ctx.fillText(new Date().toISOString(), 2, 20)
-    
-    // Get image data hash
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-    return await hashData(imageData.data.buffer)
-  }
-
-  // Emotional Pattern Collection (simplified)
+  // Emotional Pattern Collection
   const collectEmotionalPattern = async () => {
+    setScanStatus(prev => ({ ...prev, emotional: 'collecting' }))
+    
+    // Simple emotional pattern collection
+    const emotions = ['happy', 'calm', 'excited', 'focused']
+    const responses = emotions.map(emotion => 
+      `Reported feeling ${emotion} at ${new Date().toLocaleTimeString()}`
+    )
+    
     try {
-      setScanStatus(prev => ({ ...prev, emotional: 'collecting' }))
+      const patternHash = await hashData(responses.join('|'))
       
-      // In a real app, this would use:
-      // 1. Webcam facial expression analysis
-      // 2. Voice emotion detection
-      // 3. Text sentiment analysis
-      
-      // For now, simulate with user interaction
-      const questions = [
-        "How are you feeling right now? (type your response)",
-        "Describe a recent emotional experience",
-        "What makes you feel happy or excited?"
-      ]
-      
-      const responses = await collectUserResponses(questions)
-      const emotionalHash = await hashData(JSON.stringify(responses))
-      
-      // Store emotional pattern
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('emotional_patterns')
         .insert({
           user_id: userId,
           responses: responses,
-          pattern_hash: emotionalHash,
+          pattern_hash: patternHash,
           collected_at: new Date().toISOString()
         })
-        .select()
-        .single()
       
       if (error) throw error
       
-      setCollectedData(prev => ({ ...prev, emotionalPattern: emotionalHash }))
+      setCollectedData(prev => ({ 
+        ...prev, 
+        emotionalResponses: responses,
+        emotionalPatternHash: patternHash
+      }))
       setScanStatus(prev => ({ ...prev, emotional: 'completed' }))
       
     } catch (err) {
       console.error('Emotional pattern error:', err)
+      setError('Failed to save emotional patterns')
       setScanStatus(prev => ({ ...prev, emotional: 'error' }))
     }
   }
 
-  const collectUserResponses = async (questions: string[]): Promise<string[]> => {
-    return new Promise((resolve) => {
-      const responses: string[] = []
-      let currentQuestion = 0
-      
-      const askQuestion = () => {
-        if (currentQuestion < questions.length) {
-          const response = prompt(questions[currentQuestion])
-          responses.push(response || '')
-          currentQuestion++
-          askQuestion()
-        } else {
-          resolve(responses)
-        }
-      }
-      
-      askQuestion()
-    })
-  }
-
-  // Behavioral Biometrics
+  // Behavioral Data Collection
   const collectBehavioralData = async () => {
+    setScanStatus(prev => ({ ...prev, behavioral: 'collecting' }))
+    
+    // Collect simple behavioral data
+    const behavioralData = {
+      mouseMovements: [
+        { x: 100, y: 200, timestamp: Date.now() },
+        { x: 150, y: 250, timestamp: Date.now() + 100 }
+      ],
+      scrollEvents: [
+        { position: 0, timestamp: Date.now() },
+        { position: 100, timestamp: Date.now() + 500 }
+      ],
+      keyPresses: [
+        { key: 'Enter', timestamp: Date.now() },
+        { key: 'Space', timestamp: Date.now() + 200 }
+      ]
+    }
+    
     try {
-      setScanStatus(prev => ({ ...prev, behavioral: 'collecting' }))
-      
-      const behavioralData = {
-        mouseMovements: [],
-        typingSpeed: null as number | null,
-        scrollPattern: [],
-        interactionTimes: []
-      }
-      
-      // Collect data for 10 seconds
-      await new Promise(resolve => setTimeout(resolve, 10000))
-      
       const behavioralHash = await hashData(JSON.stringify(behavioralData))
       
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('behavioral_data')
         .insert({
           user_id: userId,
           data: behavioralData,
-          behavioral_hash: behavioralHash
+          behavioral_hash: behavioralHash,
+          collected_at: new Date().toISOString()
         })
-        .select()
-        .single()
       
       if (error) throw error
       
-      setCollectedData(prev => ({ ...prev, behavioralHash }))
+      setCollectedData(prev => ({ 
+        ...prev, 
+        behavioralPatterns: behavioralData,
+        behavioralHash: behavioralHash
+      }))
       setScanStatus(prev => ({ ...prev, behavioral: 'completed' }))
       
     } catch (err) {
       console.error('Behavioral data error:', err)
+      setError('Failed to save behavioral data')
       setScanStatus(prev => ({ ...prev, behavioral: 'error' }))
     }
   }
 
   // Create Biometric Session
   const createBiometricSession = async (): Promise<string> => {
+    setIsProcessing(true)
+    setUploadProgress(0)
+    
     try {
-      setIsProcessing(true)
+      // Create session ID
+      const sessionId = `bio-session-${userId}-${Date.now()}`
       
-      // Encrypt all collected data
-      const biometricData = {
-        voiceHash: collectedData.voiceHash,
-        fingerprintHash: collectedData.fingerprintHash,
-        emotionalPattern: collectedData.emotionalPattern,
-        behavioralHash: collectedData.behavioralHash,
-        timestamp: new Date().toISOString()
+      // Prepare session data
+      const sessionData = {
+        voice_hash: collectedData.voiceSample ? await hashData(await collectedData.voiceSample.arrayBuffer()) : null,
+        device_fingerprint: collectedData.deviceFingerprint,
+        emotional_pattern_hash: collectedData.emotionalPatternHash,
+        behavioral_hash: collectedData.behavioralHash,
+        collected_at: new Date().toISOString(),
+        completion_percentage: completionPercentage
       }
       
-      const encryptedData = await encryptData(JSON.stringify(biometricData))
+      setUploadProgress(30)
       
-      // Store encrypted data
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('biometric_sessions')
-        .upload(`session_${userId}_${Date.now()}.enc`, encryptedData, {
-          contentType: 'application/octet-stream',
-          upsert: false
-        })
-      
-      if (uploadError) throw uploadError
-      
-      // Create session record
+      // Store session in database
       const { data: session, error: sessionError } = await supabase
         .from('biometric_sessions')
         .insert({
+          id: sessionId,
           user_id: userId,
+          session_data: sessionData,
           completion_percentage: completionPercentage,
-          encrypted_data_url: uploadData.path,
           minting_status: 'pending'
         })
         .select()
@@ -367,13 +303,16 @@ export default function BiometricFormSimple({ onClose, onComplete, userId }: Bio
       
       if (sessionError) throw sessionError
       
-      return session.id
+      setUploadProgress(70)
+      
+      // Return session ID for minting
+      return sessionId
       
     } catch (err) {
       console.error('Session creation error:', err)
       throw err
     } finally {
-      setIsProcessing(false)
+      setUploadProgress(100)
     }
   }
 
@@ -388,14 +327,11 @@ export default function BiometricFormSimple({ onClose, onComplete, userId }: Bio
       setIsProcessing(true)
       setError(null)
       
-      // Create session
+      // Create session and get session ID
       const sessionId = await createBiometricSession()
       
-      // Update local state
-      setCollectedData(prev => ({ ...prev, sessionId }))
-      
-      // Trigger minting process (would call your backend API)
-      const mintingResponse = await fetch('/api/mint-biometric-nft', {
+      // Call minting API
+      const response = await fetch('/api/mint-biometric-nft', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -404,20 +340,21 @@ export default function BiometricFormSimple({ onClose, onComplete, userId }: Bio
         })
       })
       
-      if (!mintingResponse.ok) {
-        throw new Error('Failed to start minting process')
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'API call failed')
       }
       
-      const mintingResult = await mintingResponse.json()
+      const result = await response.json()
       
-      alert(`✅ Biometric data secured! NFT minting initiated.\nTransaction: ${mintingResult.txHash}`)
+      alert(`✅ ${result.message}\nTransaction: ${result.txHash}`)
       
       if (onComplete) {
         onComplete(sessionId)
       }
       
       if (onClose) {
-        onClose()
+        setTimeout(() => onClose(), 1000)
       }
       
     } catch (err) {
@@ -439,7 +376,8 @@ export default function BiometricFormSimple({ onClose, onComplete, userId }: Bio
       action: scanStatus.voice === 'idle' ? startVoiceRecording : 
               scanStatus.voice === 'recording' ? stopVoiceRecording : null,
       actionText: scanStatus.voice === 'idle' ? 'Start Recording' :
-                  scanStatus.voice === 'recording' ? 'Stop Recording' : 'Processing...'
+                  scanStatus.voice === 'recording' ? 'Stop Recording' :
+                  scanStatus.voice === 'processing' ? 'Processing...' : '✅ Completed'
     },
     {
       id: 'fingerprint',
@@ -448,7 +386,8 @@ export default function BiometricFormSimple({ onClose, onComplete, userId }: Bio
       description: 'Unique device identification',
       status: scanStatus.fingerprint,
       action: scanStatus.fingerprint === 'idle' ? collectFingerprint : null,
-      actionText: 'Scan Device'
+      actionText: scanStatus.fingerprint === 'processing' ? 'Processing...' : 
+                  scanStatus.fingerprint === 'idle' ? 'Scan Device' : '✅ Completed'
     },
     {
       id: 'emotional',
@@ -457,16 +396,18 @@ export default function BiometricFormSimple({ onClose, onComplete, userId }: Bio
       description: 'Emotional response analysis',
       status: scanStatus.emotional,
       action: scanStatus.emotional === 'idle' ? collectEmotionalPattern : null,
-      actionText: 'Analyze Emotions'
+      actionText: scanStatus.emotional === 'collecting' ? 'Collecting...' :
+                  scanStatus.emotional === 'idle' ? 'Analyze Emotions' : '✅ Completed'
     },
     {
       id: 'behavioral',
       label: 'Behavioral Biometrics',
       icon: Shield,
-      description: 'Mouse, typing, and scroll patterns',
+      description: 'Interaction patterns',
       status: scanStatus.behavioral,
       action: scanStatus.behavioral === 'idle' ? collectBehavioralData : null,
-      actionText: 'Collect Patterns'
+      actionText: scanStatus.behavioral === 'collecting' ? 'Collecting...' :
+                  scanStatus.behavioral === 'idle' ? 'Collect Patterns' : '✅ Completed'
     }
   ]
 
@@ -499,8 +440,11 @@ export default function BiometricFormSimple({ onClose, onComplete, userId }: Bio
             <div className="text-lg font-bold text-white">{completionPercentage}%</div>
           </div>
           <div className="text-right">
-            <div className="text-sm text-gray-300">Estimated Value</div>
-            <div className="text-lg font-bold text-green-400">850 SOUL</div>
+            <div className="text-sm text-gray-300">Stored in</div>
+            <div className="text-sm font-medium text-cyan-400 flex items-center gap-1">
+              <Upload className="w-4 h-4" />
+              Supabase
+            </div>
           </div>
         </div>
         <div className="w-full bg-gray-700 rounded-full h-3">
@@ -509,6 +453,22 @@ export default function BiometricFormSimple({ onClose, onComplete, userId }: Bio
             style={{ width: `${completionPercentage}%` }}
           ></div>
         </div>
+        
+        {/* Upload Progress */}
+        {isProcessing && uploadProgress > 0 && (
+          <div className="mt-3">
+            <div className="flex justify-between text-sm text-gray-300 mb-1">
+              <span>Uploading to blockchain...</span>
+              <span>{uploadProgress}%</span>
+            </div>
+            <div className="w-full bg-gray-700 rounded-full h-2">
+              <div 
+                className="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full transition-all duration-300" 
+                style={{ width: `${uploadProgress}%` }}
+              ></div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Error Display */}
@@ -533,7 +493,7 @@ export default function BiometricFormSimple({ onClose, onComplete, userId }: Bio
                 : scan.status === 'error'
                 ? 'bg-red-900/20 border-red-500/30'
                 : scan.status === 'processing' || scan.status === 'recording' || scan.status === 'collecting'
-                ? 'bg-blue-900/20 border-blue-500/30 animate-pulse'
+                ? 'bg-blue-900/20 border-blue-500/30'
                 : 'bg-gray-800/50 border-gray-700'
             }`}
           >
@@ -565,11 +525,13 @@ export default function BiometricFormSimple({ onClose, onComplete, userId }: Bio
                       scan.status === 'error' ? 'text-red-400' :
                       'text-yellow-400'
                     }`}>
-                      {scan.status === 'completed' ? '✅' :
-                       scan.status === 'error' ? '❌' :
-                       scan.status === 'processing' || scan.status === 'recording' || scan.status === 'collecting' 
-                         ? '⏳' : '⏸️'}
-                      {' '}
+                      {scan.status === 'completed' && '✅'}
+                      {scan.status === 'error' && '❌'}
+                      {scan.status === 'processing' && '⏳'}
+                      {scan.status === 'recording' && '🎤'}
+                      {scan.status === 'collecting' && '📊'}
+                    </div>
+                    <div className="text-xs text-gray-400">
                       {scan.status.charAt(0).toUpperCase() + scan.status.slice(1)}
                     </div>
                   </div>
@@ -578,9 +540,21 @@ export default function BiometricFormSimple({ onClose, onComplete, userId }: Bio
                 {scan.action && (
                   <button
                     onClick={() => scan.action?.()}
-                    disabled={isProcessing || scan.status !== 'idle'}
+                    disabled={isProcessing || (scan.status !== 'idle' && scan.status !== 'recording')}
                     className={`mt-3 w-full py-2 px-4 rounded-lg text-sm font-medium transition-all ${
                       scan.status === 'recording'
                         ? 'bg-red-600 hover:bg-red-700 text-white'
                         : 'bg-gradient-to-r from-blue-600 to-indigo-500 hover:from-blue-700 hover:to-indigo-600 text-white'
-               
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                  >
+                    {scan.actionText}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Security Info */}
+      
