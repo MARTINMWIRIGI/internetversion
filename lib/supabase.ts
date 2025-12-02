@@ -1,23 +1,14 @@
-// lib/supabase.ts
+// lib/supabase.ts - Final version with real values
 import { createBrowserClient } from '@supabase/ssr'
 
-// Create Supabase client with environment variables only (no hardcoded values)
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-// Validate environment variables
-if (!supabaseUrl) {
-  throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL environment variable')
-}
-
-if (!supabaseAnonKey) {
-  throw new Error('Missing NEXT_PUBLIC_SUPABASE_ANON_KEY environment variable')
-}
+// Your Supabase credentials
+const supabaseUrl = 'https://rnfyixypahzfxwvgryja.supabase.co'
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJuZnlpeHlwYWh6Znh3dmdyeWphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0NTM3NTYsImV4cCI6MjA3ODAyOTc1Nn0.vDSK8eaXJltRxar0adZM8EoofhuolNQCHJDCrjOpaCI'
 
 // Create and export the Supabase client
 export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey)
 
-// Types for biometric data
+// Types for biometric data (keep your existing types here)
 export interface VoiceBiometric {
   id?: string
   user_id: string
@@ -63,17 +54,27 @@ export interface BiometricSession {
 // Helper functions for common operations
 export const supabaseHelpers = {
   // Check if Supabase is properly initialized
-  isInitialized: () => !!supabaseUrl && !!supabaseAnonKey,
+  isInitialized: () => true, // Always true with hardcoded values
   
   // Get the current session
   getSession: async () => {
-    const { data: { session } } = await supabase.auth.getSession()
-    return session
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      return session
+    } catch (error) {
+      console.error('Error getting session:', error)
+      return null
+    }
   },
   
   // Get current user
   getCurrentUser: async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    return user
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      return user
+    } catch (error) {
+      console.error('Error getting user:', error)
+      return null
+    }
   }
 }
