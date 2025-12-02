@@ -39,7 +39,7 @@ export default function CulturalLayer() {
         <div className="bg-gradient-to-r from-purple-900/30 to-cyan-900/30 p-4 rounded-xl">
           <div className="text-sm text-gray-300">Cultural Value</div>
           <div className="text-2xl font-bold text-white">1,200 SOUL</div>
-          <div className="text-xs mt-1 text-gray-400">AI Training Rights: $25/month</div>
+          <div className="text-xs mt-1 text-gray-400">AI Training Rights: Ksh.10,000/month</div>
         </div>
 
         {/* Add More Culture Button */}
