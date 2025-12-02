@@ -1,12 +1,13 @@
-// lib/supabase.ts - Final version with real values
-import { createBrowserClient } from '@supabase/ssr'
+// lib/supabase.ts - Updated to work with SSR
+import { createClient } from '@supabase/supabase-js'
 
 // Your Supabase credentials
 const supabaseUrl = 'https://rnfyixypahzfxwvgryja.supabase.co'
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJuZnlpeHlwYWh6Znh3dmdyeWphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0NTM3NTYsImV4cCI6MjA3ODAyOTc1Nn0.vDSK8eaXJltRxar0adZM8EoofhuolNQCHJDCrjOpaCI'
 
 // Create and export the Supabase client
-export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey)
+// Use createClient instead of createBrowserClient for SSR compatibility
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 // Types for biometric data (keep your existing types here)
 export interface VoiceBiometric {
