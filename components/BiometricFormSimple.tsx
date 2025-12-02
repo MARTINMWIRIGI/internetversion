@@ -569,5 +569,19 @@ export default function BiometricFormSimple({ onClose, onComplete, userId }: Bio
           <li>• All data linked to your user ID: {userId.substring(0, 8)}...</li>
         </ul>
       </div>
-
+    {/* Actions */}
+      <div className="space-y-3">
+        <button
+          onClick={handleCompleteAll}
+          disabled={isProcessing || completionPercentage < 100}
+          className="w-full bg-gradient-to-r from-blue-600 to-indigo-500 hover:from-blue-700 hover:to-indigo-600 text-white font-medium py-4 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+        >
+          {isProcessing ? (
+            <>
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              {uploadProgress < 100 ? 'Uploading Data...' : 'Minting NFT...'}
+            </>
+          ) : completionPercentage === 100 ? (
+            <>
+              <Lock className="w-5 h-5" />
       
