@@ -4,7 +4,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
+import { supabase } from "@/lib/supabase" // Updated import
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { ArrowLeft } from "lucide-react"
 
@@ -16,7 +16,6 @@ export default function AuthPage() {
   const [rememberMe, setRememberMe] = useState(true)
   const [error, setError] = useState("")
   const [walletAddress, setWalletAddress] = useState<string | null>(null)
-  const supabase = createClient()
   const router = useRouter()
 
   // Check if already logged in
@@ -28,7 +27,7 @@ export default function AuthPage() {
       }
     }
     checkSession()
-  }, [supabase, router])
+  }, [router])
 
   // META MASK LOGIN
   const handleMetaMaskConnect = async () => {
@@ -165,6 +164,7 @@ export default function AuthPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="your@email.com"
                 required
+                className="w-full px-4 py-3 bg-purple-950/50 border border-purple-500/30 rounded-lg text-white placeholder-purple-300/50 focus:outline-none focus:border-cyan-400 transition"
               />
               <input
                 type="password"
@@ -172,25 +172,50 @@ export default function AuthPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 required
+                className="w-full px-4 py-3 bg-purple-950/50 border border-purple-500/30 rounded-lg text-white placeholder-purple-300/50 focus:outline-none focus:border-cyan-400 transition"
               />
               <div className="flex items-center gap-2">
-                <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />
-                <label>Remember me</label>
+                <input 
+                  type="checkbox" 
+                  checked={rememberMe} 
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="w-4 h-4 accent-cyan-400"
+                />
+                <label className="text-sm text-purple-300">Remember me</label>
               </div>
-              <button type="submit">{isLoading ? "Processing..." : isSignUp ? "Create Account" : "Sign In"}</button>
+              <button 
+                type="submit" 
+                disabled={isLoading}
+                className="w-full bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 text-white font-medium py-3 rounded-lg transition-all disabled:opacity-50"
+              >
+                {isLoading ? "Processing..." : isSignUp ? "Create Account" : "Sign In"}
+              </button>
             </form>
 
-            <button onClick={() => setIsSignUp(!isSignUp)} className="text-xs text-cyan-400 hover:text-purple-400">
+            <button 
+              onClick={() => setIsSignUp(!isSignUp)} 
+              className="w-full text-xs text-cyan-400 hover:text-purple-400 transition"
+            >
               {isSignUp ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
             </button>
 
             {/* MetaMask */}
-            <button onClick={handleMetaMaskConnect}>
+            <button 
+              onClick={handleMetaMaskConnect}
+              disabled={isLoading}
+              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white font-medium py-3 rounded-lg transition-all disabled:opacity-50"
+            >
+              <span>🦊</span>
               {isLoading ? "Connecting..." : "Connect MetaMask"}
             </button>
 
             {/* Google */}
-            <button onClick={handleGoogleSignIn}>
+            <button 
+              onClick={handleGoogleSignIn}
+              disabled={isLoading}
+              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-red-500 hover:from-blue-600 hover:to-red-600 text-white font-medium py-3 rounded-lg transition-all disabled:opacity-50"
+            >
+              <span>G</span>
               {isLoading ? "Signing in..." : "Sign in with Google"}
             </button>
           </CardContent>
