@@ -576,4 +576,33 @@ export default function BiometricFormSimple({ onClose, onComplete, userId }: Bio
           <h4 className="font-medium text-white">Data Storage</h4>
         </div>
         <ul className="space-y-1 text-sm text-gray-400">
-          <li>• Voice 
+          <li>• Voice samples: Encrypted & stored in Supabase Storage</li>
+          <li>• Device fingerprints: Hashed for privacy</li>
+          <li>• Emotional patterns: Anonymized analysis</li>
+          <li>• All data linked to user ID: {effectiveUserId.substring(0, 8)}...</li>
+        </ul>
+      </div>
+
+      {/* Actions */}
+      <div className="space-y-3">
+        <button
+          onClick={handleCompleteAll}
+          disabled={isProcessing || completionPercentage < 100}
+          className="w-full bg-gradient-to-r from-green-600 to-emerald-500 hover:from-green-700 hover:to-emerald-600 text-white font-medium py-3 rounded-xl transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isProcessing ? 'Processing...' : 'Mint Biometric NFT'}
+        </button>
+
+        {onClose && (
+          <button
+            onClick={onClose}
+            disabled={isProcessing}
+            className="w-full bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium py-3 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Cancel
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
