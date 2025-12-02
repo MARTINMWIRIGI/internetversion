@@ -557,4 +557,17 @@ export default function BiometricFormSimple({ onClose, onComplete, userId }: Bio
       </div>
 
       {/* Security Info */}
+<div className="mb-6 p-4 bg-gray-800/30 rounded-xl">
+        <div className="flex items-center gap-3 mb-2">
+          <Shield className="w-5 h-5 text-green-400" />
+          <h4 className="font-medium text-white">Data Storage</h4>
+        </div>
+        <ul className="space-y-1 text-sm text-gray-400">
+          <li>• Voice samples: Encrypted & stored in Supabase Storage</li>
+          <li>• Device fingerprints: Hashed for privacy</li>
+          <li>• Emotional patterns: Anonymized analysis</li>
+          <li>• All data linked to your user ID: {userId.substring(0, 8)}...</li>
+        </ul>
+      </div>
+
       
