@@ -107,7 +107,7 @@ export default function CulturalFormReal() {
             Your story will be saved: <span className="text-cyan-300">as a time capsule and minted as an NFT on the Blockchain</span>
           </p>
           <p className="text-xs text-gray-500 mt-1">
-            Check your OpenSea Dashboard to see your saved stories
+            Check your Dashboard to see your saved stories
           </p>
         </div>
       </div>
