@@ -66,7 +66,7 @@ export default function VaultPage() {
           <CulturalLayer />
           <BiometricLayer />
           <EnvironmentalLayer />
-<CulturalFormReal />
+
         </div>
         
         {/* Row 2: Last two layers */}
