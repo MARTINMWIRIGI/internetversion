@@ -44,9 +44,20 @@ export default function BiometricLayer() {
           <div className="bg-gradient-to-r from-pink-500 to-purple-500 h-2 rounded-full" style={{ width: '65%' }}></div>
         </div>
         
-        <button className="w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-medium py-3 rounded-xl transition-all duration-200 active:scale-95">
-          Complete Biometric Scan
+                {/* Add More Culture Button */}
+        <button
+          onClick={() => setShowCulturalForm(!showCulturalForm)}
+          className="w-full bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-700 hover:to-cyan-600 text-white font-medium py-3 rounded-xl transition-all duration-200 active:scale-95"
+        >
+          {showCulturalForm ? 'Preserve Identity' : 'Complete Biometrics Scan'}
         </button>
+
+        {/* Cultural Form - Conditionally Rendered */}
+        {showBiometricFormSimple && (
+          <div className="mt-4 animate-fadeIn">
+            <BiometricFormSimple />
+          </div>
+        )}
       </div>
     </div>
   );
