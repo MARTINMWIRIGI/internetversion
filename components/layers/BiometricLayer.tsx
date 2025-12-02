@@ -37,7 +37,7 @@ export default function BiometricLayer() {
         <div className="bg-gradient-to-r from-pink-900/30 to-purple-900/30 p-4 rounded-xl">
           <div className="text-sm text-gray-300">Biometric Value</div>
           <div className="text-2xl font-bold text-white">850 SOUL</div>
-          <div className="text-xs mt-1 text-gray-400">AI Voice Training: $15/month</div>
+          <div className="text-xs mt-1 text-gray-400">AI Voice Training: Ksh.10,000/month</div>
         </div>
         
         <div className="w-full bg-gray-800 rounded-full h-2">
