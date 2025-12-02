@@ -27,9 +27,12 @@ export default function BiometricFormSimple({ onClose, onComplete, userId }: Bio
   
   const [collectedData, setCollectedData] = useState({
     voiceSample: null as Blob | null,
+    voiceHash: null as string | null,
     deviceFingerprint: '',
     emotionalResponses: [] as string[],
-    behavioralPatterns: {} as Record<string, any>
+    emotionalPatternHash: null as string | null,
+    behavioralPatterns: {} as Record<string, any>,
+    behavioralHash: null as string | null
   })
   
   const [completionPercentage, setCompletionPercentage] = useState(0)
@@ -82,6 +85,7 @@ export default function BiometricFormSimple({ onClose, onComplete, userId }: Bio
         setScanStatus(prev => ({ ...prev, voice: 'processing' }))
         
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
+        const audioHash = await hashData(await audioBlob.arrayBuffer())
         
         // Upload to Supabase Storage
         try {
@@ -91,9 +95,6 @@ export default function BiometricFormSimple({ onClose, onComplete, userId }: Bio
             .upload(fileName, audioBlob)
           
           if (uploadError) throw uploadError
-          
-          // Get audio hash
-          const audioHash = await hashData(await audioBlob.arrayBuffer())
           
           // Store metadata in database
           const { error: dbError } = await supabase
@@ -108,7 +109,11 @@ export default function BiometricFormSimple({ onClose, onComplete, userId }: Bio
           
           if (dbError) throw dbError
           
-          setCollectedData(prev => ({ ...prev, voiceSample: audioBlob }))
+          setCollectedData(prev => ({ 
+            ...prev, 
+            voiceSample: audioBlob,
+            voiceHash: audioHash
+          }))
           setScanStatus(prev => ({ ...prev, voice: 'completed' }))
           
         } catch (uploadErr) {
@@ -276,17 +281,17 @@ export default function BiometricFormSimple({ onClose, onComplete, userId }: Bio
       // Create session ID
       const sessionId = `bio-session-${userId}-${Date.now()}`
       
+      setUploadProgress(30)
+      
       // Prepare session data
       const sessionData = {
-        voice_hash: collectedData.voiceSample ? await hashData(await collectedData.voiceSample.arrayBuffer()) : null,
+        voice_hash: collectedData.voiceHash,
         device_fingerprint: collectedData.deviceFingerprint,
         emotional_pattern_hash: collectedData.emotionalPatternHash,
         behavioral_hash: collectedData.behavioralHash,
         collected_at: new Date().toISOString(),
         completion_percentage: completionPercentage
       }
-      
-      setUploadProgress(30)
       
       // Store session in database
       const { data: session, error: sessionError } = await supabase
@@ -557,51 +562,11 @@ export default function BiometricFormSimple({ onClose, onComplete, userId }: Bio
       </div>
 
       {/* Security Info */}
-<div className="mb-6 p-4 bg-gray-800/30 rounded-xl">
+      <div className="mb-6 p-4 bg-gray-800/30 rounded-xl">
         <div className="flex items-center gap-3 mb-2">
           <Shield className="w-5 h-5 text-green-400" />
           <h4 className="font-medium text-white">Data Storage</h4>
         </div>
         <ul className="space-y-1 text-sm text-gray-400">
           <li>• Voice samples: Encrypted & stored in Supabase Storage</li>
-          <li>• Device fingerprints: Hashed for privacy</li>
-          <li>• Emotional patterns: Anonymized analysis</li>
-          <li>• All data linked to your user ID: {userId.substring(0, 8)}...</li>
-        </ul>
-      </div>
-    {/* Actions */}
-      <div className="space-y-3">
-        <button
-          onClick={handleCompleteAll}
-          disabled={isProcessing || completionPercentage < 100}
-          className="w-full bg-gradient-to-r from-blue-600 to-indigo-500 hover:from-blue-700 hover:to-indigo-600 text-white font-medium py-4 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
-        >
-          {isProcessing ? (
-            <>
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              {uploadProgress < 100 ? 'Uploading Data...' : 'Minting NFT...'}
-            </>
-          ) : completionPercentage === 100 ? (
-            <>
-              <Lock className="w-5 h-5" />
- 🔒 Secure & Mint Biometric NFT
-            </>
-          ) : (
-            `Complete All Scans First (${completionPercentage}%)`
-          )}
-        </button>
-        
-        {onClose && (
-          <button
-            onClick={onClose}
-            disabled={isProcessing}
-            className="w-full bg-gray-800 hover:bg-gray-700 text-gray-200 font-medium py-3 rounded-xl transition-all duration-200 disabled:opacity-50"
-          >
-            {completionPercentage > 0 ? 'Save Progress & Continue Later' : 'Cancel'}
-          </button>
-        )}
-      </div>
-    </div>
-  )
-}
-      
+          <li>
