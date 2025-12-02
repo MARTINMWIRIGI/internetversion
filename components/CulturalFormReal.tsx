@@ -98,7 +98,7 @@ export default function CulturalFormReal() {
               Saving to Database...
             </span>
           ) : (
-            '✨ Save to Supabase Database'
+            '✨ Save & Mint to Blockchain'
           )}
         </button>
         
@@ -107,7 +107,7 @@ export default function CulturalFormReal() {
             Your story will be saved to: <span className="text-cyan-300">rnfyixypahzfxwvgryja.supabase.co</span>
           </p>
           <p className="text-xs text-gray-500 mt-1">
-            Check Supabase Dashboard to see your saved stories
+            Check your OpenSea Dashboard to see your saved stories
           </p>
         </div>
       </div>
