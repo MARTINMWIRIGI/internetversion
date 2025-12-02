@@ -52,7 +52,7 @@ export default function BiometricFormSimple({ onClose, onComplete, userId }: Bio
   }, [scanStatus])
 
   // Helper function to hash data
-  const hashData = async (data: any): Promise<string> => {
+  {
     const dataString = typeof data === 'string' ? data : JSON.stringify(data)
     const encoder = new TextEncoder()
     const dataBuffer = encoder.encode(dataString)
