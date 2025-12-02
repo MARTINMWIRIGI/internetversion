@@ -98,7 +98,7 @@ export default function CulturalFormReal() {
               Saving to Database...
             </span>
           ) : (
-            '✨ Save & Mint to Blockchain'
+            '✨ Save to Mint'
           )}
         </button>
         
