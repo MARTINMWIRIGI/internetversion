@@ -584,4 +584,24 @@ export default function BiometricFormSimple({ onClose, onComplete, userId }: Bio
           ) : completionPercentage === 100 ? (
             <>
               <Lock className="w-5 h-5" />
+ 🔒 Secure & Mint Biometric NFT
+            </>
+          ) : (
+            `Complete All Scans First (${completionPercentage}%)`
+          )}
+        </button>
+        
+        {onClose && (
+          <button
+            onClick={onClose}
+            disabled={isProcessing}
+            className="w-full bg-gray-800 hover:bg-gray-700 text-gray-200 font-medium py-3 rounded-xl transition-all duration-200 disabled:opacity-50"
+          >
+            {completionPercentage > 0 ? 'Save Progress & Continue Later' : 'Cancel'}
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
       
