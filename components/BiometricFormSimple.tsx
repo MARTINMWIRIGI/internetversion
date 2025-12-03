@@ -320,10 +320,10 @@ const getWebGLRenderer = async (): Promise<string> => {
     const canvas = document.createElement('canvas');
     const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
     if (!gl) return 'no-webgl';
-    
+
     const debugInfo = (gl as any).getExtension('WEBGL_debug_renderer_info');
     if (debugInfo) {
-      const renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+      const renderer = (gl as any).getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
       return renderer ? String(renderer).substring(0, 100) : 'unknown';
     }
     return 'no-debug-info';
