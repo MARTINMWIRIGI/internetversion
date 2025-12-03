@@ -55,14 +55,20 @@ export default function BiometricFormSimple({ onClose, onComplete, userId }: Bio
   }, [scanStatus])
 
   // Helper function to hash data
-  {
+  // Helper function to hash data
+const hashData = async (data: any): Promise<string> => {
+  try {
     const dataString = typeof data === 'string' ? data : JSON.stringify(data)
     const encoder = new TextEncoder()
     const dataBuffer = encoder.encode(dataString)
     const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer)
     const hashArray = Array.from(new Uint8Array(hashBuffer))
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+  } catch (error) {
+    console.error('Hash error:', error)
+    return `hash_error_${Date.now()}`
   }
+}
 
   // Voice Recording
   const startVoiceRecording = async () => {
