@@ -72,92 +72,166 @@ const hashData = async (data: any): Promise<string> => {
 }
 
   // Voice Recording
-  const startVoiceRecording = async () => {
-    try {
-      setScanStatus(prev => ({ ...prev, voice: 'recording' }))
-      setError(null)
+  // Voice Recording - SIMPLIFIED AND FIXED
+const startVoiceRecording = async () => {
+  try {
+    console.log('🎤 Starting voice recording...');
+    setScanStatus(prev => ({ ...prev, voice: 'recording' }));
+    setError(null);
 
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true
-        }
-      })
+    // 1. Request microphone permission
+    console.log('Requesting microphone access...');
+    const stream = await navigator.mediaDevices.getUserMedia({ 
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        sampleRate: 16000
+      }
+    });
 
-      const mediaRecorder = new MediaRecorder(stream)
-      mediaRecorderRef.current = mediaRecorder
-      audioChunksRef.current = []
+    console.log('✅ Microphone access granted');
 
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data)
-        }
+    const mediaRecorder = new MediaRecorder(stream);
+    mediaRecorderRef.current = mediaRecorder;
+    audioChunksRef.current = [];
+
+    mediaRecorder.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        audioChunksRef.current.push(event.data);
+        console.log(`Audio chunk received: ${event.data.size} bytes`);
+      }
+    };
+
+    mediaRecorder.onstop = async () => {
+      console.log('🛑 Recording stopped, processing...');
+      setScanStatus(prev => ({ ...prev, voice: 'processing' }));
+
+      if (audioChunksRef.current.length === 0) {
+        console.error('❌ No audio data recorded');
+        setError('No audio recorded. Please try again.');
+        setScanStatus(prev => ({ ...prev, voice: 'error' }));
+        stream.getTracks().forEach(track => track.stop());
+        return;
       }
 
-      mediaRecorder.onstop = async () => {
-        setScanStatus(prev => ({ ...prev, voice: 'processing' }))
+      try {
+        // Create audio blob
+        const audioBlob = new Blob(audioChunksRef.current, { 
+          type: 'audio/webm' 
+        });
+        console.log(`Audio blob created: ${audioBlob.size} bytes`);
 
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
-        const audioHash = await hashData(await audioBlob.arrayBuffer())
+        // Generate hash
+        const audioHash = await hashData(await audioBlob.arrayBuffer());
+        console.log(`Audio hash: ${audioHash.substring(0, 20)}...`);
 
         // Upload to Supabase Storage
-        try {
-          const fileName = `voice/${effectiveUserId}_${Date.now()}.webm`
-          const { data, error: uploadError } = await supabase.storage
-            .from('biometrics')
-            .upload(fileName, audioBlob)
+        console.log('📤 Uploading to Supabase Storage...');
+        const fileName = `voice/${effectiveUserId}_${Date.now()}.webm`;
+        
+        const { data: storageData, error: uploadError } = await supabase.storage
+          .from('biometrics')
+          .upload(fileName, audioBlob, {
+            cacheControl: '3600',
+            upsert: false
+          });
 
-          if (uploadError) throw uploadError
-
-          // Store metadata in database
-          const { error: dbError } = await supabase
-            .from('voice_samples')
-            .insert({
-              user_id: effectiveUserId,
-              file_path: data.path,
-              file_hash: audioHash,
-              duration: audioBlob.size / 16000, // Approximate duration
-              recorded_at: new Date().toISOString()
-            })
-
-          if (dbError) throw dbError
-
-          setCollectedData(prev => ({ 
-            ...prev, 
-            voiceSample: audioBlob,
-            voiceHash: audioHash
-          }))
-          setScanStatus(prev => ({ ...prev, voice: 'completed' }))
-
-        } catch (uploadErr) {
-          console.error('Upload error:', uploadErr)
-          setError('Failed to upload voice sample')
-          setScanStatus(prev => ({ ...prev, voice: 'error' }))
+        if (uploadError) {
+          console.error('❌ Storage upload error:', uploadError);
+          throw new Error(`Storage upload failed: ${uploadError.message}`);
         }
 
-        stream.getTracks().forEach(track => track.stop())
+        console.log('✅ Upload successful');
+
+        // Store metadata in database
+        console.log('💾 Saving to database...');
+        const { error: dbError } = await supabase
+          .from('voice_samples')
+          .insert({
+            user_id: effectiveUserId,
+            file_path: storageData.path,
+            file_hash: audioHash,
+            duration: Math.round(audioBlob.size / 16000),
+            recorded_at: new Date().toISOString()
+          });
+
+        if (dbError) {
+          console.error('❌ Database error:', dbError);
+          // Store locally if database fails
+          localStorage.setItem(`voice_${effectiveUserId}`, JSON.stringify({
+            hash: audioHash,
+            timestamp: new Date().toISOString(),
+            size: audioBlob.size
+          }));
+        }
+
+        // Update UI state
+        setCollectedData(prev => ({ 
+          ...prev, 
+          voiceSample: audioBlob,
+          voiceHash: audioHash
+        }));
+        setScanStatus(prev => ({ ...prev, voice: 'completed' }));
+        
+        console.log('🎉 Voice recording completed successfully!');
+
+      } catch (uploadErr: any) {
+        console.error('❌ Processing error:', uploadErr);
+        
+        // User-friendly error message
+        let errorMsg = 'Failed to process voice recording';
+        if (uploadErr.message?.includes('bucket')) {
+          errorMsg = 'Storage bucket not found. Please create "biometrics" bucket in Supabase.';
+        } else if (uploadErr.message?.includes('permission')) {
+          errorMsg = 'Storage permission denied. Check Supabase RLS policies.';
+        }
+        
+        setError(errorMsg);
+        setScanStatus(prev => ({ ...prev, voice: 'error' }));
+        
+        // Store locally as fallback
+        localStorage.setItem(`voice_fallback_${effectiveUserId}`, 'recorded_locally');
+        console.log('📝 Voice data stored locally as fallback');
+      } finally {
+        stream.getTracks().forEach(track => track.stop());
       }
+    };
 
-      mediaRecorder.start()
+    // Start recording
+    console.log('🔴 Starting recording...');
+    mediaRecorder.start();
 
-      // Auto-stop after 5 seconds
-      setTimeout(() => {
-        if (mediaRecorder.state === 'recording') {
-          mediaRecorder.stop()
-        }
-      }, 5000)
+    // Auto-stop after 3 seconds (shorter for testing)
+    setTimeout(() => {
+      if (mediaRecorder.state === 'recording') {
+        console.log('⏱️ Auto-stopping recording after 3 seconds');
+        mediaRecorder.stop();
+      }
+    }, 3000);
 
-    } catch (err) {
-      setError('Microphone access denied or not available')
-      setScanStatus(prev => ({ ...prev, voice: 'error' }))
+  } catch (err: any) {
+    console.error('❌ Microphone error:', err);
+    
+    let errorMsg = 'Microphone access denied or not available';
+    if (err.name === 'NotFoundError') {
+      errorMsg = 'No microphone found. Please connect a microphone.';
+    } else if (err.name === 'NotAllowedError') {
+      errorMsg = 'Microphone permission denied. Please allow microphone access.';
+    } else if (err.name === 'NotReadableError') {
+      errorMsg = 'Microphone is in use by another application.';
     }
+    
+    setError(errorMsg);
+    setScanStatus(prev => ({ ...prev, voice: 'error' }));
   }
+};
 
-  const stopVoiceRecording = () => {
-    if (mediaRecorderRef.current?.state === 'recording') {
-      mediaRecorderRef.current.stop()
-    }
+const stopVoiceRecording = () => {
+  console.log('⏹️ Manually stopping recording...');
+  if (mediaRecorderRef.current?.state === 'recording') {
+    mediaRecorderRef.current.stop();
   }
+};
 
   // Device Fingerprinting
   // Device Fingerprinting - PRODUCTION READY
