@@ -7,6 +7,9 @@ import {
   Upload
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+// Add these imports
+import { getDeviceFingerprint } from '@/lib/fingerprintjs'
+
 
 interface BiometricFormSimpleProps {
   onClose?: () => void;
