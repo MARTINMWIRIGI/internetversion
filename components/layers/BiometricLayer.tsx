@@ -12,9 +12,9 @@ export default function BiometricLayer() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <header className="text-center mb-10">
-          <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
-            Biometric Authentication Layer
-          </h1>
+          <h2 className="text-5xl font-bold mb-4 bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
+            Biometric Layer
+          </h2>
           <p className="text-gray-300 max-w-2xl mx-auto">
             Secure your digital identity with multi-factor biometric verification. 
             Your unique biological traits create an unforgeable security layer.
