@@ -45,7 +45,8 @@ export default function BiometricFormSimple({ onClose, onComplete, userId }: Bio
   const [isProcessing, setIsProcessing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [uploadProgress, setUploadProgress] = useState(0)
-
+// Add this line after your other state variables
+const [sessionStartTime] = useState(Date.now())
   // Update completion percentage
   useEffect(() => {
     const statuses = Object.values(scanStatus)
