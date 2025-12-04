@@ -154,6 +154,7 @@ const collectFingerprint = async () => {
   }
 };
 // FACIAL RECOGNITION
+// FACIAL RECOGNITION
 const startCamera = async () => {
   try {
     setError(null);
@@ -251,6 +252,7 @@ const resetFacialCapture = () => {
   setIsCapturing(false);
   setScanStatus(prev => ({ ...prev, facial: 'idle' }));
 };
+
 // Create Biometric Session
 const createBiometricSession = async (): Promise<string> => {
   setIsProcessing(true)
