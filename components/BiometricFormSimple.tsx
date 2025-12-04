@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { 
   Mic, Fingerprint, Brain, Camera,  // Changed Shield to Camera
-  MicOff, Lock, AlertCircle,
+  MicOff, Lock, AlertCircle,Shield
   Upload
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
