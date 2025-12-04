@@ -12,9 +12,9 @@ export default function BiometricLayer() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <header className="text-center mb-10">
-          <h2 className="text-5xl font-bold mb-4 bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
+          <h3 className="text-5xl font-bold mb-4 bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
             Biometric Layer
-          </h2>
+          </h3>
           <p className="text-gray-300 max-w-2xl mx-auto">
             Secure your digital identity with multi-factor biometric verification. 
             Your unique biological traits create an unforgeable security layer.
@@ -28,14 +28,12 @@ export default function BiometricLayer() {
             <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-8 border border-gray-700">
               <h2 className="text-2xl font-semibold mb-4 text-cyan-300">📋 How It Works</h2>
               <ol className="space-y-4 list-decimal pl-5">
-                <li className="text-gray-300">
-                  <span className="font-medium text-white">Voice Recording</span> - Speak the passphrase to capture unique vocal patterns
-                </li>
+                
                 <li className="text-gray-300">
                   <span className="font-medium text-white">Device Fingerprinting</span> - Analyze browser and device characteristics
                 </li>
                 <li className="text-gray-300">
-                  <span className="font-medium text-white">Behavioral Analysis</span> - Monitor typing rhythm and interaction patterns
+                  <span className="font-medium text-white">Facial Analysis</span> - Monitor facial patterns, rhythm and interaction patterns for behavioral analysis.
                 </li>
                 <li className="text-gray-300">
                   <span className="font-medium text-white">NFT Minting</span> - Generate a unique digital certificate of your biometric identity
@@ -110,7 +108,7 @@ export default function BiometricLayer() {
                       <div className="w-10 h-10 bg-green-900/30 rounded-lg flex items-center justify-center mr-4">
                         <span className="text-green-400">3</span>
                       </div>
-                      <span>Behavioral Analysis</span>
+                      <span>Facial Analysis</span>
                     </div>
                     <span className="text-gray-400">~45 seconds</span>
                   </div>
