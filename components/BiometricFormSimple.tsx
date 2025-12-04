@@ -633,27 +633,38 @@ return (
   ))}
 </div>
       {/* Security Info */}
+            {/* Security Info */}
       <div className="mb-6 p-4 bg-gray-800/30 rounded-xl">
         <div className="flex items-center gap-3 mb-2">
-          <Shield className="w-5 h-5 text-green-400" />
-          <h4 className="font-medium text-white">Data Storage</h4>
+          <Shield className="w-5 h-5 text-blue-400" />
+          <h4 className="font-medium text-white">Identity Preservation</h4>
         </div>
         <ul className="space-y-1 text-sm text-gray-400">
-          <li>• Device fingerprints: Hashed</li>
-          <li>• Facial biometrics: Hashed facial patterns stored</li>
-          <li>• All data linked to user ID: {effectiveUserId.substring(0, 8)}...</li>
-          <li>• Data ready for NFT minting on blockchain</li>
+          <li>• Device fingerprint: Hashed & stored securely</li>
+          <li>• Facial biometrics: Encrypted facial patterns stored</li>
+          <li>• All data linked to your unique identity</li>
+          <li>• Ready for future verification and authentication</li>
         </ul>
       </div>
 
       {/* Actions */}
       <div className="space-y-3">
         <button
-          onClick={handleCompleteAll}
+          onClick={handlePreserveIdentity}
           disabled={isProcessing || completionPercentage < 100}
-          className="w-full bg-gradient-to-r from-green-600 to-emerald-500 hover:from-green-700 hover:to-emerald-600 text-white font-medium py-3 rounded-xl transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-gradient-to-r from-blue-600 to-indigo-500 hover:from-blue-700 hover:to-indigo-600 text-white font-medium py-3 rounded-xl transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
-          {isProcessing ? 'Processing...' : 'Mint Biometric NFT'}
+          {isProcessing ? (
+            <>
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+              <span>Preserving Identity...</span>
+            </>
+          ) : (
+            <>
+              <Shield className="w-5 h-5" />
+              <span>Preserve Identity</span>
+            </>
+          )}
         </button>
 
         {onClose && (
