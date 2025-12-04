@@ -639,7 +639,7 @@ return (
           <h4 className="font-medium text-white">Data Storage</h4>
         </div>
         <ul className="space-y-1 text-sm text-gray-400">
-          <li>• Device fingerprints: Hashed & stored in Supabase</li>
+          <li>• Device fingerprints: Hashed</li>
           <li>• Facial biometrics: Hashed facial patterns stored</li>
           <li>• All data linked to user ID: {effectiveUserId.substring(0, 8)}...</li>
           <li>• Data ready for NFT minting on blockchain</li>
