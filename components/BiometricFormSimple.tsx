@@ -1,45 +1,33 @@
 "use client"
 
-
-
-
 import { useState, useEffect, useRef } from 'react'
 import { 
-  Mic, Fingerprint, Brain, Camera,
-  MicOff, Lock, AlertCircle, Shield,
+  Fingerprint, Camera,
+  Lock, AlertCircle, Shield,
   Upload
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-import { getDeviceFingerprint } from '@/lib/fingerprintjs'
 
 interface BiometricFormSimpleProps {
   onClose?: () => void;
   onComplete?: (sessionId: string) => void;
-  userId?: string;  // Made optional
+  userId?: string;
 }
 export default function BiometricFormSimple({ onClose, onComplete, userId }: BiometricFormSimpleProps) {
   // Generate a temporary user ID if not provided
   const effectiveUserId = userId || `temp-user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
-  const audioChunksRef = useRef<Blob[]>([])
-  const webcamRef = useRef<any>(null)  // ADDED for facial recognition
+  const webcamRef = useRef<any>(null)
 
   const [scanStatus, setScanStatus] = useState({
-    voice: 'idle',
     fingerprint: 'idle',
-    emotional: 'idle',
-    facial: 'idle'  // CHANGED: behavioral → facial
+    facial: 'idle'
   })
 
   const [collectedData, setCollectedData] = useState({
-    voiceSample: null as Blob | null,
-    voiceHash: null as string | null,
     deviceFingerprint: '',
-    emotionalResponses: [] as string[],
-    emotionalPatternHash: null as string | null,
-    facialHash: null as string | null,        // CHANGED: behavioralHash → facialHash
-    facialImage: null as string | null        // NEW: for storing captured selfie
+    facialHash: null as string | null,
+    facialImage: null as string | null
   })
 
   const [completionPercentage, setCompletionPercentage] = useState(0)
@@ -47,8 +35,8 @@ export default function BiometricFormSimple({ onClose, onComplete, userId }: Bio
   const [error, setError] = useState<string | null>(null)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [sessionStartTime] = useState(Date.now())
-  const [isCapturing, setIsCapturing] = useState(false)     // NEW: for camera
-  const [capturedImage, setCapturedImage] = useState<string | null>(null)  // NEW: selfie
+  const [isCapturing, setIsCapturing] = useState(false)
+  const [capturedImage, setCapturedImage] = useState<string | null>(null)
 // Update completion percentage
 useEffect(() => {
   const statuses = Object.values(scanStatus)
@@ -71,249 +59,46 @@ const hashData = async (data: any): Promise<string> => {
     return `hash_error_${Date.now()}`
   }
 }
-// Voice Recording - SIMPLIFIED AND FIXED
-const startVoiceRecording = async () => {
-  try {
-    console.log('🎤 Starting voice recording...');
-    setScanStatus(prev => ({ ...prev, voice: 'recording' }));
-    setError(null);
-
-    // 1. Request microphone permission
-    console.log('Requesting microphone access...');
-    const stream = await navigator.mediaDevices.getUserMedia({ 
-      audio: {
-        echoCancellation: true,
-        noiseSuppression: true,
-        sampleRate: 16000
-      }
-    });
-
-    console.log('✅ Microphone access granted');
-
-    const mediaRecorder = new MediaRecorder(stream);
-    mediaRecorderRef.current = mediaRecorder;
-    audioChunksRef.current = [];
-
-    mediaRecorder.ondataavailable = (event) => {
-      if (event.data.size > 0) {
-        audioChunksRef.current.push(event.data);
-        console.log(`Audio chunk received: ${event.data.size} bytes`);
-      }
-    };
-
-    mediaRecorder.onstop = async () => {
-      console.log('🛑 Recording stopped, processing...');
-      setScanStatus(prev => ({ ...prev, voice: 'processing' }));
-
-      if (audioChunksRef.current.length === 0) {
-        console.error('❌ No audio data recorded');
-        setError('No audio recorded. Please try again.');
-        setScanStatus(prev => ({ ...prev, voice: 'error' }));
-        stream.getTracks().forEach(track => track.stop());
-        return;
-      }
-
-      try {
-        // Create audio blob
-        const audioBlob = new Blob(audioChunksRef.current, { 
-          type: 'audio/webm' 
-        });
-        console.log(`Audio blob created: ${audioBlob.size} bytes`);
-
-        // Generate hash
-        const audioHash = await hashData(await audioBlob.arrayBuffer());
-        console.log(`Audio hash: ${audioHash.substring(0, 20)}...`);
-
-        // Upload to Supabase Storage
-        console.log('📤 Uploading to Supabase Storage...');
-        const fileName = `voice/${effectiveUserId}_${Date.now()}.webm`;
-        
-        const { data: storageData, error: uploadError } = await supabase.storage
-          .from('biometrics')
-          .upload(fileName, audioBlob, {
-            cacheControl: '3600',
-            upsert: false
-          });
-
-        if (uploadError) {
-          console.error('❌ Storage upload error:', uploadError);
-          throw new Error(`Storage upload failed: ${uploadError.message}`);
-        }
-
-        console.log('✅ Upload successful');
-
-        // Store metadata in database
-        console.log('💾 Saving to database...');
-        const { error: dbError } = await supabase
-          .from('voice_samples')
-          .insert({
-            user_id: effectiveUserId,
-            file_path: storageData.path,
-            file_hash: audioHash,
-            duration: Math.round(audioBlob.size / 16000),
-            recorded_at: new Date().toISOString()
-          });
-
-        if (dbError) {
-          console.error('❌ Database error:', dbError);
-          // Store locally if database fails
-          localStorage.setItem(`voice_${effectiveUserId}`, JSON.stringify({
-            hash: audioHash,
-            timestamp: new Date().toISOString(),
-            size: audioBlob.size
-          }));
-        }
-
-        // Update UI state
-        setCollectedData(prev => ({ 
-          ...prev, 
-          voiceSample: audioBlob,
-          voiceHash: audioHash
-        }));
-        setScanStatus(prev => ({ ...prev, voice: 'completed' }));
-        
-        console.log('🎉 Voice recording completed successfully!');
-
-      } catch (uploadErr: any) {
-        console.error('❌ Processing error:', uploadErr);
-        
-        // User-friendly error message
-        let errorMsg = 'Failed to process voice recording';
-        if (uploadErr.message?.includes('bucket')) {
-          errorMsg = 'Storage bucket not found. Please create "biometrics" bucket in Supabase.';
-        } else if (uploadErr.message?.includes('permission')) {
-          errorMsg = 'Storage permission denied. Check Supabase RLS policies.';
-        }
-        
-        setError(errorMsg);
-        setScanStatus(prev => ({ ...prev, voice: 'error' }));
-        
-        // Store locally as fallback
-        localStorage.setItem(`voice_fallback_${effectiveUserId}`, 'recorded_locally');
-        console.log('📝 Voice data stored locally as fallback');
-      } finally {
-        stream.getTracks().forEach(track => track.stop());
-      }
-    };
-
-    // Start recording
-    console.log('🔴 Starting recording...');
-    mediaRecorder.start();
-
-    // Auto-stop after 3 seconds (shorter for testing)
-    setTimeout(() => {
-      if (mediaRecorder.state === 'recording') {
-        console.log('⏱️ Auto-stopping recording after 3 seconds');
-        mediaRecorder.stop();
-      }
-    }, 3000);
-
-  } catch (err: any) {
-    console.error('❌ Microphone error:', err);
-    
-    let errorMsg = 'Microphone access denied or not available';
-    if (err.name === 'NotFoundError') {
-      errorMsg = 'No microphone found. Please connect a microphone.';
-    } else if (err.name === 'NotAllowedError') {
-      errorMsg = 'Microphone permission denied. Please allow microphone access.';
-    } else if (err.name === 'NotReadableError') {
-      errorMsg = 'Microphone is in use by another application.';
-    }
-    
-    setError(errorMsg);
-    setScanStatus(prev => ({ ...prev, voice: 'error' }));
-  }
-};
-
-const stopVoiceRecording = () => {
-  console.log('⏹️ Manually stopping recording...');
-  if (mediaRecorderRef.current?.state === 'recording') {
-    mediaRecorderRef.current.stop();
-  }
-};
-// Device Fingerprinting - PRODUCTION READY
+// Device Fingerprinting
 const collectFingerprint = async () => {
   console.log('[Fingerprint] Starting collection...');
   setScanStatus(prev => ({ ...prev, fingerprint: 'processing' }));
   setError(null);
 
   try {
-    // ====================
-    // 1. COLLECT DEVICE DATA
-    // ====================
+    // Collect device data
     const deviceInfo: Record<string, any> = {
-      // Browser Identity
       userAgent: navigator.userAgent,
       platform: navigator.platform,
       vendor: navigator.vendor,
-      
-      // Language & Time
       language: navigator.language,
       languages: JSON.stringify(navigator.languages || []),
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      timezoneOffset: new Date().getTimezoneOffset(),
-      
-      // Screen Details
       screenWidth: window.screen.width,
       screenHeight: window.screen.height,
       screenColorDepth: window.screen.colorDepth,
-      screenPixelDepth: window.screen.pixelDepth,
       devicePixelRatio: window.devicePixelRatio,
-      
-      // Hardware (if available)
       hardwareConcurrency: navigator.hardwareConcurrency || null,
       deviceMemory: (navigator as any).deviceMemory || null,
       maxTouchPoints: navigator.maxTouchPoints || 0,
-      
-      // Connection
       connectionType: (navigator as any).connection?.effectiveType || 'unknown',
       connectionDownlink: (navigator as any).connection?.downlink || null,
-      
-      // WebGL Fingerprint (advanced)
-      webglRenderer: await getWebGLRenderer(),
-      
-      // Canvas Fingerprint
-      canvasHash: await getCanvasFingerprint(),
-      
-      // Fonts (sampled)
-      fonts: await getFontList(),
-      
-      // Timestamps
       sessionStart: sessionStartTime,
-      collectionTime: Date.now(),
-      userTimezone: new Date().toString().match(/\((.*?)\)/)?.[1] || 'unknown'
+      collectionTime: Date.now()
     };
 
-    // Clean up data for JSON
-    Object.keys(deviceInfo).forEach(key => {
-      if (deviceInfo[key] === undefined || deviceInfo[key] === null) {
-        delete deviceInfo[key];
-      }
-    });
-
-    console.log('[Fingerprint] Device info collected:', deviceInfo);
-
-    // ====================
-    // 2. GENERATE FINGERPRINT HASH
-    // ====================
+    // Generate fingerprint hash
     const fingerprintString = JSON.stringify({
       ua: deviceInfo.userAgent,
       pl: deviceInfo.platform,
       tz: deviceInfo.timezone,
       res: `${deviceInfo.screenWidth}x${deviceInfo.screenHeight}`,
-      lang: deviceInfo.language,
-      canvas: deviceInfo.canvasHash,
-      webgl: deviceInfo.webglRenderer
+      lang: deviceInfo.language
     });
 
     const fingerprint = await hashData(fingerprintString);
-    console.log('[Fingerprint] Generated hash:', fingerprint);
 
-    // ====================
-    // 3. INSERT INTO SUPABASE
-    // ====================
-    console.log('[Fingerprint] Inserting into database...');
-    
+    // Insert into Supabase
     const { data, error } = await supabase
       .from('device_fingerprints')
       .insert({
@@ -326,17 +111,11 @@ const collectFingerprint = async () => {
       .single();
 
     if (error) {
-      console.error('[Fingerprint] Database error:', {
-        code: error.code,
-        message: error.message,
-        details: error.details,
-        hint: error.hint
-      });
+      console.error('[Fingerprint] Database error:', error);
       
-      // Try alternative table name (case sensitivity)
-      console.log('[Fingerprint] Trying alternative table name...');
+      // Try alternative table name
       const { data: altData, error: altError } = await supabase
-        .from('DeviceFingerprints')  // Try capitalized
+        .from('DeviceFingerprints')
         .insert({
           user_id: effectiveUserId,
           device_info: deviceInfo,
@@ -347,7 +126,7 @@ const collectFingerprint = async () => {
         .single();
       
       if (altError) {
-        throw new Error(`Database insert failed: ${error.message}. Also tried alternative table.`);
+        throw new Error(`Database insert failed: ${error.message}`);
       }
       
       console.log('[Fingerprint] Inserted via alternative table:', altData);
@@ -365,129 +144,16 @@ const collectFingerprint = async () => {
   } catch (err: any) {
     console.error('[Fingerprint] ❌ Collection failed:', err);
     
-    // User-friendly error message
     let errorMsg = 'Failed to collect device fingerprint';
-    
-    if (err.message?.includes('permission denied')) {
-      errorMsg = 'Database permission denied. Please check Supabase RLS policies.';
-    } else if (err.message?.includes('does not exist')) {
+    if (err.message?.includes('does not exist')) {
       errorMsg = 'Database table not found. Please create device_fingerprints table.';
-    } else if (err.message?.includes('network')) {
-      errorMsg = 'Network error. Please check your connection.';
     }
     
     setError(errorMsg);
     setScanStatus(prev => ({ ...prev, fingerprint: 'error' }));
   }
 };
-// ====================
-// HELPER FUNCTIONS
-// ====================
-
-// Get WebGL Renderer
-const getWebGLRenderer = async (): Promise<string> => {
-  try {
-    const canvas = document.createElement('canvas');
-    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-    if (!gl) return 'no-webgl';
-
-    const debugInfo = (gl as any).getExtension('WEBGL_debug_renderer_info');
-    if (debugInfo) {
-      const renderer = (gl as any).getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
-      return renderer ? String(renderer).substring(0, 100) : 'unknown';
-    }
-    return 'no-debug-info';
-  } catch {
-    return 'error';
-  }
-};
-
-// Get Canvas Fingerprint
-const getCanvasFingerprint = async (): Promise<string> => {
-  try {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return 'no-canvas';
-    
-    canvas.width = 200;
-    canvas.height = 50;
-    
-    // Draw text
-    ctx.textBaseline = 'top';
-    ctx.font = '14px Arial';
-    ctx.fillStyle = '#f60';
-    ctx.fillRect(0, 0, 200, 50);
-    ctx.fillStyle = '#069';
-    ctx.fillText('BiometricFingerprint', 10, 10);
-    
-    // Get data URL
-    const dataUrl = canvas.toDataURL();
-    return await hashData(dataUrl.substring(0, 100));
-  } catch {
-    return 'error';
-  }
-};
-
-// Get Font List (sampled)
-const getFontList = async (): Promise<string> => {
-  try {
-    const fonts = [
-      'Arial', 'Helvetica', 'Times New Roman', 'Times', 'Courier New',
-      'Courier', 'Verdana', 'Georgia', 'Palatino', 'Garamond',
-      'Bookman', 'Comic Sans MS', 'Trebuchet MS', 'Arial Black', 'Impact'
-    ];
-    
-    const available = [];
-    for (const font of fonts.slice(0, 5)) { // Check first 5 only
-      if (document.fonts.check(`12px "${font}"`)) {
-        available.push(font);
-      }
-    }
-    
-    return available.join(',');
-  } catch {
-    return 'unknown';
-  }
-};
-
-// Emotional Pattern Collection
-const collectEmotionalPattern = async () => {
-  setScanStatus(prev => ({ ...prev, emotional: 'collecting' }))
-
-  // Simple emotional pattern collection
-  const emotions = ['happy', 'calm', 'excited', 'focused']
-  const responses = emotions.map(emotion => 
-    `Reported feeling ${emotion} at ${new Date().toLocaleTimeString()}`
-  )
-
-  try {
-    const patternHash = await hashData(responses.join('|'))
-
-    const { error } = await supabase
-      .from('emotional_patterns')
-      .insert({
-        user_id: effectiveUserId,
-        responses: responses,
-        pattern_hash: patternHash,
-        collected_at: new Date().toISOString()
-      })
-
-    if (error) throw error
-
-    setCollectedData(prev => ({ 
-      ...prev, 
-      emotionalResponses: responses,
-      emotionalPatternHash: patternHash
-    }))
-    setScanStatus(prev => ({ ...prev, emotional: 'completed' }))
-
-  } catch (err) {
-    console.error('Emotional pattern error:', err)
-    setError('Failed to save emotional patterns')
-    setScanStatus(prev => ({ ...prev, emotional: 'error' }))
-  }
-}
-// ================ FACIAL RECOGNITION (REPLACES BEHAVIORAL) ================
+// FACIAL RECOGNITION
 const startCamera = async () => {
   try {
     setError(null);
@@ -585,7 +251,6 @@ const resetFacialCapture = () => {
   setIsCapturing(false);
   setScanStatus(prev => ({ ...prev, facial: 'idle' }));
 };
-// ================ END FACIAL RECOGNITION ================
 // Create Biometric Session
 const createBiometricSession = async (): Promise<string> => {
   setIsProcessing(true)
@@ -597,12 +262,10 @@ const createBiometricSession = async (): Promise<string> => {
 
     setUploadProgress(30)
 
-    // Prepare session data INCLUDING FACIAL HASH
+    // Prepare session data
     const sessionData = {
-      voice_hash: collectedData.voiceHash,
       device_fingerprint: collectedData.deviceFingerprint,
-      emotional_pattern_hash: collectedData.emotionalPatternHash,
-      facial_hash: collectedData.facialHash, // CHANGED: behavioral_hash → facial_hash
+      facial_hash: collectedData.facialHash,
       collected_at: new Date().toISOString(),
       completion_percentage: completionPercentage
     }
@@ -683,20 +346,8 @@ const handleCompleteAll = async () => {
     setIsProcessing(false)
   }
 }
-// Scan Components - UPDATED WITH FACIAL RECOGNITION
+// Scan Components
 const scanComponents = [
-  {
-    id: 'voice',
-    label: 'Voice Biometrics',
-    icon: scanStatus.voice === 'recording' ? MicOff : Mic,
-    description: 'Record unique voice signature',
-    status: scanStatus.voice,
-    action: scanStatus.voice === 'idle' ? startVoiceRecording : 
-            scanStatus.voice === 'recording' ? stopVoiceRecording : null,
-    actionText: scanStatus.voice === 'idle' ? 'Start Recording' :
-                scanStatus.voice === 'recording' ? 'Stop Recording' :
-                scanStatus.voice === 'processing' ? 'Processing...' : '✅ Completed'
-  },
   {
     id: 'fingerprint',
     label: 'Device Fingerprint',
@@ -708,23 +359,13 @@ const scanComponents = [
                 scanStatus.fingerprint === 'idle' ? 'Scan Device' : '✅ Completed'
   },
   {
-    id: 'emotional',
-    label: 'Emotional Pattern',
-    icon: Brain,
-    description: 'Emotional response analysis',
-    status: scanStatus.emotional,
-    action: scanStatus.emotional === 'idle' ? collectEmotionalPattern : null,
-    actionText: scanStatus.emotional === 'collecting' ? 'Collecting...' :
-                scanStatus.emotional === 'idle' ? 'Analyze Emotions' : '✅ Completed'
-  },
-  {
-    id: 'facial',  // CHANGED: behavioral → facial
-    label: 'Facial Recognition',  // CHANGED
-    icon: Camera,  // CHANGED: Shield → Camera
-    description: 'Capture facial biometrics',  // CHANGED
-    status: scanStatus.facial,  // CHANGED: behavioral → facial
-    action: null, // We'll handle this separately in the render
-    actionText: 'Capture Selfie'  // CHANGED
+    id: 'facial',
+    label: 'Facial Recognition',
+    icon: Camera,
+    description: 'Capture facial biometrics',
+    status: scanStatus.facial,
+    action: null, // Handled separately in render
+    actionText: 'Capture Selfie'
   }
 ]
 return (
@@ -733,9 +374,9 @@ return (
       <div>
         <h3 className="text-xl font-bold text-white flex items-center gap-2">
           <Lock className="w-5 h-5" />
-          Complete Biometric Authentication
+          Biometric NFT Minting
         </h3>
-        <p className="text-sm text-gray-400">Collect unique biometric markers for NFT minting</p>
+        <p className="text-sm text-gray-400">Capture device & facial data for NFT</p>
         
         {/* User ID display */}
         <div className="mt-2 text-xs text-gray-500">
@@ -812,7 +453,7 @@ return (
           ? 'bg-green-900/20 border-green-500/30' 
           : scan.status === 'error'
           ? 'bg-red-900/20 border-red-500/30'
-          : scan.status === 'processing' || scanStatus.voice === 'recording' || scan.status === 'collecting'
+          : scan.status === 'processing'
           ? 'bg-blue-900/20 border-blue-500/30'
           : 'bg-gray-800/50 border-gray-700'
       }`}
@@ -821,14 +462,12 @@ return (
         <div className={`p-3 rounded-lg ${
           scan.status === 'completed' ? 'bg-green-500/20' :
           scan.status === 'error' ? 'bg-red-500/20' :
-          scan.status === 'processing' || scanStatus.voice === 'recording' || scan.status === 'collecting' 
-            ? 'bg-blue-500/20' : 'bg-gray-700'
+          scan.status === 'processing' ? 'bg-blue-500/20' : 'bg-gray-700'
         }`}>
           <scan.icon className={`w-6 h-6 ${
             scan.status === 'completed' ? 'text-green-400' :
             scan.status === 'error' ? 'text-red-400' :
-            scan.status === 'processing' || scanStatus.voice === 'recording' || scan.status === 'collecting'
-              ? 'text-blue-400' : 'text-gray-400'
+            scan.status === 'processing' ? 'text-blue-400' : 'text-gray-400'
           }`} />
         </div>
 
@@ -848,8 +487,6 @@ return (
                 {scan.status === 'completed' && '✅'}
                 {scan.status === 'error' && '❌'}
                 {scan.status === 'processing' && '⏳'}
-                {scanStatus.voice === 'recording' && '🎤'}
-                {scan.status === 'collecting' && '📊'}
               </div>
               <div className="text-xs text-gray-400">
                 {scan.status.charAt(0).toUpperCase() + scan.status.slice(1)}
@@ -857,7 +494,7 @@ return (
             </div>
           </div>
 
-          {/* ============ FACIAL RECOGNITION SPECIAL HANDLING ============ */}
+          {/* FACIAL RECOGNITION HANDLING */}
           {scan.id === 'facial' ? (
             <div className="mt-3 space-y-2">
               {!capturedImage ? (
@@ -924,12 +561,8 @@ return (
           ) : scan.action ? (
             <button
               onClick={() => scan.action?.()}
-              disabled={isProcessing || (scan.status !== 'idle' && scan.status !== 'recording')}
-              className={`mt-3 w-full py-2 px-4 rounded-lg text-sm font-medium transition-all ${
-                scan.status === 'recording'
-                  ? 'bg-red-600 hover:bg-red-700 text-white'
-                  : 'bg-gradient-to-r from-blue-600 to-indigo-500 hover:from-blue-700 hover:to-indigo-600 text-white'
-              } disabled:opacity-50 disabled:cursor-not-allowed`}
+              disabled={isProcessing || scan.status !== 'idle'}
+              className="mt-3 w-full py-2 px-4 bg-gradient-to-r from-blue-600 to-indigo-500 hover:from-blue-700 hover:to-indigo-600 text-white rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {scan.actionText}
             </button>
@@ -946,11 +579,10 @@ return (
           <h4 className="font-medium text-white">Data Storage</h4>
         </div>
         <ul className="space-y-1 text-sm text-gray-400">
-          <li>• Voice samples: Encrypted & stored in Supabase Storage</li>
-          <li>• Device fingerprints: Hashed for privacy</li>
-          <li>• Emotional patterns: Anonymized analysis</li>
+          <li>• Device fingerprints: Hashed & stored in Supabase</li>
           <li>• Facial biometrics: Hashed facial patterns stored</li>
           <li>• All data linked to user ID: {effectiveUserId.substring(0, 8)}...</li>
+          <li>• Data ready for NFT minting on blockchain</li>
         </ul>
       </div>
 
