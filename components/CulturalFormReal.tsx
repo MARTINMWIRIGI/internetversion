@@ -891,3 +891,343 @@ return (
           </motion.div>
         </div>
       </div>
+{/* Progress bar with animation */}
+<motion.div className="mb-8" layout>
+  <div className="flex justify-between text-sm text-gray-400 mb-2">
+    <span>Progress • Word {currentWordIndex + 1} of {LANGUAGE_ONTOLOGY_WORDS.length}</span>
+    <span>{Math.round(progress)}%</span>
+  </div>
+  <div className="h-3 bg-gray-800 rounded-full overflow-hidden relative">
+    <motion.div 
+      className="h-full bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 transition-all duration-1000"
+      initial={{ width: 0 }}
+      animate={{ width: `${progress}%` }}
+    />
+    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
+  </div>
+</motion.div>
+
+{/* Main training card */}
+<motion.div 
+  className="bg-gray-800/40 backdrop-blur-lg rounded-2xl border border-gray-700/50 p-6 md:p-8 mb-8"
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  key={currentWordIndex}
+>
+  {/* Word display with category */}
+  <div className="text-center mb-10">
+    <div className="inline-block px-6 py-2 bg-gray-900/80 rounded-full mb-4">
+      <span className="text-cyan-400 text-sm uppercase tracking-wider">
+        {currentWord?.category?.replace('_', ' ')}
+      </span>
+    </div>
+    
+    <motion.div 
+      className="inline-block px-8 py-6 bg-gradient-to-br from-gray-900/80 to-black/80 rounded-2xl mb-4 border border-gray-700/50"
+      whileHover={{ scale: 1.02 }}
+    >
+      <span className="text-gray-400 text-sm uppercase tracking-wider">
+        English Word
+      </span>
+      <motion.div 
+        className="text-4xl md:text-5xl font-bold text-white mt-3 mb-2"
+        key={currentWord?.id}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        {currentWord?.english}
+      </motion.div>
+      <div className="text-gray-500 text-sm">
+        {currentWord?.partOfSpeech}
+      </div>
+    </motion.div>
+  </div>
+
+  {/* Translation input with suggestions */}
+  <div className="mb-8">
+    <label className="block text-gray-300 mb-3 text-lg flex items-center gap-2">
+      <span className="bg-gradient-to-r from-cyan-500 to-blue-500 w-2 h-5 rounded-full"></span>
+      {currentLang?.name} Translation
+    </label>
+    <motion.div whileHover={{ scale: 1.01 }}>
+      <input
+        type="text"
+        value={currentTranslation}
+        onChange={(e) => handleTranslationChange(e.target.value)}
+        placeholder={`Type the ${currentLang?.name} word here...`}
+        className="w-full bg-gray-900/80 border-2 border-gray-700 rounded-2xl px-6 py-5 text-white text-xl placeholder-gray-500 focus:outline-none focus:border-cyan-500 transition-colors"
+      />
+    </motion.div>
+    
+    {/* Translation suggestions */}
+    {!currentTranslation && (
+      <div className="mt-4 p-4 bg-gray-900/50 rounded-xl">
+        <div className="text-gray-400 text-sm mb-2">Need help? Try these:</div>
+        <div className="flex flex-wrap gap-2">
+          {['mũndũ', 'mtu', 'msee', 'person'].slice(0, 3).map((suggestion, i) => (
+            <button
+              key={i}
+              onClick={() => handleTranslationChange(suggestion)}
+              className="px-3 py-1 bg-gray-800 hover:bg-gray-700 rounded-lg text-gray-300 text-sm transition-colors"
+            >
+              {suggestion}
+            </button>
+          ))}
+        </div>
+      </div>
+    )}
+  </div>
+          {/* Interactive audio section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            {/* Listen section */}
+            <motion.div 
+              className="bg-gradient-to-br from-gray-900/60 to-gray-800/60 rounded-2xl p-6 border border-gray-700/50"
+              whileHover={{ y: -5 }}
+            >
+              <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                <span className="text-cyan-400 text-xl">🔊</span> 
+                <span>Listen to Pronunciation</span>
+                {isPlaying && (
+                  <span className="ml-auto text-xs px-2 py-1 bg-cyan-500/20 text-cyan-300 rounded">
+                    Playing...
+                  </span>
+                )}
+              </h3>
+              
+              <motion.button
+                onClick={() => speakWord(currentTranslation || currentWord.english)}
+                disabled={isPlaying || !currentTranslation}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className={`
+                  w-full py-4 rounded-xl font-semibold text-lg
+                  ${currentTranslation ? 
+                    'bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white shadow-lg shadow-cyan-500/20' :
+                    'bg-gray-800 text-gray-500 cursor-not-allowed'
+                  }
+                  transition-all duration-200
+                  disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none
+                `}
+              >
+                {isPlaying ? (
+                  <span className="flex items-center justify-center gap-3">
+                    <div className="flex gap-1">
+                      {[...Array(3)].map((_, i) => (
+                        <motion.div
+                          key={i}
+                          className="w-1 bg-white rounded-full"
+                          animate={{ height: ['10px', '20px', '10px'] }}
+                          transition={{ duration: 0.5, repeat: Infinity, delay: i * 0.1 }}
+                        />
+                      ))}
+                    </div>
+                    Speaking...
+                  </span>
+                ) : (
+                  <span className="flex items-center justify-center gap-3">
+                    🔊 Play Sound
+                    <span className="text-sm opacity-75">({VOICE_PRESETS[selectedLanguage]?.lang})</span>
+                  </span>
+                )}
+              </motion.button>
+              
+              <div className="mt-4 text-sm text-gray-400 flex items-center gap-2">
+                <span className="w-2 h-2 bg-cyan-500 rounded-full"></span>
+                Hear how the word should sound in {currentLang?.name}
+              </div>
+            </motion.div>
+
+            {/* Record section */}
+            <motion.div 
+              className="bg-gradient-to-br from-gray-900/60 to-gray-800/60 rounded-2xl p-6 border border-gray-700/50"
+              whileHover={{ y: -5 }}
+            >
+              <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                <span className="text-pink-400 text-xl">🎤</span> 
+                <span>Record Your Voice</span>
+                {userRecording && (
+                  <span className="ml-auto text-xs px-2 py-1 bg-green-500/20 text-green-300 rounded">
+                    ✓ Recorded
+                  </span>
+                )}
+              </h3>
+              
+              <motion.button
+                onClick={isRecording ? stopRecording : startRecording}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className={`
+                  w-full py-4 rounded-xl font-semibold text-lg mb-4
+                  ${isRecording ? 
+                    'bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white shadow-lg shadow-red-500/20 animate-pulse' :
+                    'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg shadow-purple-500/20'
+                  }
+                  transition-all duration-200
+                `}
+              >
+                <span className="flex items-center justify-center gap-3">
+                  🎤 {isRecording ? 'Stop Recording' : 'Start Recording'}
+                  {isRecording && (
+                    <span className="w-3 h-3 bg-white rounded-full animate-ping"></span>
+                  )}
+                </span>
+              </motion.button>
+              
+              {userRecording && (
+                <motion.div 
+                  className="mt-4 p-4 bg-gray-800/50 rounded-xl"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                >
+                  <audio
+                    src={userRecording}
+                    controls
+                    className="w-full"
+                  />
+                  <div className="flex items-center gap-2 mt-3">
+                    <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                    <p className="text-green-400 text-sm">
+                      Great! Your pronunciation has been saved
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+              
+              <div className="mt-4 text-sm text-gray-400 flex items-center gap-2">
+                <span className="w-2 h-2 bg-pink-500 rounded-full"></span>
+                Practice saying the word in {currentLang?.name}
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Action buttons with XP display */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <motion.button
+              onClick={skipWord}
+              disabled={saving}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="flex-1 py-4 bg-gray-700/50 hover:bg-gray-600/50 text-white rounded-xl font-semibold transition-colors border border-gray-600/50"
+            >
+              Skip Word →
+            </motion.button>
+            
+            <motion.button
+              onClick={saveWord}
+              disabled={saving || (!currentTranslation && !userRecording)}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className={`
+                flex-1 py-4 rounded-xl font-semibold relative overflow-hidden
+                ${saving || (!currentTranslation && !userRecording) ?
+                  'bg-gray-800/50 text-gray-500 cursor-not-allowed border border-gray-700/50' :
+                  'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg shadow-green-500/20'
+                }
+                transition-all duration-200
+              `}
+            >
+              {saving ? (
+                <span className="flex items-center justify-center gap-3">
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/30 border-t-white"></div>
+                  Saving to Database...
+                </span>
+              ) : (
+                <span className="flex items-center justify-center gap-3">
+                  💾 Save & Next Word
+                  <span className="text-sm bg-white/20 px-2 py-1 rounded-full">
+                    +10 XP
+                  </span>
+                </span>
+              )}
+              
+              {/* Shimmer effect */}
+              {!saving && currentTranslation && (
+                <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
+              )}
+            </motion.button>
+          </div>
+          
+          {/* Community stats for this word */}
+          <div className="mt-8 pt-6 border-t border-gray-700/50">
+            <div className="text-center text-gray-400 text-sm">
+              <span className="text-cyan-300">{COMMUNITY_SCORES.find(c => c.language.toLowerCase() === selectedLanguage)?.totalWords.toLocaleString() || '0'}</span> 
+              {' '}words collected by the community for {currentLang?.name}
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Stats and achievements preview */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-gradient-to-br from-gray-800/30 to-gray-900/30 rounded-2xl p-6 backdrop-blur-sm">
+            <div className="text-4xl font-bold text-cyan-300 mb-2 text-center">
+              {Object.keys(translations).length}
+            </div>
+            <div className="text-gray-400 text-center">Words Translated</div>
+            <div className="h-1 bg-gray-700 rounded-full mt-3 overflow-hidden">
+              <motion.div 
+                className="h-full bg-cyan-500"
+                initial={{ width: 0 }}
+                animate={{ width: `${(Object.keys(translations).length / 1000) * 100}%` }}
+              />
+            </div>
+          </div>
+          
+          <div className="bg-gradient-to-br from-gray-800/30 to-gray-900/30 rounded-2xl p-6 backdrop-blur-sm">
+            <div className="text-4xl font-bold text-purple-300 mb-2 text-center">
+              {currentWordIndex}
+            </div>
+            <div className="text-gray-400 text-center">Words Completed</div>
+            <div className="h-1 bg-gray-700 rounded-full mt-3 overflow-hidden">
+              <motion.div 
+                className="h-full bg-purple-500"
+                initial={{ width: 0 }}
+                animate={{ width: `${(currentWordIndex / LANGUAGE_ONTOLOGY_WORDS.length) * 100}%` }}
+              />
+            </div>
+          </div>
+          
+          <div className="bg-gradient-to-br from-gray-800/30 to-gray-900/30 rounded-2xl p-6 backdrop-blur-sm">
+            <div className="text-4xl font-bold text-green-300 mb-2 text-center">
+              {Math.round((LANGUAGE_ONTOLOGY_WORDS.length - currentWordIndex) / 10)} min
+            </div>
+            <div className="text-gray-400 text-center">Estimated Time Remaining</div>
+            <div className="h-1 bg-gray-700 rounded-full mt-3">
+              <div className="h-full bg-gradient-to-r from-green-500 to-emerald-500"></div>
+            </div>
+          </div>
+        </div>
+
+        {/* Tips and encouragement */}
+        <motion.div 
+          className="text-center p-6 bg-gradient-to-r from-gray-800/20 to-gray-900/20 rounded-2xl backdrop-blur-sm border border-gray-700/30"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+        >
+          <p className="text-gray-300 text-lg">
+            💪 <strong>Keep going!</strong> Each word you save helps preserve {currentLang?.name} for future generations
+          </p>
+          <p className="text-gray-400 text-sm mt-2">
+            Your recordings are stored securely and contribute to training language AI models
+          </p>
+          
+          {/* Social sharing */}
+          <div className="mt-4 flex justify-center gap-4">
+            <button className="px-4 py-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 rounded-lg transition-colors">
+              📱 Share Progress
+            </button>
+            <button 
+              onClick={() => setShowCommunity(true)}
+              className="px-4 py-2 bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 rounded-lg transition-colors"
+            >
+              👥 View Community
+            </button>
+          </div>
+        </motion.div>
+      </div>
+      
+      {/* Hidden canvas for confetti */}
+      <canvas ref={confettiRef} className="fixed top-0 left-0 w-full h-full pointer-events-none z-30" />
+    </div>
+  );
+}
