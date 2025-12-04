@@ -8,6 +8,11 @@ import {
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 // Add these imports
+// In your vault page component
+import FacialBiometricsNFT from '@/components/FacialBiometricsNFT';
+
+// Then in your render function:
+
 import { getDeviceFingerprint } from '@/lib/fingerprintjs'
 
 
@@ -16,6 +21,7 @@ interface BiometricFormSimpleProps {
   onComplete?: (sessionId: string) => void;
   userId?: string;  // Made optional
 }
+
 
 export default function BiometricFormSimple({ onClose, onComplete, userId }: BiometricFormSimpleProps) {
   // Generate a temporary user ID if not provided
