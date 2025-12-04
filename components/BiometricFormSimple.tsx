@@ -359,7 +359,8 @@ const createBiometricSession = async (): Promise<string> => {
 }
 
 // Complete All Scans
-const handleCompleteAll = async () => {
+// Preserve Identity (Save and Close)
+const handlePreserveIdentity = async () => {
   if (completionPercentage < 100) {
     alert('Please complete all biometric scans first.')
     return
@@ -372,36 +373,21 @@ const handleCompleteAll = async () => {
     // Create session and get session ID
     const sessionId = await createBiometricSession()
 
-    // Call minting API
-    const response = await fetch('/api/mint-biometric-nft', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        sessionId,
-        userId: effectiveUserId
-      })
-    })
+    // Show success message
+    alert(`✅ Identity preserved successfully!\nSession ID: ${sessionId}`)
 
-    if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(errorData.error || 'API call failed')
-    }
-
-    const result = await response.json()
-
-    alert(`✅ ${result.message}\nTransaction: ${result.txHash}`)
-
+    // Close the biometrics form
     if (onComplete) {
       onComplete(sessionId)
     }
 
     if (onClose) {
-      setTimeout(() => onClose(), 1000)
+      setTimeout(() => onClose(), 500)
     }
 
   } catch (err) {
-    console.error('Completion error:', err)
-    setError(err instanceof Error ? err.message : 'Failed to complete biometric scan')
+    console.error('Preserve identity error:', err)
+    setError(err instanceof Error ? err.message : 'Failed to preserve identity')
   } finally {
     setIsProcessing(false)
   }
