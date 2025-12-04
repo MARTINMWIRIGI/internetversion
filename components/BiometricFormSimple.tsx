@@ -158,6 +158,8 @@ const collectFingerprint = async () => {
 const startCamera = async () => {
   try {
     setError(null);
+    setIsCapturing(true);
+    
     const stream = await navigator.mediaDevices.getUserMedia({
       video: {
         facingMode: 'user',
@@ -166,40 +168,69 @@ const startCamera = async () => {
       }
     });
     
-    if (webcamRef.current) {
-      webcamRef.current.srcObject = stream;
+    // Create video element if it doesn't exist
+    if (!webcamRef.current) {
+      const video = document.createElement('video');
+      video.autoplay = true;
+      video.playsInline = true;
+      video.style.width = '100%';
+      video.style.height = '100%';
+      video.style.objectFit = 'cover';
+      webcamRef.current = video;
     }
-    setIsCapturing(true);
+    
+    webcamRef.current.srcObject = stream;
+    
   } catch (err: any) {
     console.error('Camera error:', err);
     setError('Camera access denied. Please allow camera permissions.');
+    setIsCapturing(false);
     setScanStatus(prev => ({ ...prev, facial: 'error' }));
   }
 };
 
 const captureSelfie = () => {
-  if (!webcamRef.current) return;
+  if (!webcamRef.current) {
+    setError('Camera not initialized');
+    return;
+  }
   
-  const canvas = document.createElement('canvas');
-  const video = webcamRef.current.video;
-  
-  if (!video) return;
-  
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-  const ctx = canvas.getContext('2d');
-  
-  if (!ctx) return;
-  
-  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-  const imageData = canvas.toDataURL('image/jpeg');
-  setCapturedImage(imageData);
-  setIsCapturing(false);
-  
-  // Stop all camera tracks
-  const stream = webcamRef.current.srcObject as MediaStream;
-  if (stream) {
-    stream.getTracks().forEach(track => track.stop());
+  try {
+    const video = webcamRef.current;
+    const canvas = document.createElement('canvas');
+    
+    // Set canvas dimensions to match video
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      setError('Canvas context not available');
+      return;
+    }
+    
+    // Draw video frame to canvas
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    
+    // Convert to base64 image
+    const imageData = canvas.toDataURL('image/jpeg', 0.8);
+    setCapturedImage(imageData);
+    setIsCapturing(false);
+    
+    // Stop camera stream
+    if (video.srcObject) {
+      const stream = video.srcObject as MediaStream;
+      stream.getTracks().forEach(track => {
+        track.stop();
+      });
+      video.srcObject = null;
+    }
+    
+    console.log('Selfie captured successfully');
+    
+  } catch (err) {
+    console.error('Capture error:', err);
+    setError('Failed to capture image');
   }
 };
 
@@ -212,42 +243,79 @@ const collectFacialData = async () => {
   setScanStatus(prev => ({ ...prev, facial: 'processing' }));
   
   try {
-    // Create a unique facial hash
-    const timestamp = Date.now();
-    const random = Math.random().toString(36).substring(2, 15);
-    const data = `facial-${effectiveUserId}-${timestamp}-${random}-${capturedImage.length}`;
+    // Create a unique facial hash from the image data
+    // Use the first 1000 chars of the base64 image for hashing
+    const imageDataForHash = capturedImage.substring(0, 1000);
+    const facialHash = await hashData(imageDataForHash);
     
-    const facialHash = await hashData(data);
+    console.log('Facial hash generated:', facialHash.substring(0, 20) + '...');
     
     // Store in Supabase
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('facial_biometrics')
       .insert({
         user_id: effectiveUserId,
         facial_hash: facialHash,
         captured_image: capturedImage,
         collected_at: new Date().toISOString()
-      });
+      })
+      .select()
+      .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase insert error:', error);
+      
+      // Try creating the table if it doesn't exist
+      if (error.message.includes('does not exist')) {
+        setError('Facial biometrics table not found. Please create it in Supabase.');
+      } else {
+        throw error;
+      }
+    } else {
+      console.log('Facial data saved to Supabase:', data);
+      
+      // Update state
+      setCollectedData(prev => ({ 
+        ...prev, 
+        facialHash: facialHash,
+        facialImage: capturedImage
+      }));
+      
+      setScanStatus(prev => ({ ...prev, facial: 'completed' }));
+      console.log('✅ Facial biometrics saved successfully!');
+    }
 
-    setCollectedData(prev => ({ 
-      ...prev, 
-      facialHash: facialHash,
-      facialImage: capturedImage
-    }));
-    
-    setScanStatus(prev => ({ ...prev, facial: 'completed' }));
-    console.log('✅ Facial biometrics saved:', facialHash);
-
-  } catch (err) {
+  } catch (err: any) {
     console.error('Facial data error:', err);
-    setError('Failed to save facial biometrics');
+    let errorMsg = 'Failed to save facial biometrics';
+    
+    if (err.message?.includes('permission')) {
+      errorMsg = 'Database permission denied. Check Supabase RLS policies.';
+    } else if (err.message?.includes('network')) {
+      errorMsg = 'Network error. Check your connection.';
+    }
+    
+    setError(errorMsg);
     setScanStatus(prev => ({ ...prev, facial: 'error' }));
+    
+    // Store locally as fallback
+    localStorage.setItem(`facial_${effectiveUserId}`, JSON.stringify({
+      hash: facialHash,
+      timestamp: new Date().toISOString(),
+      imageLength: capturedImage.length
+    }));
+    console.log('Facial data stored locally as fallback');
   }
 };
 
 const resetFacialCapture = () => {
+  // Clean up camera stream
+  if (webcamRef.current?.srcObject) {
+    const stream = webcamRef.current.srcObject as MediaStream;
+    stream.getTracks().forEach(track => track.stop());
+    webcamRef.current.srcObject = null;
+  }
+  
   setCapturedImage(null);
   setIsCapturing(false);
   setScanStatus(prev => ({ ...prev, facial: 'idle' }));
