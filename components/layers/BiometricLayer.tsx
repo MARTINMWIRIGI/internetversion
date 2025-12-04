@@ -86,17 +86,11 @@ export default function BiometricLayer() {
                   <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-xl">
                     <div className="flex items-center">
                       <div className="w-10 h-10 bg-cyan-900/30 rounded-lg flex items-center justify-center mr-4">
-                        <span className="text-cyan-400">1</span>
-                      </div>
-                      <span>Voice Recognition</span>
-                    </div>
-                    <span className="text-gray-400">~60 seconds</span>
-                  </div>
-
+   
                   <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-xl">
                     <div className="flex items-center">
                       <div className="w-10 h-10 bg-purple-900/30 rounded-lg flex items-center justify-center mr-4">
-                        <span className="text-purple-400">2</span>
+                        <span className="text-purple-400">1</span>
                       </div>
                       <span>Device Fingerprint</span>
                     </div>
@@ -106,7 +100,7 @@ export default function BiometricLayer() {
                   <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-xl">
                     <div className="flex items-center">
                       <div className="w-10 h-10 bg-green-900/30 rounded-lg flex items-center justify-center mr-4">
-                        <span className="text-green-400">3</span>
+                        <span className="text-green-400">2</span>
                       </div>
                       <span>Facial Analysis</span>
                     </div>
