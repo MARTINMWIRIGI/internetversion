@@ -298,17 +298,7 @@ const collectFacialData = async () => {
     setError(errorMsg);
     setScanStatus(prev => ({ ...prev, facial: 'error' }));
     
-    // Store locally as fallback
-    localStorage.setItem(`facial_${effectiveUserId}`, JSON.stringify({
-      hash: facialHash,
-      timestamp: new Date().toISOString(),
-      imageLength: capturedImage.length
-    }));
-    console.log('Facial data stored locally as fallback');
-  }
-};
-
-const resetFacialCapture = () => {
+   
   // Clean up camera stream
   if (webcamRef.current?.srcObject) {
     const stream = webcamRef.current.srcObject as MediaStream;
