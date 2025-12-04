@@ -155,6 +155,8 @@ const collectFingerprint = async () => {
 };
 // FACIAL RECOGNITION
 // FACIAL RECOGNITION
+// ================ FACIAL RECOGNITION ================
+
 const startCamera = async () => {
   try {
     setError(null);
@@ -244,24 +246,10 @@ const collectFacialData = async () => {
   
   try {
     // Create a unique facial hash from the image data
-    // Use the first 1000 chars of the base64 image for hashing
     const imageDataForHash = capturedImage.substring(0, 1000);
     const facialHash = await hashData(imageDataForHash);
     
     console.log('Facial hash generated:', facialHash.substring(0, 20) + '...');
-
-const resetFacialCapture = () => {
-  // Clean up camera stream
-  if (webcamRef.current?.srcObject) {
-    const stream = webcamRef.current.srcObject as MediaStream;
-    stream.getTracks().forEach(track => track.stop());
-    webcamRef.current.srcObject = null;
-  }
-  
-  setCapturedImage(null);
-  setIsCapturing(false);
-  setScanStatus(prev => ({ ...prev, facial: 'idle' }));
-};
     
     // Store in Supabase
     const { data, error } = await supabase
@@ -277,8 +265,6 @@ const resetFacialCapture = () => {
 
     if (error) {
       console.error('Supabase insert error:', error);
-      
-      // Try creating the table if it doesn't exist
       if (error.message.includes('does not exist')) {
         setError('Facial biometrics table not found. Please create it in Supabase.');
       } else {
@@ -287,7 +273,6 @@ const resetFacialCapture = () => {
     } else {
       console.log('Facial data saved to Supabase:', data);
       
-      // Update state
       setCollectedData(prev => ({ 
         ...prev, 
         facialHash: facialHash,
@@ -310,8 +295,10 @@ const resetFacialCapture = () => {
     
     setError(errorMsg);
     setScanStatus(prev => ({ ...prev, facial: 'error' }));
-    
-   
+  }
+};
+
+const resetFacialCapture = () => {
   // Clean up camera stream
   if (webcamRef.current?.srcObject) {
     const stream = webcamRef.current.srcObject as MediaStream;
