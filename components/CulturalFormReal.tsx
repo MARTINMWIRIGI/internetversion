@@ -780,3 +780,114 @@ if (!selectedLanguage) {
     </div>
   );
 }
+// Get current language info
+const currentLang = LANGUAGES.find(l => l.id === selectedLanguage);
+
+// Render training interface
+return (
+  <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 p-4 md:p-8">
+    {/* Achievement popup */}
+    <AnimatePresence>
+      {showAchievement && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.8 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+          onClick={() => setShowAchievement(null)}
+        >
+          <motion.div 
+            className="bg-gradient-to-br from-yellow-800 to-orange-600 rounded-2xl p-8 max-w-md mx-4"
+            initial={{ y: 50 }}
+            animate={{ y: 0 }}
+          >
+            <div className="text-center">
+              <div className="text-6xl mb-4">{showAchievement.icon}</div>
+              <h3 className="text-2xl font-bold text-white mb-2">Achievement Unlocked!</h3>
+              <h4 className="text-xl text-yellow-200 mb-2">{showAchievement.title}</h4>
+              <p className="text-gray-200 mb-6">{showAchievement.description}</p>
+              <button 
+                onClick={() => setShowAchievement(null)}
+                className="px-6 py-2 bg-white/20 rounded-lg text-white hover:bg-white/30"
+              >
+                Awesome!
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+    
+    {/* Word completion animation */}
+    <AnimatePresence>
+      {wordCompletionAnim && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 2 }}
+          className="fixed inset-0 z-40 flex items-center justify-center pointer-events-none"
+        >
+          <motion.div 
+            className="text-6xl font-bold"
+            initial={{ y: 0 }}
+            animate={{ 
+              y: [0, -50, 0],
+              scale: [1, 1.5, 1],
+              rotate: [0, 360, 0]
+            }}
+            transition={{ duration: 1 }}
+          >
+            <span className="bg-gradient-to-r from-green-400 to-cyan-400 bg-clip-text text-transparent">
+              ✓
+            </span>
+          </motion.div>
+          <motion.div 
+            className="absolute inset-0 bg-gradient-to-r from-green-500/10 to-cyan-500/10"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.5 }}
+            exit={{ opacity: 0 }}
+          />
+        </motion.div>
+      )}
+    </AnimatePresence>
+    
+    <div className="max-w-4xl mx-auto">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-center mb-8 p-6 bg-gray-800/30 rounded-2xl backdrop-blur-sm">
+        <div>
+          <button
+            onClick={() => setSelectedLanguage('')}
+            className="text-gray-400 hover:text-white mb-4 md:mb-0 flex items-center gap-2 group"
+          >
+            <span className="group-hover:-translate-x-1 transition-transform">←</span>
+            Back to languages
+          </button>
+          <h1 className="text-3xl font-bold text-white">
+            Learning <span className="bg-gradient-to-r from-cyan-300 to-purple-300 bg-clip-text text-transparent">{currentLang?.name}</span>
+          </h1>
+          <p className="text-gray-400">Session ID: {sessionId.slice(0, 8)}...</p>
+        </div>
+        
+        <div className="flex items-center gap-6">
+          <div className="text-right hidden md:block">
+            <div className="text-white font-semibold text-lg">
+              L{level} • {xp} XP
+            </div>
+            <div className="text-gray-400 text-sm">
+              {streak} day streak 🔥
+            </div>
+          </div>
+          
+          <motion.div 
+            className="relative"
+            whileHover={{ scale: 1.1 }}
+          >
+            <div className="w-16 h-16 rounded-full border-4 border-gray-700 flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
+              <div className="text-2xl">{currentLang?.flag}</div>
+            </div>
+            <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-xs font-bold">
+              {Math.round(progress)}%
+            </div>
+          </motion.div>
+        </div>
+      </div>
