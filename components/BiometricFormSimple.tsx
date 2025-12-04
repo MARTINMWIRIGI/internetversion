@@ -249,6 +249,19 @@ const collectFacialData = async () => {
     const facialHash = await hashData(imageDataForHash);
     
     console.log('Facial hash generated:', facialHash.substring(0, 20) + '...');
+
+const resetFacialCapture = () => {
+  // Clean up camera stream
+  if (webcamRef.current?.srcObject) {
+    const stream = webcamRef.current.srcObject as MediaStream;
+    stream.getTracks().forEach(track => track.stop());
+    webcamRef.current.srcObject = null;
+  }
+  
+  setCapturedImage(null);
+  setIsCapturing(false);
+  setScanStatus(prev => ({ ...prev, facial: 'idle' }));
+};
     
     // Store in Supabase
     const { data, error } = await supabase
