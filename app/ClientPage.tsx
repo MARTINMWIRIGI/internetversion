@@ -627,7 +627,7 @@ return (
               
               <div className="text-center md:text-right">
                 <p className="text-sm text-gray-500 font-mono">
-                  © {new Date().getFullYear()} SOULNET | QUANTUM-ARCHITECTURE v2.3
+                  © {new Date().getFullYear()} SOUL INTERNET | Powered by IMPERIAL ENTERPRISE
                 </p>
                 <p className="text-xs text-gray-600 mt-1">
                   Human data sovereignty • Eternal preservation • Decentralized future
