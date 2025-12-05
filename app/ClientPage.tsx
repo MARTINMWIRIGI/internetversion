@@ -150,32 +150,7 @@ return (
       ))}
     </div>
 
-{/* MAIN NAVIGATION ORB */}
-<nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-xl">
-  <div className="flex flex-wrap justify-center gap-2 bg-black/80 backdrop-blur-xl border border-cyan-500/30 rounded-full px-4 py-2 mx-4">
-    {["evolution", "capsule", "layers", "vault"].map((item) => (
-      <button
-        key={item}
-        onClick={() => setActiveSection(item)}
-        className={`px-3 py-2 rounded-full text-xs md:text-sm font-mono transition-all duration-300 ${activeSection === item 
-          ? 'bg-gradient-to-r from-cyan-500 to-purple-500 text-white shadow-lg shadow-cyan-500/30' 
-          : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
-      >
-        {item.toUpperCase()}
-      </button>
-    ))}
-    <div className="h-6 w-px bg-gradient-to-b from-transparent via-cyan-500 to-transparent mx-1 md:mx-2" />
-    <button
-      onClick={connectedWallet ? handleDisconnectWallet : handleConnectWallet}
-      className={`px-3 py-2 rounded-full text-xs md:text-sm font-mono flex items-center gap-1 md:gap-2 transition-all ${connectedWallet 
-        ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white' 
-        : 'bg-gradient-to-r from-cyan-500 to-purple-500 hover:shadow-lg hover:shadow-cyan-500/30'}`}
-    >
-      <Wallet className="w-3 h-3 md:w-4 md:h-4" />
-      {connectedWallet ? walletAddress : "CONNECT"}
-    </button>
-  </div>
-</nav>
+
 
 {/* INTERNET EVOLUTION - MAJESTIC TIMELINE */}
 <section className="relative min-h-screen pt-24 pb-20 px-4 md:px-8 lg:px-16">
