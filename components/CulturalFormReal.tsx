@@ -558,12 +558,19 @@ const unlockAchievement = (id: string) => {
   ));
 };
 // Trigger confetti animation
+// Trigger confetti animation
 const triggerConfetti = () => {
-  confetti({
-    particleCount: 100,
-    spread: 70,
-    origin: { y: 0.6 }
-  });
+  if (typeof window !== 'undefined') {
+    // Dynamic import to avoid TypeScript errors
+    import('canvas-confetti').then((module) => {
+      const confetti = module.default;
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+    });
+  }
 };
 
 // Trigger word completion animation
