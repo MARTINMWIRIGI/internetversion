@@ -1,29 +1,27 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
   Heart, Users, Brain, Globe, Cpu, Shield, 
-  Sparkles, Zap, Lock, Cloud, Cctv, Satellite,
+  Sparkles, Zap, Lock, Cloud, Satellite,
   Wallet, Coins, Upload, Database, Network,
-  Cpu as CpuIcon, Scan, Radio, Orbit, Atom,
+  Cpu as CpuIcon, Scan, Radio, Orbit,
   Server, Binary, Matrix, CircuitBoard, BrainCircuit,
   Terminal, Fingerprint, Eye, Ear, Mic,
-  BarChart3, CreditCard, Key, WalletCards,
-  ChevronRight, ExternalLink, ScanFace,
+  BarChart3, CreditCard, Key,
+  ChevronRight, ExternalLink,
   ShieldCheck, Rocket, Infinity as InfinityIcon,
-  Wifi, WifiOff, Cpu as Processor,
+  Wifi, WifiOff,
   Globe as Earth, Smartphone, Laptop,
   Monitor, Router, Satellite as SatelliteIcon,
   Cloud as CloudIcon, Server as ServerIcon,
-  Code, GitBranch, Cpu as Chip,
+  Code, GitBranch,
   Smartphone as Mobile,
   RadioTower
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useWallet } from "@/hooks/useWallet";
-import { toast } from "sonner";
+import { motion } from "framer-motion";
 
 export default function SoulInternetHome() {
   const [mounted, setMounted] = useState(false);
@@ -34,56 +32,90 @@ export default function SoulInternetHome() {
   const [walletAddress, setWalletAddress] = useState("");
   const [minting, setMinting] = useState(false);
   const [internetEra, setInternetEra] = useState(0);
-  const canvasRef = useRef(null);
-
-  const { connectWallet, disconnectWallet, mintToken } = useWallet();
+  const [toastMessage, setToastMessage] = useState("");
 
   useEffect(() => {
     setMounted(true);
     
-    // Animated intervals
     const intervals = [
       setInterval(() => setNeonGlow(v => !v), 3000),
       setInterval(() => setHologramActive(v => !v), 5000),
       setInterval(() => {
-        setInternetEra(prev => prev < 5 ? prev + 1 : 0);
+        setInternetEra(prev => prev < 3 ? prev + 1 : 0);
       }, 8000)
     ];
     
     return () => intervals.forEach(clearInterval);
   }, []);
 
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToastMessage(message);
+    setTimeout(() => setToastMessage(""), 3000);
+  };
+
   const handleConnectWallet = async () => {
     try {
-      const address = await connectWallet();
+      const mockAddress = "0x742d35Cc6634C0532925a3b8B9C4b1f0";
       setConnectedWallet(true);
-      setWalletAddress(`${address.slice(0, 6)}...${address.slice(-4)}`);
-      toast.success("Neural interface established");
+      setWalletAddress(`${mockAddress.slice(0, 6)}...${mockAddress.slice(-4)}`);
+      showToast("Neural interface established", 'success');
     } catch (error) {
-      toast.error("Quantum handshake failed");
+      showToast("Quantum handshake failed", 'error');
     }
+  };
+
+  const handleDisconnectWallet = () => {
+    setConnectedWallet(false);
+    setWalletAddress("");
+    showToast("Neural interface disconnected", 'success');
   };
 
   const handleMintSoulToken = async () => {
     setMinting(true);
     try {
-      await mintToken();
-      toast.success("MultiSoul Token minted to your neural wallet");
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      showToast("MultiSoul Token minted successfully", 'success');
     } catch (error) {
-      toast.error("Tokenization failed");
+      showToast("Tokenization failed", 'error');
     }
     setMinting(false);
   };
 
-  if (!mounted) return (
-    <div className="min-h-screen bg-black flex items-center justify-center">
-      <div className="relative">
-        <div className="w-16 h-16 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin"></div>
-        <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-cyan-500 rounded-full animate-spin animation-delay-500"></div>
-        <p className="mt-4 text-purple-400 font-mono animate-pulse">Initializing SoulMatrix...</p>
-      </div>
+if (!mounted) return (
+  <div className="min-h-screen bg-black flex items-center justify-center">
+    <div className="relative">
+      <div className="w-16 h-16 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin"></div>
+      <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-cyan-500 rounded-full animate-spin animation-delay-500"></div>
+      <p className="mt-4 text-purple-400 font-mono animate-pulse">Initializing SoulMatrix...</p>
     </div>
+  </div>
+);
+
+const ToastNotification = () => {
+  if (!toastMessage) return null;
+  
+  const isSuccess = toastMessage.includes("established") || 
+                   toastMessage.includes("success") || 
+                   toastMessage.includes("disconnected");
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 50 }}
+      className="fixed bottom-4 right-4 z-50"
+    >
+      <div className={`px-4 py-3 rounded-lg shadow-lg ${
+        isSuccess 
+          ? 'bg-gradient-to-r from-green-500/90 to-emerald-500/90 backdrop-blur-sm' 
+          : 'bg-gradient-to-r from-red-500/90 to-pink-500/90 backdrop-blur-sm'
+      }`}>
+        <p className="text-white font-mono text-sm">{toastMessage}</p>
+      </div>
+    </motion.div>
   );
+};
+
 return (
   <main className="min-h-screen bg-black text-white overflow-x-hidden">
     {/* CYBER GRID BACKGROUND */}
@@ -118,32 +150,33 @@ return (
       ))}
     </div>
 
-    {/* MAIN NAVIGATION ORB */}
-    <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-xl">
-      <div className="flex flex-wrap justify-center gap-2 bg-black/80 backdrop-blur-xl border border-cyan-500/30 rounded-full px-4 py-2 mx-4">
-        {["evolution", "capsule", "layers", "vault", "network"].map((item) => (
-          <button
-            key={item}
-            onClick={() => setActiveSection(item)}
-            className={`px-3 py-2 rounded-full text-xs md:text-sm font-mono transition-all duration-300 ${activeSection === item 
-              ? 'bg-gradient-to-r from-cyan-500 to-purple-500 text-white shadow-lg shadow-cyan-500/30' 
-              : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
-          >
-            {item.toUpperCase()}
-          </button>
-        ))}
-        <div className="h-6 w-px bg-gradient-to-b from-transparent via-cyan-500 to-transparent mx-1 md:mx-2" />
-        <button
-          onClick={connectedWallet ? disconnectWallet : handleConnectWallet}
-          className={`px-3 py-2 rounded-full text-xs md:text-sm font-mono flex items-center gap-1 md:gap-2 transition-all ${connectedWallet 
-            ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white' 
-            : 'bg-gradient-to-r from-cyan-500 to-purple-500 hover:shadow-lg hover:shadow-cyan-500/30'}`}
-        >
-          <Wallet className="w-3 h-3 md:w-4 md:h-4" />
-          {connectedWallet ? walletAddress : "CONNECT"}
-        </button>
-      </div>
-    </nav>
+{/* MAIN NAVIGATION ORB */}
+<nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-xl">
+  <div className="flex flex-wrap justify-center gap-2 bg-black/80 backdrop-blur-xl border border-cyan-500/30 rounded-full px-4 py-2 mx-4">
+    {["evolution", "capsule", "layers", "vault"].map((item) => (
+      <button
+        key={item}
+        onClick={() => setActiveSection(item)}
+        className={`px-3 py-2 rounded-full text-xs md:text-sm font-mono transition-all duration-300 ${activeSection === item 
+          ? 'bg-gradient-to-r from-cyan-500 to-purple-500 text-white shadow-lg shadow-cyan-500/30' 
+          : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+      >
+        {item.toUpperCase()}
+      </button>
+    ))}
+    <div className="h-6 w-px bg-gradient-to-b from-transparent via-cyan-500 to-transparent mx-1 md:mx-2" />
+    <button
+      onClick={connectedWallet ? handleDisconnectWallet : handleConnectWallet}
+      className={`px-3 py-2 rounded-full text-xs md:text-sm font-mono flex items-center gap-1 md:gap-2 transition-all ${connectedWallet 
+        ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white' 
+        : 'bg-gradient-to-r from-cyan-500 to-purple-500 hover:shadow-lg hover:shadow-cyan-500/30'}`}
+    >
+      <Wallet className="w-3 h-3 md:w-4 md:h-4" />
+      {connectedWallet ? walletAddress : "CONNECT"}
+    </button>
+  </div>
+</nav>
+
 {/* INTERNET EVOLUTION - MAJESTIC TIMELINE */}
 <section className="relative min-h-screen pt-24 pb-20 px-4 md:px-8 lg:px-16">
   <div className="max-w-7xl mx-auto">
@@ -254,6 +287,7 @@ return (
     </motion.div>
   </div>
 </section>
+
 {/* QUANTUM CAPSULE - SOUL INTERNET */}
 <section className="py-20 md:py-32 px-4 md:px-8 lg:px-16 relative overflow-hidden">
   <div className="max-w-7xl mx-auto">
@@ -376,6 +410,7 @@ return (
     </div>
   </div>
 </section>
+
 {/* MULTISOUL LAYERS */}
 <section className="py-20 md:py-32 px-4 md:px-8 lg:px-16 bg-gradient-to-b from-transparent to-black/50">
   <div className="max-w-7xl mx-auto">
@@ -464,6 +499,7 @@ return (
     </div>
   </div>
 </section>
+
 {/* VAULT & MINTING INTERFACE */}
 <section className="py-20 md:py-32 px-4 md:px-8 lg:px-16">
   <div className="max-w-7xl mx-auto">
@@ -563,6 +599,7 @@ return (
     </div>
   </div>
 </section>
+
       {/* FOOTER */}
       <footer className="border-t border-white/10 bg-black/50 backdrop-blur-xl py-12 px-4 md:px-8 lg:px-16">
         <div className="max-w-7xl mx-auto">
@@ -625,6 +662,9 @@ return (
           </div>
         </div>
       </footer>
+
+      {/* TOAST NOTIFICATION */}
+      <ToastNotification />
 
       {/* GLOBAL STYLES */}
       <style jsx global>{`
