@@ -115,6 +115,7 @@ export default function SoulInternetHome() {
       </div>
     </div>
   );
+
 return (
   <main className="min-h-screen bg-black text-white overflow-x-hidden">
     {/* CYBER GRID BACKGROUND */}
