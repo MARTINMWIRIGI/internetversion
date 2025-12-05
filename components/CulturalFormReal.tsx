@@ -382,7 +382,16 @@ const saveWord = async () => {
     const supabase = createClient();
     
     // Convert audio blob to base64 if recorded
-    let audioBase64 = null;
+    const saveWord = async () => {
+  if (!selectedLanguage || !currentWord) return;
+  
+  setSaving(true);
+  
+  try {
+    const supabase = createClient();
+    
+    // Convert audio blob to base64 if recorded
+    let audioBase64: string | null = null;
     if (userRecording) {
       const response = await fetch(userRecording);
       const audioBlob = await response.blob();
@@ -392,6 +401,61 @@ const saveWord = async () => {
         reader.readAsDataURL(audioBlob);
       });
     }
+    
+    // Generate a pronunciation score (simulated)
+    const pronunciationScore = Math.floor(Math.random() * 20) + 80; // 80-100%
+    const isPerfect = pronunciationScore >= 95;
+    
+    // Save word data
+    const { data, error } = await supabase
+      .from('language_ontology_words')
+      .insert({
+        session_id: sessionId,
+        language: selectedLanguage,
+        word_id: currentWord.id,
+        english_word: currentWord.english,
+        translated_word: currentTranslation || '',
+        user_recording: audioBase64,
+        category: currentWord.category,
+        part_of_speech: currentWord.partOfSpeech,
+        pronunciation_score: pronunciationScore,
+        is_perfect: isPerfect,
+        progress: progress,
+        created_at: new Date().toISOString()
+      })
+      .select();
+    
+    if (error) throw error;
+    
+    console.log('✅ Saved word to Supabase:', data);
+    
+    // Award XP
+    const xpEarned = 10 + (isPerfect ? 5 : 0) + (userRecording ? 3 : 0);
+    setXp(prev => prev + xpEarned);
+    
+    // Update stats
+    setUserStats(prev => ({
+      ...prev,
+      totalWordsCompleted: prev.totalWordsCompleted + 1,
+      perfectScores: prev.perfectScores + (isPerfect ? 1 : 0)
+    }));
+    
+    // Check achievements
+    checkAchievements();
+    
+    // Trigger completion animation
+    triggerWordCompletion();
+    
+    // Move to next word
+    setTimeout(() => goToNextWord(), 1000);
+    
+  } catch (error) {
+    console.error('Error saving word:', error);
+    alert('Failed to save word. Please try again.');
+  } finally {
+    setSaving(false);
+  }
+};
     
     // Generate a pronunciation score (simulated)
     const pronunciationScore = Math.floor(Math.random() * 20) + 80; // 80-100%
