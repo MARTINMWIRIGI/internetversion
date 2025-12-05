@@ -115,7 +115,6 @@ export default function SoulInternetHome() {
       </div>
     </div>
   );
-
 return (
   <main className="min-h-screen bg-black text-white overflow-x-hidden">
     {/* CYBER GRID BACKGROUND */}
@@ -176,113 +175,113 @@ return (
         />
       ))}
     </div>
-{/* QUANTUM LEAP SECTION */}
-<section className="relative min-h-screen pt-32 pb-12 px-4 md:px-8 lg:px-16 flex items-center">
-  <div className="max-w-7xl mx-auto w-full text-center">
-    {/* QUANTUM LEAP HEADER */}
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="mb-8 md:mb-12"
-    >
-      <div className="inline-flex items-center gap-4 mb-6">
-        <div className="h-px w-8 md:w-12 bg-gradient-to-r from-transparent to-cyan-500" />
-        <span className="text-cyan-400 font-mono text-sm md:text-base tracking-widest">QUANTUM LEAP</span>
-        <div className="h-px w-8 md:w-12 bg-gradient-to-r from-cyan-500 to-transparent" />
-      </div>
-      
-      <h1 className="text-4xl md:text-7xl lg:text-8xl font-bold mb-4 md:mb-6 tracking-tight">
-        <span className="bg-gradient-to-r from-purple-400 via-cyan-400 to-pink-400 bg-clip-text text-transparent">
-          SOUL INTERNET
-        </span>
-      </h1>
-      
-      <p className="text-xl md:text-3xl font-light text-gray-300 mb-6 md:mb-8 font-mono">
-        The <span className="text-cyan-300">Next Evolution</span> of Human Data
-      </p>
-      
-      <p className="text-lg md:text-xl text-gray-400 max-w-3xl mx-auto mb-8">
-        Where every heartbeat, memory, and cultural expression becomes an eternal digital asset on the blockchain.
-      </p>
-    </motion.div>
 
-    {/* QUANTUM CAPSULE VISUALIZATION */}
-    <div className="relative h-[300px] md:h-[500px] mb-12 md:mb-20">
-      <div className="absolute inset-0 flex items-center justify-center">
+    {/* QUANTUM LEAP SECTION */}
+    <section className="relative min-h-screen pt-32 pb-12 px-4 md:px-8 lg:px-16 flex items-center">
+      <div className="max-w-7xl mx-auto w-full text-center">
+        {/* QUANTUM LEAP HEADER */}
         <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
-          className="relative w-48 h-48 md:w-80 md:h-80 lg:w-96 lg:h-96"
-        >
-          {/* OUTER RING */}
-          <div className="absolute inset-0 border-2 border-cyan-500/30 rounded-full" />
-          
-          {/* MIDDLE RINGS */}
-          <div className="absolute inset-6 md:inset-8 border-2 border-purple-500/20 rounded-full" />
-          <div className="absolute inset-12 md:inset-16 border-2 border-pink-500/10 rounded-full" />
-          
-          {/* INNER CORE */}
-          <div className="absolute inset-20 md:inset-24 bg-gradient-to-br from-cyan-500/20 via-purple-500/20 to-pink-500/20 rounded-full flex items-center justify-center">
-            <motion.div
-              animate={{ scale: [1, 1.05, 1] }}
-              transition={{ duration: 3, repeat: Infinity }}
-              className="w-24 h-24 md:w-40 md:h-40 bg-gradient-to-br from-cyan-500 to-purple-500 rounded-full flex items-center justify-center"
-            >
-              <BrainCircuit className="w-12 h-12 md:w-20 md:h-20" />
-            </motion.div>
-          </div>
-
-          {/* ORBITING NODES */}
-          {[0, 1, 2, 3, 4, 5].map((i) => (
-            <motion.div
-              key={i}
-              animate={{
-                rotate: [0, 360],
-                x: [0, Math.cos(i * 60) * 90],
-                y: [0, Math.sin(i * 60) * 90]
-              }}
-              transition={{
-                duration: 15,
-                repeat: Infinity,
-                ease: "linear"
-              }}
-              className="absolute w-8 h-8 md:w-12 md:h-12 bg-black border border-cyan-500/50 rounded-full flex items-center justify-center"
-            >
-              <Database className="w-4 h-4 md:w-5 md:h-5 text-cyan-400" />
-            </motion.div>
-          ))}
-        </motion.div>
-      </div>
-    </div>
-
-    {/* STATISTICS */}
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 max-w-4xl mx-auto">
-      {[
-        { label: "SOULS PRESERVED", value: "847K+", icon: <Heart className="w-4 h-4 md:w-5 md:h-5" />, color: "pink" },
-        { label: "CULTURES SAVED", value: "142+", icon: <Users className="w-4 h-4 md:w-5 md:h-5" />, color: "purple" },
-        { label: "LANGUAGES STORED", value: "58+", icon: <Brain className="w-4 h-4 md:w-5 md:h-5" />, color: "cyan" },
-        { label: "BLOCKS SECURED", value: "18.4K", icon: <Shield className="w-4 h-4 md:w-5 md:h-5" />, color: "green" }
-      ].map((stat, i) => (
-        <motion.div
-          key={i}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: i * 0.1 }}
-          className="bg-black/30 backdrop-blur-sm border border-white/10 rounded-xl p-4"
+          className="mb-8 md:mb-12"
         >
-          <div className="flex items-center gap-3 mb-2">
-            <div className={`w-8 h-8 rounded-lg bg-${stat.color}-500/20 flex items-center justify-center`}>
-              <div className={`text-${stat.color}-400`}>{stat.icon}</div>
-            </div>
-            <span className="text-xs text-gray-500 font-mono">{stat.label}</span>
+          <div className="inline-flex items-center gap-4 mb-6">
+            <div className="h-px w-8 md:w-12 bg-gradient-to-r from-transparent to-cyan-500" />
+            <span className="text-cyan-400 font-mono text-sm md:text-base tracking-widest">QUANTUM LEAP</span>
+            <div className="h-px w-8 md:w-12 bg-gradient-to-r from-cyan-500 to-transparent" />
           </div>
-          <p className={`text-xl md:text-2xl font-bold text-${stat.color}-300`}>{stat.value}</p>
+          
+          <h1 className="text-4xl md:text-7xl lg:text-8xl font-bold mb-4 md:mb-6 tracking-tight">
+            <span className="bg-gradient-to-r from-purple-400 via-cyan-400 to-pink-400 bg-clip-text text-transparent">
+              SOUL INTERNET
+            </span>
+          </h1>
+          
+          <p className="text-xl md:text-3xl font-light text-gray-300 mb-6 md:mb-8 font-mono">
+            The <span className="text-cyan-300">Next Evolution</span> of Human Data
+          </p>
+          
+          <p className="text-lg md:text-xl text-gray-400 max-w-3xl mx-auto mb-8">
+            Where every heartbeat, memory, and cultural expression becomes an eternal digital asset on the blockchain.
+          </p>
         </motion.div>
-      ))}
-    </div>
-  </div>
-</section>
 
+        {/* QUANTUM CAPSULE VISUALIZATION */}
+        <div className="relative h-[300px] md:h-[500px] mb-12 md:mb-20">
+          <div className="absolute inset-0 flex items-center justify-center">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
+              className="relative w-48 h-48 md:w-80 md:h-80 lg:w-96 lg:h-96"
+            >
+              {/* OUTER RING */}
+              <div className="absolute inset-0 border-2 border-cyan-500/30 rounded-full" />
+              
+              {/* MIDDLE RINGS */}
+              <div className="absolute inset-6 md:inset-8 border-2 border-purple-500/20 rounded-full" />
+              <div className="absolute inset-12 md:inset-16 border-2 border-pink-500/10 rounded-full" />
+              
+              {/* INNER CORE */}
+              <div className="absolute inset-20 md:inset-24 bg-gradient-to-br from-cyan-500/20 via-purple-500/20 to-pink-500/20 rounded-full flex items-center justify-center">
+                <motion.div
+                  animate={{ scale: [1, 1.05, 1] }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                  className="w-24 h-24 md:w-40 md:h-40 bg-gradient-to-br from-cyan-500 to-purple-500 rounded-full flex items-center justify-center"
+                >
+                  <BrainCircuit className="w-12 h-12 md:w-20 md:h-20" />
+                </motion.div>
+              </div>
+
+              {/* ORBITING NODES */}
+              {[0, 1, 2, 3, 4, 5].map((i) => (
+                <motion.div
+                  key={i}
+                  animate={{
+                    rotate: [0, 360],
+                    x: [0, Math.cos(i * 60) * 90],
+                    y: [0, Math.sin(i * 60) * 90]
+                  }}
+                  transition={{
+                    duration: 15,
+                    repeat: Infinity,
+                    ease: "linear"
+                  }}
+                  className="absolute w-8 h-8 md:w-12 md:h-12 bg-black border border-cyan-500/50 rounded-full flex items-center justify-center"
+                >
+                  <Database className="w-4 h-4 md:w-5 md:h-5 text-cyan-400" />
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        </div>
+
+        {/* STATISTICS */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 max-w-4xl mx-auto">
+          {[
+            { label: "SOULS PRESERVED", value: "847K+", icon: <Heart className="w-4 h-4 md:w-5 md:h-5" />, color: "pink" },
+            { label: "CULTURES SAVED", value: "142+", icon: <Users className="w-4 h-4 md:w-5 md:h-5" />, color: "purple" },
+            { label: "LANGUAGES STORED", value: "58+", icon: <Brain className="w-4 h-4 md:w-5 md:h-5" />, color: "cyan" },
+            { label: "BLOCKS SECURED", value: "18.4K", icon: <Shield className="w-4 h-4 md:w-5 md:h-5" />, color: "green" }
+          ].map((stat, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1 }}
+              className="bg-black/30 backdrop-blur-sm border border-white/10 rounded-xl p-4"
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <div className={`w-8 h-8 rounded-lg bg-${stat.color}-500/20 flex items-center justify-center`}>
+                  <div className={`text-${stat.color}-400`}>{stat.icon}</div>
+                </div>
+                <span className="text-xs text-gray-500 font-mono">{stat.label}</span>
+              </div>
+              <p className={`text-xl md:text-2xl font-bold text-${stat.color}-300`}>{stat.value}</p>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
 {/* INTERNET EVOLUTION TIMELINE */}
 <section className="py-16 md:py-24 px-4 md:px-8 lg:px-16 bg-gradient-to-b from-transparent to-black/30">
   <div className="max-w-7xl mx-auto">
@@ -382,81 +381,81 @@ return (
     </motion.div>
   </div>
 </section>
-      {/* MULTISOUL LAYERS */}
-      <section className="py-16 md:py-24 px-4 md:px-8 lg:px-16">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12 md:mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold mb-4">
-              <span className="text-cyan-400">MultiSoul</span> Architecture
-            </h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">
-              Human consciousness fragmented into quantum-resistant data streams
-            </p>
+
+{/* MULTISOUL LAYERS */}
+<section className="py-16 md:py-24 px-4 md:px-8 lg:px-16">
+  <div className="max-w-7xl mx-auto">
+    <div className="text-center mb-12 md:mb-16">
+      <h2 className="text-3xl md:text-5xl font-bold mb-4">
+        <span className="text-cyan-400">MultiSoul</span> Architecture
+      </h2>
+      <p className="text-gray-400 max-w-2xl mx-auto">
+        Human consciousness fragmented into quantum-resistant data streams
+      </p>
+    </div>
+
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+      {[
+        {
+          title: "BIOMETRIC CORE",
+          icon: <Fingerprint className="w-8 h-8" />,
+          color: "cyan",
+          description: "Heartbeat, DNA, and neural patterns encoded into quantum signatures",
+          features: ["Neural Mapping", "DNA Sequencing", "Vocal Analysis", "Retinal Scan"]
+        },
+        {
+          title: "CULTURAL MATRIX",
+          icon: <Users className="w-8 h-8" />,
+          color: "purple",
+          description: "Ancestral wisdom, rituals, and traditions preserved forever",
+          features: ["Oral History", "Ritual Patterns", "Cultural DNA", "Ancestral Data"]
+        },
+        {
+          title: "LINGUISTIC GRID",
+          icon: <Brain className="w-8 h-8" />,
+          color: "pink",
+          description: "Endangered languages and dialects stored in neural networks",
+          features: ["Phoneme Banks", "Syntax Trees", "Dialect Maps", "Semantic Webs"]
+        }
+      ].map((layer, i) => (
+        <motion.div
+          key={i}
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="bg-black/30 backdrop-blur-sm border border-white/10 rounded-2xl p-6"
+        >
+          <div className="flex items-center gap-4 mb-6">
+            <div className={`w-12 h-12 rounded-xl bg-${layer.color}-500/20 flex items-center justify-center`}>
+              {layer.icon}
+            </div>
+            <span className={`text-${layer.color}-400 font-mono text-sm`}>LAYER 0{i + 1}</span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-            {[
-              {
-                title: "BIOMETRIC CORE",
-                icon: <Fingerprint className="w-8 h-8" />,
-                color: "cyan",
-                description: "Heartbeat, DNA, and neural patterns encoded into quantum signatures",
-                features: ["Neural Mapping", "DNA Sequencing", "Vocal Analysis", "Retinal Scan"]
-              },
-              {
-                title: "CULTURAL MATRIX",
-                icon: <Users className="w-8 h-8" />,
-                color: "purple",
-                description: "Ancestral wisdom, rituals, and traditions preserved forever",
-                features: ["Oral History", "Ritual Patterns", "Cultural DNA", "Ancestral Data"]
-              },
-              {
-                title: "LINGUISTIC GRID",
-                icon: <Brain className="w-8 h-8" />,
-                color: "pink",
-                description: "Endangered languages and dialects stored in neural networks",
-                features: ["Phoneme Banks", "Syntax Trees", "Dialect Maps", "Semantic Webs"]
-              }
-            ].map((layer, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className="bg-black/30 backdrop-blur-sm border border-white/10 rounded-2xl p-6"
-              >
-                <div className="flex items-center gap-4 mb-6">
-                  <div className={`w-12 h-12 rounded-xl bg-${layer.color}-500/20 flex items-center justify-center`}>
-                    {layer.icon}
-                  </div>
-                  <span className={`text-${layer.color}-400 font-mono text-sm`}>LAYER 0{i + 1}</span>
-                </div>
+          <h3 className="text-xl font-bold mb-4">{layer.title}</h3>
+          <p className="text-gray-400 mb-6">{layer.description}</p>
 
-                <h3 className="text-xl font-bold mb-4">{layer.title}</h3>
-                <p className="text-gray-400 mb-6">{layer.description}</p>
-
-                <div className="space-y-2 mb-6">
-                  {layer.features.map((feature, j) => (
-                    <div key={j} className="flex items-center gap-3">
-                      <div className={`w-2 h-2 rounded-full bg-${layer.color}-500`} />
-                      <span className="text-sm text-gray-300">{feature}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <Button 
-                  className={`w-full bg-gradient-to-r from-${layer.color}-600 to-${layer.color}-400 hover:from-${layer.color}-700 hover:to-${layer.color}-500`}
-                  onClick={() => setActiveSection("vault")}
-                >
-                  <Zap className="w-4 h-4 mr-2" />
-                  ACCESS LAYER
-                </Button>
-              </motion.div>
+          <div className="space-y-2 mb-6">
+            {layer.features.map((feature, j) => (
+              <div key={j} className="flex items-center gap-3">
+                <div className={`w-2 h-2 rounded-full bg-${layer.color}-500`} />
+                <span className="text-sm text-gray-300">{feature}</span>
+              </div>
             ))}
           </div>
-        </div>
-      </section>
 
+          <Button 
+            className={`w-full bg-gradient-to-r from-${layer.color}-600 to-${layer.color}-400 hover:from-${layer.color}-700 hover:to-${layer.color}-500`}
+            onClick={() => setActiveSection("vault")}
+          >
+            <Zap className="w-4 h-4 mr-2" />
+            ACCESS LAYER
+          </Button>
+        </motion.div>
+      ))}
+    </div>
+  </div>
+</section>
       {/* VAULT & MINTING */}
       <section className="py-16 md:py-24 px-4 md:px-8 lg:px-16 bg-gradient-to-b from-transparent to-black/30">
         <div className="max-w-7xl mx-auto">
