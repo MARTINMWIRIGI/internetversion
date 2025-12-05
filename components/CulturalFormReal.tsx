@@ -332,10 +332,10 @@ const updateUserStats = async (xpEarned: number, isPerfect: boolean) => {
     
     // Get current user stats
     const { data: userData, error: fetchError } = await supabase
-      .from('users')
-      .select('total_xp, total_words_completed, total_perfect_scores, languages_tried')
-      .eq('id', userId)
-      .single();
+  .from('users')
+  .select('total_xp, total_words_completed, total_perfect_scores, languages_tried, total_recordings_made') // Add this
+  .eq('id', userId)
+  .single();
 
     if (fetchError) throw fetchError;
 
