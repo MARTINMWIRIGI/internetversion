@@ -2,9 +2,24 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import confetti from 'canvas-confetti'
+
 import { motion, AnimatePresence } from 'framer-motion'
 
+// Add this function instead:
+const triggerConfetti = () => {
+  if (typeof window !== 'undefined') {
+    import('canvas-confetti').then((module) => {
+      const confetti = module.default;
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+    });
+  }
+};
+
+// Then replace all confetti() calls with triggerConfetti()
 // Types
 type LanguageType = 'meru' | 'kikuyu' | 'swahili' | 'sheng'
 type WordType = {
