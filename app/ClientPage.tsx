@@ -86,7 +86,7 @@ if (!mounted) return (
     <div className="relative">
       <div className="w-16 h-16 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin"></div>
       <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-cyan-500 rounded-full animate-spin animation-delay-500"></div>
-      <p className="mt-4 text-purple-400 font-mono animate-pulse">Initializing SoulMatrix...</p>
+      <p className="mt-4 text-purple-400 font-mono animate-pulse">Initializing <br>Soul Internet...</p>
     </div>
   </div>
 );
@@ -149,119 +149,6 @@ return (
         />
       ))}
     </div>
-
-
-
-{/* INTERNET EVOLUTION - MAJESTIC TIMELINE */}
-<section className="relative min-h-screen pt-24 pb-20 px-4 md:px-8 lg:px-16">
-  <div className="max-w-7xl mx-auto">
-    {/* EVOLUTION HEADER */}
-    <div className="text-center mb-16">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="inline-flex items-center gap-3 md:gap-6 mb-6"
-      >
-        <div className="w-8 h-8 md:w-12 md:h-12 rounded-full bg-gradient-to-r from-purple-500 to-cyan-500 flex items-center justify-center">
-          <Globe className="w-4 h-4 md:w-6 md:h-6" />
-        </div>
-        <div className="h-px w-12 md:w-20 bg-gradient-to-r from-purple-500 to-transparent" />
-        <p className="text-cyan-400 font-mono text-xs md:text-sm tracking-widest">THE EVOLUTION</p>
-        <div className="h-px w-12 md:w-20 bg-gradient-to-r from-transparent to-cyan-500" />
-        <div className="w-8 h-8 md:w-12 md:h-12 rounded-full bg-gradient-to-r from-cyan-500 to-purple-500 flex items-center justify-center">
-          <Brain className="w-4 h-4 md:w-6 md:h-6" />
-        </div>
-      </motion.div>
-
-      <h1 className="text-4xl md:text-7xl lg:text-8xl font-bold mb-4 md:mb-6 tracking-tighter">
-        <span className="bg-gradient-to-r from-purple-400 via-cyan-400 to-pink-400 bg-clip-text text-transparent">
-          SOULNET
-        </span>
-      </h1>
-      
-      <p className="text-xl md:text-3xl font-light text-gray-300 mb-6 md:mb-8 font-mono">
-        <span className="text-cyan-300">#</span> FROM WEB1 TO SOULNET
-      </p>
-    </div>
-
-    {/* EVOLUTION TIMELINE - VISUAL */}
-    <div className="relative h-96 md:h-[500px] mb-16">
-      {/* TIMELINE LINE */}
-      <div className="absolute left-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-purple-500 via-cyan-500 to-pink-500 transform -translate-x-1/2" />
-      
-      {/* EVOLUTION ERAS */}
-      {[
-        { era: 0, year: "1990s", name: "WEB 1.0", desc: "Read-Only Static Pages", icon: <Monitor className="w-6 h-6" />, color: "purple", pos: "top-4" },
-        { era: 1, year: "2000s", name: "WEB 2.0", desc: "Social Interactive Web", icon: <Laptop className="w-6 h-6" />, color: "blue", pos: "top-1/4" },
-        { era: 2, year: "2010s", name: "WEB 3.0", desc: "Decentralized Semantic Web", icon: <ServerIcon className="w-6 h-6" />, color: "cyan", pos: "top-1/2" },
-        { era: 3, year: "2020s", name: "SOULNET", desc: "Human Data Consciousness", icon: <Brain className="w-6 h-6" />, color: "pink", pos: "top-3/4" },
-      ].map((era) => (
-        <motion.div
-          key={era.era}
-          initial={{ opacity: 0, scale: 0 }}
-          animate={{ 
-            opacity: internetEra >= era.era ? 1 : 0.3,
-            scale: internetEra === era.era ? 1.1 : 1
-          }}
-          transition={{ duration: 1 }}
-          className={`absolute ${era.pos} left-1/2 transform -translate-x-1/2 -translate-y-1/2`}
-        >
-          {/* ERA NODE */}
-          <div className={`relative group cursor-pointer ${internetEra === era.era ? 'z-10' : ''}`}>
-            {/* GLOW EFFECT */}
-            <div className={`absolute -inset-4 bg-gradient-to-r from-${era.color}-600/50 to-transparent rounded-full blur-lg ${internetEra === era.era ? 'opacity-100' : 'opacity-0'} transition-opacity duration-1000`} />
-            
-            {/* MAIN NODE */}
-            <div className={`relative w-20 h-20 md:w-28 md:h-28 rounded-full border-2 border-${era.color}-500 flex items-center justify-center ${internetEra === era.era ? `bg-${era.color}-500/20` : 'bg-black/50'}`}>
-              <div className={`text-${era.color}-300`}>
-                {era.icon}
-              </div>
-              
-              {/* CONNECTING LINES */}
-              <div className={`absolute -top-12 left-1/2 w-1 h-12 bg-gradient-to-b from-transparent to-${era.color}-500 transform -translate-x-1/2`} />
-            </div>
-            
-            {/* ERA INFO */}
-            <div className={`absolute ${era.era % 2 === 0 ? 'right-6' : 'left-6'} top-1/2 transform -translate-y-1/2 w-48 md:w-64`}>
-              <motion.div
-                initial={{ x: era.era % 2 === 0 ? 20 : -20 }}
-                animate={{ x: 0 }}
-                className={`bg-black/80 backdrop-blur-sm border border-${era.color}-500/30 rounded-xl p-4 ${era.era % 2 === 0 ? 'text-right' : 'text-left'}`}
-              >
-                <p className={`text-${era.color}-400 font-mono text-sm`}>{era.year}</p>
-                <h3 className="text-lg md:text-xl font-bold mt-1">{era.name}</h3>
-                <p className="text-gray-400 text-sm mt-1">{era.desc}</p>
-              </motion.div>
-            </div>
-          </div>
-        </motion.div>
-      ))}
-    </div>
-
-    {/* CURRENT ERA DISPLAY */}
-    <motion.div
-      key={internetEra}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="max-w-4xl mx-auto text-center mb-12"
-    >
-      <div className="inline-flex items-center gap-3 mb-4">
-        <div className={`w-4 h-4 rounded-full bg-${['purple', 'blue', 'cyan', 'pink'][internetEra]}-500 animate-pulse`} />
-        <span className="text-cyan-400 font-mono tracking-widest">
-          CURRENT ERA: {['WEB 1.0', 'WEB 2.0', 'WEB 3.0', 'SOULNET'][internetEra]}
-        </span>
-      </div>
-      <p className="text-xl md:text-2xl text-gray-300">
-        {[
-          "Static documents • Information consumption • Basic HTML",
-          "Social networks • User-generated content • Centralized platforms",
-          "Blockchain • Smart contracts • Decentralized autonomy",
-          "Human consciousness • Biometric data • Eternal soul preservation"
-        ][internetEra]}
-      </p>
-    </motion.div>
-  </div>
-</section>
 
 {/* QUANTUM CAPSULE - SOUL INTERNET */}
 <section className="py-20 md:py-32 px-4 md:px-8 lg:px-16 relative overflow-hidden">
@@ -385,6 +272,120 @@ return (
     </div>
   </div>
 </section>
+
+
+
+{/* INTERNET EVOLUTION - MAJESTIC TIMELINE */}
+<section className="relative min-h-screen pt-24 pb-20 px-4 md:px-8 lg:px-16">
+  <div className="max-w-7xl mx-auto">
+    {/* EVOLUTION HEADER */}
+    <div className="text-center mb-16">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="inline-flex items-center gap-3 md:gap-6 mb-6"
+      >
+        <div className="w-8 h-8 md:w-12 md:h-12 rounded-full bg-gradient-to-r from-purple-500 to-cyan-500 flex items-center justify-center">
+          <Globe className="w-4 h-4 md:w-6 md:h-6" />
+        </div>
+        <div className="h-px w-12 md:w-20 bg-gradient-to-r from-purple-500 to-transparent" />
+        <p className="text-cyan-400 font-mono text-xs md:text-sm tracking-widest">THE EVOLUTION</p>
+        <div className="h-px w-12 md:w-20 bg-gradient-to-r from-transparent to-cyan-500" />
+        <div className="w-8 h-8 md:w-12 md:h-12 rounded-full bg-gradient-to-r from-cyan-500 to-purple-500 flex items-center justify-center">
+          <Brain className="w-4 h-4 md:w-6 md:h-6" />
+        </div>
+      </motion.div>
+
+      <h1 className="text-4xl md:text-7xl lg:text-8xl font-bold mb-4 md:mb-6 tracking-tighter">
+        <span className="bg-gradient-to-r from-purple-400 via-cyan-400 to-pink-400 bg-clip-text text-transparent">
+          SOULNET
+        </span>
+      </h1>
+      
+      <p className="text-xl md:text-3xl font-light text-gray-300 mb-6 md:mb-8 font-mono">
+        <span className="text-cyan-300">#</span> FROM WEB1 TO SOULNET
+      </p>
+    </div>
+
+    {/* EVOLUTION TIMELINE - VISUAL */}
+    <div className="relative h-96 md:h-[500px] mb-16">
+      {/* TIMELINE LINE */}
+      <div className="absolute left-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-purple-500 via-cyan-500 to-pink-500 transform -translate-x-1/2" />
+      
+      {/* EVOLUTION ERAS */}
+      {[
+        { era: 0, year: "1990s", name: "WEB 1.0", desc: "Read-Only Static Pages", icon: <Monitor className="w-6 h-6" />, color: "purple", pos: "top-4" },
+        { era: 1, year: "2000s", name: "WEB 2.0", desc: "Social Interactive Web", icon: <Laptop className="w-6 h-6" />, color: "blue", pos: "top-1/4" },
+        { era: 2, year: "2010s", name: "WEB 3.0", desc: "Decentralized Semantic Web", icon: <ServerIcon className="w-6 h-6" />, color: "cyan", pos: "top-1/2" },
+        { era: 3, year: "2020s", name: "SOULNET", desc: "Human Data Consciousness", icon: <Brain className="w-6 h-6" />, color: "pink", pos: "top-3/4" },
+      ].map((era) => (
+        <motion.div
+          key={era.era}
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ 
+            opacity: internetEra >= era.era ? 1 : 0.3,
+            scale: internetEra === era.era ? 1.1 : 1
+          }}
+          transition={{ duration: 1 }}
+          className={`absolute ${era.pos} left-1/2 transform -translate-x-1/2 -translate-y-1/2`}
+        >
+          {/* ERA NODE */}
+          <div className={`relative group cursor-pointer ${internetEra === era.era ? 'z-10' : ''}`}>
+            {/* GLOW EFFECT */}
+            <div className={`absolute -inset-4 bg-gradient-to-r from-${era.color}-600/50 to-transparent rounded-full blur-lg ${internetEra === era.era ? 'opacity-100' : 'opacity-0'} transition-opacity duration-1000`} />
+            
+            {/* MAIN NODE */}
+            <div className={`relative w-20 h-20 md:w-28 md:h-28 rounded-full border-2 border-${era.color}-500 flex items-center justify-center ${internetEra === era.era ? `bg-${era.color}-500/20` : 'bg-black/50'}`}>
+              <div className={`text-${era.color}-300`}>
+                {era.icon}
+              </div>
+              
+              {/* CONNECTING LINES */}
+              <div className={`absolute -top-12 left-1/2 w-1 h-12 bg-gradient-to-b from-transparent to-${era.color}-500 transform -translate-x-1/2`} />
+            </div>
+            
+            {/* ERA INFO */}
+            <div className={`absolute ${era.era % 2 === 0 ? 'right-6' : 'left-6'} top-1/2 transform -translate-y-1/2 w-48 md:w-64`}>
+              <motion.div
+                initial={{ x: era.era % 2 === 0 ? 20 : -20 }}
+                animate={{ x: 0 }}
+                className={`bg-black/80 backdrop-blur-sm border border-${era.color}-500/30 rounded-xl p-4 ${era.era % 2 === 0 ? 'text-right' : 'text-left'}`}
+              >
+                <p className={`text-${era.color}-400 font-mono text-sm`}>{era.year}</p>
+                <h3 className="text-lg md:text-xl font-bold mt-1">{era.name}</h3>
+                <p className="text-gray-400 text-sm mt-1">{era.desc}</p>
+              </motion.div>
+            </div>
+          </div>
+        </motion.div>
+      ))}
+    </div>
+
+    {/* CURRENT ERA DISPLAY */}
+    <motion.div
+      key={internetEra}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="max-w-4xl mx-auto text-center mb-12"
+    >
+      <div className="inline-flex items-center gap-3 mb-4">
+        <div className={`w-4 h-4 rounded-full bg-${['purple', 'blue', 'cyan', 'pink'][internetEra]}-500 animate-pulse`} />
+        <span className="text-cyan-400 font-mono tracking-widest">
+          CURRENT ERA: {['WEB 1.0', 'WEB 2.0', 'WEB 3.0', 'SOULNET'][internetEra]}
+        </span>
+      </div>
+      <p className="text-xl md:text-2xl text-gray-300">
+        {[
+          "Static documents • Information consumption • Basic HTML",
+          "Social networks • User-generated content • Centralized platforms",
+          "Blockchain • Smart contracts • Decentralized autonomy",
+          "Human consciousness • Biometric data • Eternal soul preservation"
+        ][internetEra]}
+      </p>
+    </motion.div>
+  </div>
+</section>
+
 
 {/* MULTISOUL LAYERS */}
 <section className="py-20 md:py-32 px-4 md:px-8 lg:px-16 bg-gradient-to-b from-transparent to-black/50">
