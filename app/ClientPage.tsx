@@ -34,15 +34,17 @@ export default function SoulInternetHome() {
   useEffect(() => {
     setMounted(true);
 
-    const intervals = [
-      setInterval(() => setNeonGlow(v => !v), 3000),
-      setInterval(() => setHologramActive(v => !v), 5000),
-      setInterval(() => {
-        setInternetEra(prev => prev < 3 ? prev + 1 : 0);
-      }, 8000)
-    ];
+    const interval1 = setInterval(() => setNeonGlow(v => !v), 3000);
+    const interval2 = setInterval(() => setHologramActive(v => !v), 5000);
+    const interval3 = setInterval(() => {
+      setInternetEra(prev => prev < 3 ? prev + 1 : 0);
+    }, 8000);
 
-    return () => intervals.forEach(clearInterval);
+    return () => {
+      clearInterval(interval1);
+      clearInterval(interval2);
+      clearInterval(interval3);
+    };
   }, []);
 
   if (!mounted) {
@@ -57,7 +59,6 @@ export default function SoulInternetHome() {
     );
   }
 
-  // Check if we should show toast
   const showToastNotification = toastMessage.length > 0;
   const isSuccessToast = toastMessage.includes("established") || 
                          toastMessage.includes("success") || 
@@ -65,7 +66,6 @@ export default function SoulInternetHome() {
 
   return (
     <main className="min-h-screen bg-black text-white overflow-x-hidden">
-      {/* Toast Notification */}
       {showToastNotification && (
         <motion.div
           initial={{ opacity: 0, y: 50 }}
@@ -86,9 +86,8 @@ export default function SoulInternetHome() {
         <h1 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-purple-500 to-cyan-500 bg-clip-text text-transparent">
           Soul Internet Interface
         </h1>
-    
-
-    
+        {/* Your content here */}
+   
 
         {/* Your other JSX content goes here */}
 
