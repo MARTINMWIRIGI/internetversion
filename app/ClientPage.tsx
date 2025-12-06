@@ -28,9 +28,6 @@ export default function SoulInternetHome() {
   const [activeSection, setActiveSection] = useState("evolution");
   const [hologramActive, setHologramActive] = useState(false);
   const [neonGlow, setNeonGlow] = useState(false);
-  const [connectedWallet, setConnectedWallet] = useState(false);
-  const [walletAddress, setWalletAddress] = useState("");
-  const [minting, setMinting] = useState(false);
   const [internetEra, setInternetEra] = useState(0);
   const [toastMessage, setToastMessage] = useState("");
 
@@ -47,39 +44,6 @@ export default function SoulInternetHome() {
 
     return () => intervals.forEach(clearInterval);
   }, []);
-
-  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
-    setToastMessage(message);
-    setTimeout(() => setToastMessage(""), 3000);
-  };
-
-  const handleConnectWallet = async () => {
-    try {
-      const mockAddress = "0x742d35Cc6634C0532925a3b8B9C4b1f0";
-      setConnectedWallet(true);
-      setWalletAddress(`${mockAddress.slice(0, 6)}...${mockAddress.slice(-4)}`);
-      showToast("Neural interface established", 'success');
-    } catch (error) {
-      showToast("Quantum handshake failed", 'error');
-    }
-  };
-
-  const handleDisconnectWallet = () => {
-    setConnectedWallet(false);
-    setWalletAddress("");
-    showToast("Neural interface disconnected", 'success');
-  };
-
-  const handleMintSoulToken = async () => {
-    setMinting(true);
-    try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      showToast("MultiSoul Token minted successfully", 'success');
-    } catch (error) {
-      showToast("Tokenization failed", 'error');
-    }
-    setMinting(false);
-  };
 
   if (!mounted) {
     return (
@@ -101,12 +65,11 @@ export default function SoulInternetHome() {
 
   return (
     <main className="min-h-screen bg-black text-white overflow-x-hidden">
-      {/* Toast Notification - Inline instead of nested component */}
+      {/* Toast Notification */}
       {showToastNotification && (
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 50 }}
           className="fixed bottom-4 right-4 z-50"
         >
           <div className={`px-4 py-3 rounded-lg shadow-lg ${
@@ -119,13 +82,11 @@ export default function SoulInternetHome() {
         </motion.div>
       )}
 
-      {/* Rest of your component content will go here */}
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-purple-500 to-cyan-500 bg-clip-text text-transparent">
           Soul Internet Interface
         </h1>
-
-        {/* Add your content here */}
+    
 
     
 
