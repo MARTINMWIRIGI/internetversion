@@ -81,7 +81,6 @@ export default function SoulInternetHome() {
     setMinting(false);
   };
 
-  // SIMPLIFIED FIX: Remove the nested ToastNotification component and make it inline
   if (!mounted) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
@@ -125,6 +124,10 @@ export default function SoulInternetHome() {
         <h1 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-purple-500 to-cyan-500 bg-clip-text text-transparent">
           Soul Internet Interface
         </h1>
+
+        {/* Add your content here */}
+
+    
 
         {/* Your other JSX content goes here */}
 
