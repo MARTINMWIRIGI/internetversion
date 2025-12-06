@@ -137,10 +137,7 @@ export default function SoulInternetHome() {
 
         {/* Your other JSX content goes here */}
 
-      </div>
-    </main>
-  );
-}
+    
     {/* CYBER GRID BACKGROUND */}
     <div className="fixed inset-0 z-0 opacity-20">
       <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_24px,transparent_24px),linear-gradient(transparent_24px,transparent_24px)] bg-[size:48px_48px] bg-repeat bg-[linear-gradient(135deg,#000_20%,transparent_20%,transparent_80%,#000_80%)]" />
