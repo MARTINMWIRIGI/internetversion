@@ -69,6 +69,7 @@ export default function SoulInternetHome() {
     setWalletAddress("");
     showToast("Neural interface disconnected", 'success');
   };
+
   const handleMintSoulToken = async () => {
     setMinting(true);
     try {
@@ -79,6 +80,7 @@ export default function SoulInternetHome() {
     }
     setMinting(false);
   };
+
   const ToastNotification = () => {
     if (!toastMessage) return null;
     const isSuccess = toastMessage.includes("established") || 
@@ -101,7 +103,8 @@ export default function SoulInternetHome() {
         </div>
       </motion.div>
     );
-}
+  };
+
   if (!mounted) return (
     <div className="min-h-screen bg-black flex items-center justify-center">
       <div className="relative">
@@ -111,8 +114,23 @@ export default function SoulInternetHome() {
       </div>
     </div>
   );
-return (
-  <main className="min-h-screen bg-black text-white overflow-x-hidden">
+
+  return (
+    <main className="min-h-screen bg-black text-white overflow-x-hidden">
+      <ToastNotification />
+      
+      {/* Rest of your component content will go here */}
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-purple-500 to-cyan-500 bg-clip-text text-transparent">
+          Soul Internet Interface
+        </h1>
+        
+        {/* Your other JSX content goes here */}
+        
+      </div>
+    </main>
+  );
+}
     {/* CYBER GRID BACKGROUND */}
     <div className="fixed inset-0 z-0 opacity-20">
       <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_24px,transparent_24px),linear-gradient(transparent_24px,transparent_24px)] bg-[size:48px_48px] bg-repeat bg-[linear-gradient(135deg,#000_20%,transparent_20%,transparent_80%,#000_80%)]" />
