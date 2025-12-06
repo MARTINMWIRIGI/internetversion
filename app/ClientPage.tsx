@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 
-export default function SoulInternetHome() {
+export default function ClientPage() {
   const [mounted, setMounted] = useState(false);
   const [activeSection, setActiveSection] = useState("evolution");
   const [hologramActive, setHologramActive] = useState(false);
