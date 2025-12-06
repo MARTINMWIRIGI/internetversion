@@ -69,7 +69,6 @@ export default function SoulInternetHome() {
     setWalletAddress("");
     showToast("Neural interface disconnected", 'success');
   };
-
   const handleMintSoulToken = async () => {
     setMinting(true);
     try {
@@ -80,10 +79,8 @@ export default function SoulInternetHome() {
     }
     setMinting(false);
   };
-
   const ToastNotification = () => {
     if (!toastMessage) return null;
-
     const isSuccess = toastMessage.includes("established") || 
                      toastMessage.includes("success") || 
                      toastMessage.includes("disconnected");
@@ -104,8 +101,6 @@ export default function SoulInternetHome() {
         </div>
       </motion.div>
     );
-  
-
   if (!mounted) return (
     <div className="min-h-screen bg-black flex items-center justify-center">
       <div className="relative">
