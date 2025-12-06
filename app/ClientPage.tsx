@@ -21,7 +21,7 @@ import {
   Smartphone as Mobile,
   RadioTower
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 export default function SoulInternetHome() {
   const [mounted, setMounted] = useState(false);
@@ -33,7 +33,6 @@ export default function SoulInternetHome() {
   const [minting, setMinting] = useState(false);
   const [internetEra, setInternetEra] = useState(0);
   const [toastMessage, setToastMessage] = useState("");
-  const [showToast, setShowToast] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -49,13 +48,9 @@ export default function SoulInternetHome() {
     return () => intervals.forEach(clearInterval);
   }, []);
 
-  const showToastMessage = (message: string, type: 'success' | 'error' = 'success') => {
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
     setToastMessage(message);
-    setShowToast(true);
-    setTimeout(() => {
-      setShowToast(false);
-      setToastMessage("");
-    }, 3000);
+    setTimeout(() => setToastMessage(""), 3000);
   };
 
   const handleConnectWallet = async () => {
@@ -63,54 +58,30 @@ export default function SoulInternetHome() {
       const mockAddress = "0x742d35Cc6634C0532925a3b8B9C4b1f0";
       setConnectedWallet(true);
       setWalletAddress(`${mockAddress.slice(0, 6)}...${mockAddress.slice(-4)}`);
-      showToastMessage("Neural interface established", 'success');
+      showToast("Neural interface established", 'success');
     } catch (error) {
-      showToastMessage("Quantum handshake failed", 'error');
+      showToast("Quantum handshake failed", 'error');
     }
   };
 
   const handleDisconnectWallet = () => {
     setConnectedWallet(false);
     setWalletAddress("");
-    showToastMessage("Neural interface disconnected", 'success');
+    showToast("Neural interface disconnected", 'success');
   };
 
   const handleMintSoulToken = async () => {
     setMinting(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 2000));
-      showToastMessage("MultiSoul Token minted successfully", 'success');
+      showToast("MultiSoul Token minted successfully", 'success');
     } catch (error) {
-      showToastMessage("Tokenization failed", 'error');
+      showToast("Tokenization failed", 'error');
     }
     setMinting(false);
   };
 
-  const ToastNotification = () => {
-    if (!showToast || !toastMessage) return null;
-    
-    const isSuccess = toastMessage.includes("established") || 
-                     toastMessage.includes("success") || 
-                     toastMessage.includes("disconnected");
-
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 50 }}
-        className="fixed bottom-4 right-4 z-50"
-      >
-        <div className={`px-4 py-3 rounded-lg shadow-lg ${
-          isSuccess 
-            ? 'bg-gradient-to-r from-green-500/90 to-emerald-500/90 backdrop-blur-sm' 
-            : 'bg-gradient-to-r from-red-500/90 to-pink-500/90 backdrop-blur-sm'
-        }`}>
-          <p className="text-white font-mono text-sm">{toastMessage}</p>
-        </div>
-      </motion.div>
-    );
-  };
-
+  // SIMPLIFIED FIX: Remove the nested ToastNotification component and make it inline
   if (!mounted) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
@@ -123,11 +94,31 @@ export default function SoulInternetHome() {
     );
   }
 
+  // Check if we should show toast
+  const showToastNotification = toastMessage.length > 0;
+  const isSuccessToast = toastMessage.includes("established") || 
+                         toastMessage.includes("success") || 
+                         toastMessage.includes("disconnected");
+
   return (
     <main className="min-h-screen bg-black text-white overflow-x-hidden">
-      <AnimatePresence>
-        <ToastNotification />
-      </AnimatePresence>
+      {/* Toast Notification - Inline instead of nested component */}
+      {showToastNotification && (
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 50 }}
+          className="fixed bottom-4 right-4 z-50"
+        >
+          <div className={`px-4 py-3 rounded-lg shadow-lg ${
+            isSuccessToast 
+              ? 'bg-gradient-to-r from-green-500/90 to-emerald-500/90 backdrop-blur-sm' 
+              : 'bg-gradient-to-r from-red-500/90 to-pink-500/90 backdrop-blur-sm'
+          }`}>
+            <p className="text-white font-mono text-sm">{toastMessage}</p>
+          </div>
+        </motion.div>
+      )}
 
       {/* Rest of your component content will go here */}
       <div className="container mx-auto px-4 py-8">
@@ -135,6 +126,9 @@ export default function SoulInternetHome() {
           Soul Internet Interface
         </h1>
 
+        {/* Your other JSX content goes here */}
+
+    
         {/* Your other JSX content goes here */}
 
     
