@@ -21,7 +21,7 @@ import {
   Smartphone as Mobile,
   RadioTower
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function SoulInternetHome() {
   const [mounted, setMounted] = useState(false);
@@ -33,6 +33,7 @@ export default function SoulInternetHome() {
   const [minting, setMinting] = useState(false);
   const [internetEra, setInternetEra] = useState(0);
   const [toastMessage, setToastMessage] = useState("");
+  const [showToast, setShowToast] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -48,9 +49,13 @@ export default function SoulInternetHome() {
     return () => intervals.forEach(clearInterval);
   }, []);
 
-  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+  const showToastMessage = (message: string, type: 'success' | 'error' = 'success') => {
     setToastMessage(message);
-    setTimeout(() => setToastMessage(""), 3000);
+    setShowToast(true);
+    setTimeout(() => {
+      setShowToast(false);
+      setToastMessage("");
+    }, 3000);
   };
 
   const handleConnectWallet = async () => {
@@ -58,31 +63,32 @@ export default function SoulInternetHome() {
       const mockAddress = "0x742d35Cc6634C0532925a3b8B9C4b1f0";
       setConnectedWallet(true);
       setWalletAddress(`${mockAddress.slice(0, 6)}...${mockAddress.slice(-4)}`);
-      showToast("Neural interface established", 'success');
+      showToastMessage("Neural interface established", 'success');
     } catch (error) {
-      showToast("Quantum handshake failed", 'error');
+      showToastMessage("Quantum handshake failed", 'error');
     }
   };
 
   const handleDisconnectWallet = () => {
     setConnectedWallet(false);
     setWalletAddress("");
-    showToast("Neural interface disconnected", 'success');
+    showToastMessage("Neural interface disconnected", 'success');
   };
 
   const handleMintSoulToken = async () => {
     setMinting(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 2000));
-      showToast("MultiSoul Token minted successfully", 'success');
+      showToastMessage("MultiSoul Token minted successfully", 'success');
     } catch (error) {
-      showToast("Tokenization failed", 'error');
+      showToastMessage("Tokenization failed", 'error');
     }
     setMinting(false);
   };
 
   const ToastNotification = () => {
-    if (!toastMessage) return null;
+    if (!showToast || !toastMessage) return null;
+    
     const isSuccess = toastMessage.includes("established") || 
                      toastMessage.includes("success") || 
                      toastMessage.includes("disconnected");
@@ -105,28 +111,32 @@ export default function SoulInternetHome() {
     );
   };
 
-  if (!mounted) return (
-    <div className="min-h-screen bg-black flex items-center justify-center">
-      <div className="relative">
-        <div className="w-16 h-16 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin"></div>
-        <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-cyan-500 rounded-full animate-spin animation-delay-500"></div>
-        <p className="mt-4 text-purple-400 font-mono animate-pulse">Initializing <br>Soul Internet...</p>
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="relative">
+          <div className="w-16 h-16 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin"></div>
+          <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-cyan-500 rounded-full animate-spin animation-delay-500"></div>
+          <p className="mt-4 text-purple-400 font-mono animate-pulse">Initializing <br>Soul Internet...</p>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 
   return (
     <main className="min-h-screen bg-black text-white overflow-x-hidden">
-      <ToastNotification />
-      
+      <AnimatePresence>
+        <ToastNotification />
+      </AnimatePresence>
+
       {/* Rest of your component content will go here */}
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-purple-500 to-cyan-500 bg-clip-text text-transparent">
           Soul Internet Interface
         </h1>
-        
+
         {/* Your other JSX content goes here */}
-        
+
       </div>
     </main>
   );
