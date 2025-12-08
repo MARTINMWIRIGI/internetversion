@@ -180,16 +180,19 @@ export function Header() {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex gap-6 items-center flex-1 justify-center text-sm">
-          <Link href="/gallery" className="text-gray-300 hover:text-cyan-400 transition-colors py-2 px-3 rounded-lg hover:bg-purple-500/10">
-            Gallery
-          </Link>
+
+ <Link href="/about" className="text-gray-300 hover:text-cyan-400 transition-colors py-2 px-3 rounded-lg hover:bg-purple-500/10">
+  About Us
+</Link>
+
+
           <Link href="/wizard" className="text-gray-300 hover:text-cyan-400 transition-colors py-2 px-3 rounded-lg hover:bg-purple-500/10">
             Contribute
           </Link>
           {/* VAULT LINK */}
           <Link href="/vault" className="bg-gradient-to-r from-purple-600/20 to-cyan-500/20 text-white border border-purple-500/30 hover:border-cyan-500/60 transition-colors py-2 px-4 rounded-lg flex items-center gap-2">
             <span>🏦</span>
-            <span>Vault</span>
+            <span>Explore Vault</span>
           </Link>
           {address && (
             <Link href={openSeaUrl} target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-cyan-400 transition-colors py-2 px-3 rounded-lg hover:bg-purple-500/10">
@@ -248,7 +251,11 @@ export function Header() {
             <div className="space-y-6 mt-8 px-2">
               <nav className="space-y-2">
                 <p className="text-xs text-purple-400 font-semibold px-4 mb-3">EXPLORE</p>
-                <Link href="/gallery" className="block text-gray-300 hover:text-cyan-400 py-4 px-4 rounded-lg" onClick={() => setIsOpen(false)}>Gallery</Link>
+          
+ <Link href="/about" className="text-gray-300 hover:text-cyan-400 transition-colors py-2 px-3 rounded-lg hover:bg-purple-500/10">
+  About Us
+</Link>
+
                 <Link href="/wizard" className="block text-gray-300 hover:text-cyan-400 py-4 px-4 rounded-lg" onClick={() => setIsOpen(false)}>Contribute</Link>
                 <Link href="/vault" className="block text-gray-300 hover:text-cyan-400 py-4 px-4 rounded-lg bg-gradient-to-r from-purple-600/10 to-cyan-500/10 border border-purple-500/20" onClick={() => setIsOpen(false)}>
                   <div className="flex items-center gap-2">
