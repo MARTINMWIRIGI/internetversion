@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description:
     "Join Soul Internet Vault Guardian to preserve African vernacular languages. Record linguistic data, mint NFTs, and earn MILSA rewards on Polygon blockchain.",
   alternates: {
-    canonical: "https://soul-internet-vault-guardian.vercel.app",
+    canonical: "https://soul-internet.com",
   },
 }
 
