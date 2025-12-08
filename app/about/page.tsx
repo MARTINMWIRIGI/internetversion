@@ -8,7 +8,7 @@ import {
   GitBranch, Cloud, Satellite, CircuitBoard, BrainCircuit,
   Zap, Lock, Heart, Eye, Fingerprint, Terminal,
   ChevronRight, ExternalLink, ArrowRight,
-  Star, Target, Layers, Cradle
+  Star, Target, Layers
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
