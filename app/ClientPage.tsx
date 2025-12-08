@@ -800,3 +800,27 @@ export default function ClientPage() {
       </footer>
 
       {/* ============================================= */}
+{/* GLOBAL STYLES */}
+      {/* ============================================= */}
+      <style jsx global>{`
+        @keyframes spin-slow {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        @keyframes pulse-glow {
+          0%, 100% { opacity: 0.5; }
+          50% { opacity: 1; }
+        }
+        .animate-spin-slow {
+          animation: spin-slow 20s linear infinite;
+        }
+        .animate-pulse-glow {
+          animation: pulse-glow 2s ease-in-out infinite;
+        }
+        .animation-delay-500 {
+          animation-delay: 500ms;
+        }
+      `}</style>
+    </main>
+  );
+}
