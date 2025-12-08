@@ -46,6 +46,7 @@ export default function ClientPage() {
       clearInterval(interval3);
     };
   }, []);
+
   if (!mounted) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
