@@ -634,3 +634,169 @@ export default function ClientPage() {
       </section>
 
       {/* ============================================= */}
+{/* SECTION 8: USE CASES */}
+      {/* ============================================= */}
+      <section id="use-cases" className="py-16 md:py-24 px-4 md:px-8 lg:px-16 bg-gradient-to-b from-transparent to-black/30">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12 md:mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold mb-4">
+              Transformative <span className="text-cyan-400">Use Cases</span>
+            </h2>
+            <p className="text-gray-400 max-w-2xl mx-auto">
+              Revolutionizing how we preserve and interact with human consciousness
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              { icon: Users, title: "Cultural Preservation", desc: "Save endangered cultures and languages for future generations", color: "purple" },
+              { icon: Brain, title: "Medical Research", desc: "Anonymous consciousness data for neurological studies", color: "cyan" },
+              { icon: Heart, title: "Legacy Creation", desc: "Create digital immortality for loved ones", color: "pink" },
+              { icon: Globe, title: "Global Heritage", desc: "Preserve humanity's collective consciousness", color: "green" },
+              { icon: CodeIcon, title: "AI Training", desc: "Ethical AI training with human consciousness data", color: "blue" },
+              { icon: BarChart3, title: "Market Research", desc: "Anonymized emotional and behavioral insights", color: "orange" }
+            ].map((useCase, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="bg-black/30 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:border-cyan-500/30 transition-all duration-300"
+              >
+                <div className={`w-10 h-10 rounded-lg bg-${useCase.color}-500/20 flex items-center justify-center mb-4`}>
+                  <useCase.icon className={`w-5 h-5 text-${useCase.color}-400`} />
+                </div>
+                <h3 className="font-bold text-lg mb-2">{useCase.title}</h3>
+                <p className="text-gray-400 text-sm">{useCase.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================= */}
+{/* SECTION 9: GET STARTED */}
+      {/* ============================================= */}
+      <section id="get-started" className="py-16 md:py-24 px-4 md:px-8 lg:px-16">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl md:text-5xl font-bold mb-6">
+            Begin Your <span className="text-cyan-400">Soul Internet</span> Journey
+          </h2>
+          <p className="text-gray-400 mb-8 max-w-2xl mx-auto">
+            Join the revolution of human consciousness preservation. Your data, your sovereignty.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
+            <div className="p-6 bg-black/30 backdrop-blur-sm border border-white/10 rounded-xl">
+              <div className="text-3xl font-bold text-cyan-300 mb-2">01</div>
+              <h3 className="font-bold mb-2">Create Account</h3>
+              <p className="text-gray-400 text-sm">Sign up with secure quantum authentication</p>
+            </div>
+            <div className="p-6 bg-black/30 backdrop-blur-sm border border-white/10 rounded-xl">
+              <div className="text-3xl font-bold text-purple-300 mb-2">02</div>
+              <h3 className="font-bold mb-2">Choose Layers</h3>
+              <p className="text-gray-400 text-sm">Select which consciousness layers to preserve</p>
+            </div>
+            <div className="p-6 bg-black/30 backdrop-blur-sm border border-white/10 rounded-xl">
+              <div className="text-3xl font-bold text-pink-300 mb-2">03</div>
+              <h3 className="font-bold mb-2">Access Vault</h3>
+              <p className="text-gray-400 text-sm">Manage and interact with your stored data</p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap justify-center gap-4">
+            <Link href="/signup">
+              <button className="px-8 py-3 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-full font-bold hover:shadow-lg hover:shadow-cyan-500/30 transition-all duration-300">
+                START PRESERVING NOW
+              </button>
+            </Link>
+            <Link href="/vault">
+              <button className="px-8 py-3 border border-cyan-500 text-cyan-400 rounded-full font-bold hover:bg-cyan-500/10 transition-all duration-300">
+                EXPLORE VAULT
+              </button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================= */}
+{/* SECTION 10: FOOTER */}
+      {/* ============================================= */}
+      <footer className="border-t border-white/10 bg-black/50 backdrop-blur-xl py-12 px-4 md:px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-purple-500 flex items-center justify-center">
+                  <BrainCircuit className="w-5 h-5" />
+                </div>
+                <span className="text-xl font-bold">SOUL INTERNET</span>
+              </div>
+              <p className="text-sm text-gray-400">
+                The next evolution of the internet — human consciousness on blockchain.
+              </p>
+            </div>
+
+            {[
+              { title: "ARCHITECTURE", links: [
+                { name: "Biometric Vault", href: "/vault/biometric" },
+                { name: "Cultural Vault", href: "/vault/cultural" },
+                { name: "Linguistic Vault", href: "/vault/linguistic" },
+                { name: "Memory Vault", href: "/vault/memory" }
+              ] },
+              { title: "TECHNOLOGY", links: [
+                { name: "Blockchain", href: "/technology/blockchain" },
+                { name: "Quantum AI", href: "/technology/quantum-ai" },
+                { name: "Neural Networks", href: "/technology/neural" },
+                { name: "Security", href: "/technology/security" }
+              ] },
+              { title: "RESOURCES", links: [
+                { name: "Documentation", href: "/docs" },
+                { name: "API Reference", href: "/api" },
+                { name: "Whitepaper", href: "/whitepaper" },
+                { name: "Community", href: "/community" }
+              ] }
+            ].map((column, i) => (
+              <div key={i}>
+                <h4 className="font-bold mb-4 text-cyan-300">{column.title}</h4>
+                <ul className="space-y-2">
+                  {column.links.map((link, j) => (
+                    <li key={j}>
+                      <Link href={link.href} className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
+                        {link.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+
+          <div className="border-t border-white/10 pt-8">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                  <span className="text-sm font-mono text-gray-400">NETWORK: ONLINE</span>
+                </div>
+                <div className="h-4 w-px bg-gray-700" />
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse" />
+                  <span className="text-sm font-mono text-gray-400">NODES: 2,417</span>
+                </div>
+              </div>
+              
+              <div className="text-center md:text-right">
+                <p className="text-sm text-gray-500 font-mono">
+                  © {new Date().getFullYear()} SOUL INTERNET | Powered by IMPERIAL ENTERPRISE
+                </p>
+                <p className="text-xs text-gray-600 mt-1">
+                  Human data sovereignty • Eternal preservation • Decentralized future
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
+
+      {/* ============================================= */}
