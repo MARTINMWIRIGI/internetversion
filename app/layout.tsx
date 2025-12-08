@@ -58,7 +58,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/logo.png" />
         <link
           rel="canonical"
-          href="https://soul-internet-vault-guardian.vercel.app"
+          href="https://soul-internet. com"
         />
       </head>
       <body className={`${inter.className} antialiased bg-background text-foreground`}>
