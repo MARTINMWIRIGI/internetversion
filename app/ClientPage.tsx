@@ -37,7 +37,7 @@ type ProviderType = ethers.providers.Web3Provider | null;
 interface WalletState {
   connected: boolean;
   address: string;
-  chainId: number | null;
+  chainId: bigint | null;
   provider: ProviderType;
 }
 
