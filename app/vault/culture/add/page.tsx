@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import CulturalFormReal from '@/components/CulturalFormReal'
 import SimpleCulturalForm from '@/components/SimpleCulturalForm'
 import { BookOpen, FileText, ArrowLeft, Globe, Brain } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 export default function AddCulturePage() {
   const router = useRouter()
