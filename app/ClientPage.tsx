@@ -15,7 +15,7 @@ import {
   Ear, Mic, BarChart3, CreditCard,
   Key, ChevronRight, ExternalLink,
   ShieldCheck, Rocket, Infinity as InfinityIcon,
-  Wifi, WifiOff, Earth,
+  Wifi, WifiOff,
   Smartphone, Router, Code, GitBranch,
   RadioTower,
   ArrowRight, ShieldAlert, Layers
@@ -137,6 +137,7 @@ export default function ClientPage() {
     { era: 2, year: "2010s", name: "WEB 3.0", desc: "Decentralized blockchain", icon: <Server className="w-8 h-8" />, color: "cyan", pos: "top-2/3" },
     { era: 3, year: "2020s", name: "SOUL INTERNET", desc: "Human data consciousness", icon: <Brain className="w-8 h-8" />, color: "pink", pos: "bottom-4" },
   ];
+
 return (
   <main className="min-h-screen bg-black text-white overflow-x-hidden">
     {/* BACKGROUND ELEMENTS SECTION */}
