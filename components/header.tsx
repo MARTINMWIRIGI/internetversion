@@ -257,11 +257,11 @@ export function Header() {
                 <p className="text-xs text-purple-400 font-semibold px-4 mb-3">EXPLORE</p>
       
 
-<Link href="/" className="text-gray-300 hover:text-cyan-400 transition-colors py-2 px-3 rounded-lg hover:bg-purple-500/10">
+<Link href="/" className="text-gray-300 hover:text-cyan-400 transition-colors py-2 px-3 rounded-lg hover:bg-purple-500/10"onClick={() => setIsOpen(false)}>
   Home
 </Link>
     
- <Link href="/about" className="text-gray-300 hover:text-cyan-400 transition-colors py-2 px-3 rounded-lg hover:bg-purple-500/10">
+ <Link href="/about" className="text-gray-300 hover:text-cyan-400 transition-colors py-2 px-3 rounded-lg hover:bg-purple-500/10"onClick={() => setIsOpen(false)}>
   About
 </Link>
 
