@@ -135,7 +135,7 @@ export default function ClientPage() {
     { era: 0, year: "1990s", name: "WEB 1.0", desc: "Read-only static pages", icon: <Monitor className="w-8 h-8" />, color: "purple", pos: "top-4" },
     { era: 1, year: "2000s", name: "WEB 2.0", desc: "Social interactive platforms", icon: <Laptop className="w-8 h-8" />, color: "blue", pos: "top-1/3" },
     { era: 2, year: "2010s", name: "WEB 3.0", desc: "Decentralized blockchain", icon: <Server className="w-8 h-8" />, color: "cyan", pos: "top-2/3" },
-    { era: 3, year: "2020s", name: "SOUL INTERNET", desc: "Human data consciousness", icon: <Brain className="w-8 h-8" />, color: "pink", pos: "bottom-4" },
+    { era: 3, year: "2026+", name: "SOUL INTERNET", desc: "Human data consciousness", icon: <Brain className="w-8 h-8" />, color: "pink", pos: "bottom-4" },
   ];
 
 return (
