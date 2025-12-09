@@ -280,6 +280,7 @@ return (
       </div>
     </section>
 {/* SECTION 2: EVOLUTION TIMELINE */}
+{/* SECTION 2: EVOLUTION TIMELINE */}
 <section id="evolution" className="py-16 md:py-24 px-4 md:px-8 lg:px-16 bg-gradient-to-b from-transparent to-black/30">
   <div className="max-w-7xl mx-auto">
     <div className="text-center mb-12 md:mb-16">
@@ -292,6 +293,7 @@ return (
       </p>
     </div>
 
+    {/* DESKTOP TIMELINE - Hidden on mobile, shown on md and above */}
     <div className="hidden md:block">
       <div className="relative h-[500px]">
         <div className="absolute left-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-purple-500 via-cyan-500 to-pink-500 transform -translate-x-1/2" />
@@ -327,6 +329,57 @@ return (
       </div>
     </div>
 
+    {/* MOBILE TIMELINE - Shown on mobile, hidden on md and above */}
+    <div className="md:hidden">
+      <div className="relative">
+        {/* Vertical line for mobile */}
+        <div className="absolute left-4 top-0 bottom-0 w-1 bg-gradient-to-b from-purple-500 via-cyan-500 to-pink-500" />
+        
+        <div className="space-y-12 pl-12">
+          {internetEras.map((era) => {
+            const colorClass = colorClasses[era.color];
+            return (
+              <motion.div
+                key={era.era}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ 
+                  opacity: internetEra >= era.era ? 1 : 0.3,
+                  x: 0
+                }}
+                className="relative"
+              >
+                {/* Dot on the timeline */}
+                <div className="absolute -left-12 top-4 w-8 h-8 rounded-full border-2 border-white/20 flex items-center justify-center">
+                  <div className={`w-3 h-3 rounded-full ${internetEra === era.era ? colorClass.bg : 'bg-gray-600'}`} />
+                </div>
+                
+                <div className={`bg-black/40 backdrop-blur-sm border ${colorClass.border}/30 rounded-xl p-4`}>
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className={`w-10 h-10 rounded-lg ${colorClass.bgLight} flex items-center justify-center`}>
+                      <div className={colorClass.text}>{era.icon}</div>
+                    </div>
+                    <div>
+                      <p className={`${colorClass.text} font-mono text-sm`}>{era.year}</p>
+                      <h3 className="text-lg font-bold">{era.name}</h3>
+                    </div>
+                  </div>
+                  <p className="text-gray-400 text-sm">{era.desc}</p>
+                  
+                  {internetEra === era.era && (
+                    <div className="mt-2 inline-flex items-center gap-2">
+                      <div className={`w-2 h-2 rounded-full ${colorClass.bg} animate-pulse`} />
+                      <span className="text-xs text-cyan-400 font-mono">ACTIVE ERA</span>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+
+    {/* Current era indicator - shown on all devices */}
     <motion.div
       key={internetEra}
       initial={{ opacity: 0, y: 20 }}
@@ -334,9 +387,14 @@ return (
       className="text-center mt-8 md:mt-12"
     >
       <div className="inline-flex items-center gap-3 mb-4">
-        <div className={`w-3 h-3 rounded-full ${internetEra === 0 ? 'bg-purple-500' : internetEra === 1 ? 'bg-blue-500' : internetEra === 2 ? 'bg-cyan-500' : 'bg-pink-500'} animate-pulse`} />
+        <div className={`w-3 h-3 rounded-full ${
+          internetEra === 0 ? 'bg-purple-500' : 
+          internetEra === 1 ? 'bg-blue-500' : 
+          internetEra === 2 ? 'bg-cyan-500' : 
+          'bg-pink-500'
+        } animate-pulse`} />
         <span className="text-cyan-400 font-mono">
-          CURRENT ERA: {['WEB 1.0', 'WEB 2.0', 'WEB 3.0', 'SOUL INTERNET'][internetEra]}
+         INTERNET ERA: {['WEB 1.0', 'WEB 2.0', 'WEB 3.0', 'SOUL INTERNET'][internetEra]}
         </span>
       </div>
     </motion.div>
