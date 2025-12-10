@@ -546,7 +546,7 @@ const saveWord = async () => {
     }));
 
     // Check and award achievements
-    checkAchievements();
+  await  checkAchievements();
 
     // Trigger completion animation
     triggerWordCompletion();
