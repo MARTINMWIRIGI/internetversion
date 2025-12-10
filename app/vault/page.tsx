@@ -28,6 +28,32 @@ import {
   Leaf
 } from 'lucide-react';
 
+// Define the type for layer stats
+interface LayerStat {
+  label: string;
+  value: string;
+  color: string;
+  subValue?: string;
+}
+
+// Define the layer interface
+interface VaultLayer {
+  id: string;
+  title: string;
+  component: React.ComponentType;
+  color: string;
+  borderColor: string;
+  description: string;
+  longDescription: string;
+  rewardRate: number;
+  progress: number;
+  mintable: boolean;
+  addButtonText: string;
+  addPage: string;
+  icon: React.ReactNode;
+  stats: LayerStat[]; // Make stats required
+}
+
 export default function VaultPage() {
   const router = useRouter();
   const [activeLayer, setActiveLayer] = useState<string | null>(null);
@@ -41,7 +67,7 @@ export default function VaultPage() {
   const USD_TO_KES = 150; // Approximate
   const milsaToKes = (tokens: number) => tokens * MILSA_TO_USD * USD_TO_KES;
 
-  const layers = [
+  const layers: VaultLayer[] = [
     { 
       id: 'cultural', 
       title: '🏛️ Cultural Heritage', 
@@ -56,7 +82,7 @@ export default function VaultPage() {
       addButtonText: 'Add More Culture',
       addPage: '/vault/culture/add',
       icon: <BookOpen className="w-5 h-5" />,
-      stats: [ // ADDED THIS PROPERTY
+      stats: [
         { label: 'Words Preserved', value: '847', color: 'text-cyan-400' },
         { label: 'Stories Saved', value: '23', color: 'text-purple-400' },
         { label: 'Earned This Month', value: '847 Tokens', subValue: '≈ KSh 1,270' }
@@ -76,7 +102,7 @@ export default function VaultPage() {
       addButtonText: 'Complete Biometric Scan',
       addPage: '/vault/biometrics/scan',
       icon: <Mic className="w-5 h-5" />,
-      stats: [ // ADDED THIS PROPERTY
+      stats: [
         { label: 'Traits Recorded', value: '4', color: 'text-blue-400' },
         { label: 'Security Score', value: '92%', color: 'text-green-400' },
         { label: 'Earned This Month', value: '12 Tokens', subValue: '≈ KSh 18' }
@@ -96,7 +122,7 @@ export default function VaultPage() {
       addButtonText: 'Add Environmental Data',
       addPage: '/vault/environment/add',
       icon: <Leaf className="w-5 h-5" />,
-      stats: [ // ADDED THIS PROPERTY
+      stats: [
         { label: 'Carbon Offset', value: '12.2 tons', color: 'text-green-400' },
         { label: 'Trees Planted', value: '8', color: 'text-emerald-400' },
         { label: 'Earned This Month', value: '90 Tokens', subValue: '≈ KSh 135' }
@@ -116,7 +142,11 @@ export default function VaultPage() {
       addButtonText: 'Add Experience',
       addPage: '/vault/experience/add',
       icon: <Camera className="w-5 h-5" />,
-      
+      stats: [
+        { label: 'Memories Saved', value: '24', color: 'text-orange-400' },
+        { label: 'Family Members', value: '8', color: 'text-yellow-400' },
+        { label: 'Earned This Month', value: '36 Tokens', subValue: '≈ KSh 54' }
+      ]
     },
     { 
       id: 'economic', 
@@ -132,10 +162,10 @@ export default function VaultPage() {
       addButtonText: 'Add Economic Data',
       addPage: '/vault/economic/add',
       icon: <Briefcase className="w-5 h-5" />,
-      stats: [ // ADDED THIS PROPERTY
-        { label: 'Memories Saved', value: '24', color: 'text-orange-400' },
-        { label: 'Family Members', value: '8', color: 'text-yellow-400' },
-        { label: 'Earned This Month', value: '36 Tokens', subValue: '≈ KSh 54' }
+      stats: [
+        { label: 'Verified Skills', value: '12', color: 'text-indigo-400' },
+        { label: 'Monthly Income', value: '$85', color: 'text-blue-400' },
+        { label: 'Earned This Month', value: '260 Tokens', subValue: '≈ KSh 390' }
       ]
     },
   ];
@@ -412,7 +442,7 @@ export default function VaultPage() {
                 key={layer.id}
                 className={`bg-gradient-to-br ${layer.color} rounded-2xl border ${layer.borderColor} overflow-hidden hover:border-opacity-50 transition-all duration-300`}
               >
-                {/* Layer Header */}
+              {/* Layer Header */}
                 <div className="p-6 border-b border-gray-800/50">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex-1">
@@ -446,7 +476,7 @@ export default function VaultPage() {
                   </div>
                 </div>
 
-                 {/* Layer Content */}
+                {/* Layer Content */}
                 <div className="p-6">
                   {/* Progress Bar */}
                   <div className="mb-6">
@@ -489,8 +519,7 @@ export default function VaultPage() {
                         ))}
                       </div>
                     </div>
-
-                    {/* Earning Potential */}
+{/* Earning Potential */}
                     <div className="bg-black/30 rounded-xl p-4 border border-gray-800/50">
                       <h4 className="font-bold text-white mb-3 flex items-center gap-2">
                         <TrendingUp className="w-4 h-4" />
@@ -584,7 +613,8 @@ export default function VaultPage() {
               </div>
             </div>
           </div>
- {/* Statistics Bar */}
+
+          {/* Statistics Bar */}
           <div className="mt-10 bg-gradient-to-br from-gray-900/30 to-black/30 rounded-2xl p-6 border border-gray-800/50">
             <h3 className="text-xl font-bold text-white mb-4">📊 Your Vault Statistics</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -632,8 +662,7 @@ export default function VaultPage() {
             </div>
           </div>
         </div>
-
-        {/* Earnings Modal */}
+{/* Earnings Modal */}
         {showEarningsModal && (
           <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-6 max-w-md w-full border border-purple-500/30">
