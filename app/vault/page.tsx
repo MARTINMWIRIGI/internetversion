@@ -85,7 +85,7 @@ export default function VaultPage() {
       stats: [
         { label: 'Words Preserved', value: '847', color: 'text-cyan-400' },
         { label: 'Stories Saved', value: '23', color: 'text-purple-400' },
-        { label: 'Earned This Month', value: '847 Tokens', subValue: '≈ KSh 1,270' }
+        { label: 'Earned This Month', value: '847 Tokens', color: 'text-green-400', subValue: '≈ KSh 1,270' }
       ]
     },
     { 
@@ -105,7 +105,7 @@ export default function VaultPage() {
       stats: [
         { label: 'Traits Recorded', value: '4', color: 'text-blue-400' },
         { label: 'Security Score', value: '92%', color: 'text-green-400' },
-        { label: 'Earned This Month', value: '12 Tokens', subValue: '≈ KSh 18' }
+        { label: 'Earned This Month', value: '12 Tokens', color: 'text-green-400',subValue: '≈ KSh 18' }
       ]
     },
     { 
@@ -125,7 +125,7 @@ export default function VaultPage() {
       stats: [
         { label: 'Carbon Offset', value: '12.2 tons', color: 'text-green-400' },
         { label: 'Trees Planted', value: '8', color: 'text-emerald-400' },
-        { label: 'Earned This Month', value: '90 Tokens', subValue: '≈ KSh 135' }
+        { label: 'Earned This Month', value: '90 Tokens', color: 'text-green-400',subValue: '≈ KSh 135' }
       ]
     },
     { 
@@ -145,7 +145,7 @@ export default function VaultPage() {
       stats: [
         { label: 'Memories Saved', value: '24', color: 'text-orange-400' },
         { label: 'Family Members', value: '8', color: 'text-yellow-400' },
-        { label: 'Earned This Month', value: '36 Tokens', subValue: '≈ KSh 54' }
+        { label: 'Earned This Month', value: '36 Tokens',color: 'text-green-400', subValue: '≈ KSh 54' }
       ]
     },
     { 
@@ -165,7 +165,7 @@ export default function VaultPage() {
       stats: [
         { label: 'Verified Skills', value: '12', color: 'text-indigo-400' },
         { label: 'Monthly Income', value: '$85', color: 'text-blue-400' },
-        { label: 'Earned This Month', value: '260 Tokens', subValue: '≈ KSh 390' }
+        { label: 'Earned This Month', value: '260 Tokens',color: 'text-green-400', subValue: '≈ KSh 390' }
       ]
     },
   ];
