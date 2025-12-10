@@ -56,11 +56,7 @@ export default function VaultPage() {
       addButtonText: 'Add More Culture',
       addPage: '/vault/culture/add',
       icon: <BookOpen className="w-5 h-5" />,
-      stats: [
-        { label: 'Words Preserved', value: '847', color: 'text-cyan-400' },
-        { label: 'Stories Saved', value: '23', color: 'text-purple-400' },
-        { label: 'Earned This Month', value: '847 Tokens', subValue: '≈ KSh 1,270' }
-      ]
+      
     },
     { 
       id: 'biometric', 
@@ -76,11 +72,7 @@ export default function VaultPage() {
       addButtonText: 'Complete Biometric Scan',
       addPage: '/vault/biometrics/scan',
       icon: <Mic className="w-5 h-5" />,
-      stats: [
-        { label: 'Traits Recorded', value: '4', color: 'text-blue-400' },
-        { label: 'Security Score', value: '92%', color: 'text-green-400' },
-        { label: 'Earned This Month', value: '12 Tokens', subValue: '≈ KSh 18' }
-      ]
+      
     },
     { 
       id: 'environmental', 
@@ -96,11 +88,7 @@ export default function VaultPage() {
       addButtonText: 'Add Environmental Data',
       addPage: '/vault/environment/add',
       icon: <Leaf className="w-5 h-5" />,
-      stats: [
-        { label: 'Carbon Offset', value: '12.2 tons', color: 'text-green-400' },
-        { label: 'Trees Planted', value: '8', color: 'text-emerald-400' },
-        { label: 'Earned This Month', value: '90 Tokens', subValue: '≈ KSh 135' }
-      ]
+      
     },
     { 
       id: 'experiential', 
@@ -116,11 +104,7 @@ export default function VaultPage() {
       addButtonText: 'Add Experience',
       addPage: '/vault/experience/add',
       icon: <Camera className="w-5 h-5" />,
-      stats: [
-        { label: 'Memories Saved', value: '24', color: 'text-orange-400' },
-        { label: 'Family Members', value: '8', color: 'text-yellow-400' },
-        { label: 'Earned This Month', value: '36 Tokens', subValue: '≈ KSh 54' }
-      ]
+      
     },
     { 
       id: 'economic', 
@@ -136,11 +120,7 @@ export default function VaultPage() {
       addButtonText: 'Add Economic Data',
       addPage: '/vault/economic/add',
       icon: <Briefcase className="w-5 h-5" />,
-      stats: [
-        { label: 'Verified Skills', value: '12', color: 'text-indigo-400' },
-        { label: 'Monthly Income', value: '$85', color: 'text-blue-400' },
-        { label: 'Earned This Month', value: '260 Tokens', subValue: '≈ KSh 390' }
-      ]
+      
     },
   ];
 
