@@ -27,7 +27,7 @@ export default function WhitepaperPage() {
       subtitle: "A Cultural, Biometric & Linguistic Blockchain Layer from Africa to the World",
       content: `
         Websites: soulinternet.xyz | soul-internet.com | soulinternet.eth
-        Emails: info@soul-internet.com | founder@soul-internet.com | ceo@soul-internet.com | migwi@soul-internet.com
+        Emails: info@soul-internet.com | founder@soul-internet.com | ceo@soul-internet.com | migwi@soul-internet.com | Imperial Enterprise
         Founded: 24th July 2025
       `
     },
@@ -344,13 +344,7 @@ export default function WhitepaperPage() {
             <p className="text-gray-500 text-sm mb-2">
               © 2025 SoulInternet | Powered by Imperial Enterprise
             </p>
-            <div className="flex justify-center gap-6 text-sm text-gray-400">
-              <span>soulinternet.xyz</span>
-              <span>•</span>
-              <span>soul-internet.com</span>
-              <span>•</span>
-              <span>soulinternet.eth</span>
-            </div>
+            
           </div>
         </div>
       </div>
