@@ -342,7 +342,7 @@ export default function WhitepaperPage() {
         <div className="mt-12 pt-8 border-t border-gray-800/50">
           <div className="text-center">
             <p className="text-gray-500 text-sm mb-2">
-              © 2025 SoulInternet | Powered by Imperial Enterprise
+              © Soul Internet | Powered by IMPERIAL ENTERPRISE 
             </p>
             
           </div>
