@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 // Types
 type LanguageType = 'meru' | 'kikuyu' | 'swahili' | 'sheng'
+
 type WordType = {
   id: number
   english: string
@@ -21,6 +22,18 @@ type AchievementType = {
   unlocked: boolean
   progress: number
   total: number
+}
+
+type ProgressDataType = {
+  wordId: number
+  english: string
+  language: string
+  translation: string
+  pronunciationScore: number
+  isPerfect: boolean
+  timestamp: string
+  sessionId: string
+  audioRecording?: string
 }
 
 // Language options
@@ -63,7 +76,7 @@ const LANGUAGES = [
   },
 ];
 
-// Complete words database (100 words for example)
+// Complete words database (100 words)
 const LANGUAGE_ONTOLOGY_WORDS: WordType[] = [
   // Lexical Ontology - People & Family (1-25)
   { id: 1, english: "person", category: "people_family", partOfSpeech: "noun" },
@@ -325,7 +338,7 @@ export default function LanguageOntologyTrainer() {
       // Update languages tried
       setUserStats(prev => ({
         ...prev,
-        languagesTried: new Set([...prev.languagesTried, selectedLanguage])
+        languagesTried: new Set<string>([...prev.languagesTried, selectedLanguage as string])
       }));
     }
   }, [selectedLanguage]);
@@ -343,7 +356,9 @@ export default function LanguageOntologyTrainer() {
       const totalWordsCompleted = savedProgress.length;
       const totalRecordings = savedProgress.filter((p: any) => p.audioRecording).length;
       const perfectScores = savedProgress.filter((p: any) => p.pronunciationScore >= 95).length;
-      const languagesTried = new Set(savedProgress.map((p: any) => p.language));
+      
+      // FIXED: Add explicit type casting
+      const languagesTried = new Set<string>(savedProgress.map((p: any) => p.language as string));
 
       setUserStats({
         totalWordsCompleted,
@@ -412,75 +427,197 @@ export default function LanguageOntologyTrainer() {
     }));
   };
 
-  // Save word locally
-  const saveWord = async () => {
-    if (!selectedLanguage || !currentWord) {
-      console.error('Missing required data:', { selectedLanguage, currentWord });
-      alert('Please select a language and word');
-      return;
-    }
-
-    setSaving(true);
-
-    try {
-      // Generate a pronunciation score
-      const pronunciationScore = Math.floor(Math.random() * 20) + 80; // 80-100%
-      const isPerfect = pronunciationScore >= 95;
-
-      // Save to localStorage
-      const progressData = {
-        wordId: currentWord.id,
-        english: currentWord.english,
-        language: selectedLanguage,
-        translation: currentTranslation || '',
-        pronunciationScore: pronunciationScore,
-        isPerfect: isPerfect,
-        timestamp: new Date().toISOString(),
-        sessionId: sessionId
+  // Convert audio blob to base64
+  const audioBlobToBase64 = async (blob: Blob): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64data = reader.result as string;
+        resolve(base64data);
       };
-
-      const savedProgress = JSON.parse(localStorage.getItem('language_progress') || '[]');
-      savedProgress.push(progressData);
-      localStorage.setItem('language_progress', JSON.stringify(savedProgress));
-
-      // Award XP
-      const xpEarned = 10 + (isPerfect ? 5 : 0) + (userRecording ? 3 : 0);
-      const newXp = xp + xpEarned;
-      setXp(newXp);
-      localStorage.setItem('language_trainer_xp', newXp.toString());
-
-      // Check level up
-      const newLevel = Math.floor(newXp / 100) + 1;
-      if (newLevel > level) {
-        setLevel(newLevel);
-        localStorage.setItem('language_trainer_level', newLevel.toString());
-        showNotification(`🎉 Level Up! You're now Level ${newLevel}`);
-      }
-
-      // Update user stats
-      setUserStats(prev => ({
-        ...prev,
-        totalWordsCompleted: prev.totalWordsCompleted + 1,
-        totalRecordings: prev.totalRecordings + (userRecording ? 1 : 0),
-        perfectScores: prev.perfectScores + (isPerfect ? 1 : 0)
-      }));
-
-      // Check and award achievements
-      checkAchievements();
-
-      // Trigger completion animation
-      triggerWordCompletion();
-
-      // Move to next word
-      setTimeout(() => goToNextWord(), 1000);
-
-    } catch (error: any) {
-      console.error('Error saving word:', error);
-      alert(`Failed to save word: ${error.message || 'Unknown error'}`);
-    } finally {
-      setSaving(false);
-    }
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
   };
+// Save word to both localStorage and Supabase
+const saveWord = async () => {
+  if (!selectedLanguage || !currentWord) {
+    console.error('Missing required data:', { selectedLanguage, currentWord });
+    alert('Please select a language and word');
+    return;
+  }
+
+  setSaving(true);
+
+  try {
+    // Generate a pronunciation score
+    const pronunciationScore = Math.floor(Math.random() * 20) + 80; // 80-100%
+    const isPerfect = pronunciationScore >= 95;
+
+    // Convert audio to base64 if recorded
+    let audioBase64: string | null = null;
+    if (userRecording) {
+      try {
+        const response = await fetch(userRecording);
+        const audioBlob = await response.blob();
+        audioBase64 = await audioBlobToBase64(audioBlob);
+      } catch (audioError) {
+        console.error('Error converting audio to base64:', audioError);
+      }
+    }
+
+    // Prepare data for localStorage
+    const progressData: ProgressDataType = {
+      wordId: currentWord.id,
+      english: currentWord.english,
+      language: selectedLanguage as string,
+      translation: currentTranslation || '',
+      pronunciationScore: pronunciationScore,
+      isPerfect: isPerfect,
+      timestamp: new Date().toISOString(),
+      sessionId: sessionId,
+      audioRecording: audioBase64 || undefined
+    };
+
+    // 1. Save to localStorage first (fast, works offline)
+    const savedProgress = JSON.parse(localStorage.getItem('language_progress') || '[]');
+    savedProgress.push(progressData);
+    localStorage.setItem('language_progress', JSON.stringify(savedProgress));
+
+    // 2. Save to Supabase (persistent storage)
+    try {
+      const supabase = createClient();
+      
+      const { data, error } = await supabase
+        .from('language_progress')
+        .insert({
+          user_id: localUserId,
+          word_id: currentWord.id,
+          english_word: currentWord.english,
+          language: selectedLanguage,
+          user_translation: currentTranslation || '',
+          audio_recording: audioBase64,
+          pronunciation_score: pronunciationScore,
+          is_perfect: isPerfect,
+          session_id: sessionId,
+          created_at: new Date().toISOString()
+        })
+        .select();
+
+      if (error) {
+        console.error('Supabase save error:', error);
+        // Continue anyway - localStorage already saved
+      } else {
+        console.log('✅ Saved to Supabase:', data);
+      }
+    } catch (supabaseError) {
+      console.error('Supabase connection error:', supabaseError);
+      // Continue anyway - localStorage already saved
+    }
+
+    // 3. Update user stats in Supabase
+    try {
+      await updateUserStatsInSupabase(pronunciationScore, isPerfect, audioBase64);
+    } catch (statsError) {
+      console.error('Error updating user stats in Supabase:', statsError);
+    }
+
+    // Award XP
+    const xpEarned = 10 + (isPerfect ? 5 : 0) + (userRecording ? 3 : 0);
+    const newXp = xp + xpEarned;
+    setXp(newXp);
+    localStorage.setItem('language_trainer_xp', newXp.toString());
+
+    // Check level up
+    const newLevel = Math.floor(newXp / 100) + 1;
+    if (newLevel > level) {
+      setLevel(newLevel);
+      localStorage.setItem('language_trainer_level', newLevel.toString());
+      showNotification(`🎉 Level Up! You're now Level ${newLevel}`);
+    }
+
+    // Update local user stats
+    setUserStats(prev => ({
+      ...prev,
+      totalWordsCompleted: prev.totalWordsCompleted + 1,
+      totalRecordings: prev.totalRecordings + (userRecording ? 1 : 0),
+      perfectScores: prev.perfectScores + (isPerfect ? 1 : 0),
+      languagesTried: new Set<string>([...prev.languagesTried, selectedLanguage as string])
+    }));
+
+    // Check and award achievements
+    checkAchievements();
+
+    // Trigger completion animation
+    triggerWordCompletion();
+
+    // Move to next word
+    setTimeout(() => goToNextWord(), 1000);
+
+  } catch (error: any) {
+    console.error('Error saving word:', error);
+    alert(`Failed to save word: ${error.message || 'Unknown error'}`);
+  } finally {
+    setSaving(false);
+  }
+};
+
+// Update user stats in Supabase
+const updateUserStatsInSupabase = async (pronunciationScore: number, isPerfect: boolean, audioBase64: string | null) => {
+  try {
+    const supabase = createClient();
+
+    // Check if user exists in Supabase
+    const { data: existingUser, error: fetchError } = await supabase
+      .from('language_users')
+      .select('*')
+      .eq('user_id', localUserId)
+      .single();
+
+    const updates: any = {
+      user_id: localUserId,
+      total_xp: xp + 10 + (isPerfect ? 5 : 0) + (audioBase64 ? 3 : 0),
+      total_words_completed: userStats.totalWordsCompleted + 1,
+      total_recordings_made: userStats.totalRecordings + (audioBase64 ? 1 : 0),
+      total_perfect_scores: userStats.perfectScores + (isPerfect ? 1 : 0),
+      languages_tried: Array.from(new Set([...userStats.languagesTried, selectedLanguage as string])),
+      last_active: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    if (fetchError || !existingUser) {
+      // Create new user
+      updates.created_at = new Date().toISOString();
+      const { error: insertError } = await supabase
+        .from('language_users')
+        .insert([updates]);
+
+      if (insertError) throw insertError;
+    } else {
+      // Update existing user
+      updates.total_xp = (existingUser.total_xp || 0) + 10 + (isPerfect ? 5 : 0) + (audioBase64 ? 3 : 0);
+      updates.total_words_completed = (existingUser.total_words_completed || 0) + 1;
+      updates.total_recordings_made = (existingUser.total_recordings_made || 0) + (audioBase64 ? 1 : 0);
+      updates.total_perfect_scores = (existingUser.total_perfect_scores || 0) + (isPerfect ? 1 : 0);
+      
+      // Merge languages tried
+      const existingLanguages = existingUser.languages_tried || [];
+      const newLanguages = Array.from(new Set([...existingLanguages, selectedLanguage as string]));
+      updates.languages_tried = newLanguages;
+
+      const { error: updateError } = await supabase
+        .from('language_users')
+        .update(updates)
+        .eq('user_id', localUserId);
+
+      if (updateError) throw updateError;
+    }
+
+  } catch (error) {
+    console.error('Error updating user stats in Supabase:', error);
+    throw error;
+  }
+};
 // Go to next word
 const goToNextWord = () => {
   if (currentWordIndex < LANGUAGE_ONTOLOGY_WORDS.length - 1) {
@@ -574,6 +711,18 @@ const checkAchievements = () => {
   if (unlockedNew) {
     setAchievements(newAchievements);
     localStorage.setItem('language_achievements', JSON.stringify(newAchievements));
+    
+    // Save achievements to Supabase
+    try {
+      const supabase = createClient();
+      await supabase.from('user_achievements').insert({
+        user_id: localUserId,
+        achievement_id: newAchievements[newAchievements.length - 1].id,
+        unlocked_at: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error saving achievement to Supabase:', error);
+    }
   }
 };
 
@@ -643,7 +792,6 @@ if (!selectedLanguage) {
           </motion.div>
         )}
       </AnimatePresence>
-
       <div className="max-w-6xl mx-auto">
         {/* User status bar */}
         <div className="mb-8">
@@ -651,7 +799,7 @@ if (!selectedLanguage) {
             <div className="flex items-center gap-3 w-full sm:w-auto justify-center sm:justify-start">
               <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
               <span className="text-white text-sm sm:text-base truncate">
-                Ready to learn • {userStats.totalWordsCompleted} words completed
+                {localUserId ? `User: ${localUserId.slice(0, 8)}...` : 'Loading...'}
               </span>
             </div>
 
@@ -678,6 +826,7 @@ if (!selectedLanguage) {
             <span className="text-white font-semibold">{LANGUAGE_ONTOLOGY_WORDS.length} words • 4 languages • Your voice</span>
           </div>
         </div>
+
         {/* Community leaderboard */}
         {showCommunity && (
           <motion.div 
@@ -802,118 +951,119 @@ if (!selectedLanguage) {
 
         <div className="mt-8 sm:mt-12 text-center text-gray-400 text-sm">
           <p className="mb-2">Each word you save helps preserve indigenous languages for future generations</p>
-          <p>All progress saved locally in your browser</p>
+          <p>Progress saved locally and to Supabase database</p>
         </div>
       </div>
     </div>
   );
 }
-// Get current language info
-const currentLang = LANGUAGES.find(l => l.id === selectedLanguage);
+  // Get current language info
+  const currentLang = LANGUAGES.find(l => l.id === selectedLanguage);
 
-// Render training interface
-return (
-  <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 p-4 sm:p-8">
-    <div className="max-w-4xl mx-auto">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8 p-4 sm:p-6 bg-gray-800/30 rounded-2xl">
-        <div className="w-full sm:w-auto">
-          <button
-            onClick={() => setSelectedLanguage('')}
-            className="text-gray-400 hover:text-white mb-2 sm:mb-0 flex items-center gap-2 group w-full sm:w-auto justify-center sm:justify-start"
-          >
-            <span className="group-hover:-translate-x-1 transition-transform">←</span>
-            Back to languages
-          </button>
-          <h1 className="text-xl sm:text-3xl font-bold text-white text-center sm:text-left">
-            Learning <span className="bg-gradient-to-r from-cyan-300 to-purple-300 bg-clip-text text-transparent">{currentLang?.name}</span>
-          </h1>
-          <p className="text-gray-400 text-sm text-center sm:text-left">Session ID: {sessionId.slice(0, 8)}...</p>
-        </div>
-
-        <div className="flex items-center gap-4 w-full sm:w-auto justify-center sm:justify-end">
-          <div className="text-right hidden sm:block">
-            <div className="text-white font-semibold text-lg">
-              L{level} • {xp} XP
-            </div>
-            <div className="text-gray-400 text-sm">
-              {streak} day streak 🔥
-            </div>
-          </div>
-
-          <div className="relative">
-            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full border-4 border-gray-700 flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
-              <div className="text-lg sm:text-2xl">{currentLang?.flag}</div>
-            </div>
-            <div className="absolute -bottom-2 -right-2 w-6 h-6 sm:w-8 sm:h-8 bg-green-500 rounded-full flex items-center justify-center text-xs font-bold">
-              {Math.round(progress)}%
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Progress bar */}
-      <div className="mb-6 sm:mb-8">
-        <div className="flex justify-between text-sm text-gray-400 mb-2">
-          <span>Progress • Word {currentWordIndex + 1} of {LANGUAGE_ONTOLOGY_WORDS.length}</span>
-          <span>{Math.round(progress)}%</span>
-        </div>
-        <div className="h-2 sm:h-3 bg-gray-800 rounded-full overflow-hidden relative">
-          <motion.div 
-            className="h-full bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 transition-all duration-1000"
-            initial={{ width: 0 }}
-            animate={{ width: `${progress}%` }}
-          />
-        </div>
-      </div>
-
-      {/* Main training card */}
-      <motion.div 
-        className="bg-gray-800/40 backdrop-blur-lg rounded-2xl border border-gray-700/50 p-4 sm:p-6 md:p-8 mb-6 sm:mb-8"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        key={currentWordIndex}
-      >
-        {/* Word display */}
-        <div className="text-center mb-6 sm:mb-10">
-          <div className="inline-block px-4 sm:px-6 py-2 bg-gray-900/80 rounded-full mb-3 sm:mb-4">
-            <span className="text-cyan-400 text-xs sm:text-sm uppercase tracking-wider">
-              {currentWord?.category?.replace('_', ' ')}
-            </span>
-          </div>
-
-          <div className="inline-block px-4 sm:px-8 py-4 sm:py-6 bg-gradient-to-br from-gray-900/80 to-black/80 rounded-2xl mb-3 sm:mb-4 border border-gray-700/50">
-            <span className="text-gray-400 text-xs sm:text-sm uppercase tracking-wider">
-              English Word
-            </span>
-            <motion.div 
-              className="text-2xl sm:text-4xl md:text-5xl font-bold text-white mt-2 sm:mt-3 mb-1 sm:mb-2"
-              key={currentWord?.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
+  // Render training interface
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 p-4 sm:p-8">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8 p-4 sm:p-6 bg-gray-800/30 rounded-2xl">
+          <div className="w-full sm:w-auto">
+            <button
+              onClick={() => setSelectedLanguage('')}
+              className="text-gray-400 hover:text-white mb-2 sm:mb-0 flex items-center gap-2 group w-full sm:w-auto justify-center sm:justify-start"
             >
-              {currentWord?.english}
-            </motion.div>
-            <div className="text-gray-500 text-xs sm:text-sm">
-              {currentWord?.partOfSpeech}
+              <span className="group-hover:-translate-x-1 transition-transform">←</span>
+              Back to languages
+            </button>
+            <h1 className="text-xl sm:text-3xl font-bold text-white text-center sm:text-left">
+              Learning <span className="bg-gradient-to-r from-cyan-300 to-purple-300 bg-clip-text text-transparent">{currentLang?.name}</span>
+            </h1>
+            <p className="text-gray-400 text-sm text-center sm:text-left">Session ID: {sessionId.slice(0, 8)}...</p>
+          </div>
+
+          <div className="flex items-center gap-4 w-full sm:w-auto justify-center sm:justify-end">
+            <div className="text-right hidden sm:block">
+              <div className="text-white font-semibold text-lg">
+                L{level} • {xp} XP
+              </div>
+              <div className="text-gray-400 text-sm">
+                {streak} day streak 🔥
+              </div>
+            </div>
+
+            <div className="relative">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full border-4 border-gray-700 flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
+                <div className="text-lg sm:text-2xl">{currentLang?.flag}</div>
+              </div>
+              <div className="absolute -bottom-2 -right-2 w-6 h-6 sm:w-8 sm:h-8 bg-green-500 rounded-full flex items-center justify-center text-xs font-bold">
+                {Math.round(progress)}%
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Translation input */}
+        {/* Progress bar */}
         <div className="mb-6 sm:mb-8">
-          <label className="block text-gray-300 mb-2 sm:mb-3 text-base sm:text-lg flex items-center gap-2">
-            <span className="bg-gradient-to-r from-cyan-500 to-blue-500 w-2 h-4 sm:h-5 rounded-full"></span>
-            {currentLang?.name} Translation
-          </label>
-          <input
-            type="text"
-            value={currentTranslation}
-            onChange={(e) => handleTranslationChange(e.target.value)}
-            placeholder={`Type the ${currentLang?.name} word here...`}
-            className="w-full bg-gray-900/80 border-2 border-gray-700 rounded-xl sm:rounded-2xl px-4 sm:px-6 py-3 sm:py-5 text-white text-lg sm:text-xl placeholder-gray-500 focus:outline-none focus:border-cyan-500 transition-colors"
-          />
+          <div className="flex justify-between text-sm text-gray-400 mb-2">
+            <span>Progress • Word {currentWordIndex + 1} of {LANGUAGE_ONTOLOGY_WORDS.length}</span>
+            <span>{Math.round(progress)}%</span>
+          </div>
+          <div className="h-2 sm:h-3 bg-gray-800 rounded-full overflow-hidden relative">
+            <motion.div 
+              className="h-full bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 transition-all duration-1000"
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+            />
+          </div>
         </div>
+
+        {/* Main training card */}
+        <motion.div 
+          className="bg-gray-800/40 backdrop-blur-lg rounded-2xl border border-gray-700/50 p-4 sm:p-6 md:p-8 mb-6 sm:mb-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          key={currentWordIndex}
+        >
+          {/* Word display */}
+          <div className="text-center mb-6 sm:mb-10">
+            <div className="inline-block px-4 sm:px-6 py-2 bg-gray-900/80 rounded-full mb-3 sm:mb-4">
+              <span className="text-cyan-400 text-xs sm:text-sm uppercase tracking-wider">
+                {currentWord?.category?.replace('_', ' ')}
+              </span>
+            </div>
+
+            <div className="inline-block px-4 sm:px-8 py-4 sm:py-6 bg-gradient-to-br from-gray-900/80 to-black/80 rounded-2xl mb-3 sm:mb-4 border border-gray-700/50">
+              <span className="text-gray-400 text-xs sm:text-sm uppercase tracking-wider">
+                English Word
+              </span>
+              <motion.div 
+                className="text-2xl sm:text-4xl md:text-5xl font-bold text-white mt-2 sm:mt-3 mb-1 sm:mb-2"
+                key={currentWord?.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                {currentWord?.english}
+              </motion.div>
+              <div className="text-gray-500 text-xs sm:text-sm">
+                {currentWord?.partOfSpeech}
+              </div>
+            </div>
+          </div>
+
+          {/* Translation input */}
+          <div className="mb-6 sm:mb-8">
+            <label className="block text-gray-300 mb-2 sm:mb-3 text-base sm:text-lg flex items-center gap-2">
+              <span className="bg-gradient-to-r from-cyan-500 to-blue-500 w-2 h-4 sm:h-5 rounded-full"></span>
+              {currentLang?.name} Translation
+            </label>
+            <input
+              type="text"
+              value={currentTranslation}
+              onChange={(e) => handleTranslationChange(e.target.value)}
+              placeholder={`Type the ${currentLang?.name} word here...`}
+              className="w-full bg-gray-900/80 border-2 border-gray-700 rounded-xl sm:rounded-2xl px-4 sm:px-6 py-3 sm:py-5 text-white text-lg sm:text-xl placeholder-gray-500 focus:outline-none focus:border-cyan-500 transition-colors"
+            />
+          </div>
+
           {/* Record section */}
           <div className="mb-6 sm:mb-8">
             <div className="bg-gradient-to-br from-gray-900/60 to-gray-800/60 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-gray-700/50">
@@ -956,7 +1106,7 @@ return (
                   <div className="flex items-center gap-2 mt-2 sm:mt-3">
                     <span className="w-2 h-2 bg-green-500 rounded-full"></span>
                     <p className="text-green-400 text-xs sm:text-sm">
-                      Great! Your pronunciation has been saved
+                      Great! Your pronunciation will be saved
                     </p>
                   </div>
                 </div>
@@ -1049,7 +1199,7 @@ return (
             💪 <strong>Keep going!</strong> Each word you save helps preserve {currentLang?.name} for future generations
           </p>
           <p className="text-gray-400 text-xs sm:text-sm mt-2">
-            Your progress is saved locally in your browser
+            Your progress is saved to Supabase database for permanent preservation
           </p>
         </div>
       </div>
