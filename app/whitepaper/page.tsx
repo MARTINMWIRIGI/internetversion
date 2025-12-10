@@ -52,18 +52,18 @@ export default function WhitepaperPage() {
     {
       title: "THE GLOBAL PROBLEMS SOULINTERNET SOLVES",
       content: `
-        ## The Rapid Disappearance of Culture
+        • The Rapid Disappearance of Culture
         Languages vanish every month.
         Songs disappear with their last singers.
         Youth lose dialects replaced by globalized fragments.
         SoulInternet preserves them permanently on-chain.
 
-        ## The Exploitation of Human Data
+        • The Exploitation of Human Data
         Corporations extract identity, emotion, biometrics, and behavior — yet individuals earn nothing.
         SoulInternet reverses this:
         Your cultural and biometric abstractions belong to YOU — not Silicon Valley.
 
-        ## High Barriers to Web3 Adoption
+        • High Barriers to Web3 Adoption
         Wallets are confusing.
         Gas fees too high.
         NFT systems too complex.
