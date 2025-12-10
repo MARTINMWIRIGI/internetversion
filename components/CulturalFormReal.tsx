@@ -640,7 +640,8 @@ const skipWord = () => {
 };
 
 // Achievement system
-const checkAchievements = () => {
+// Achievement system
+const checkAchievements = async () => {
   const newAchievements = [...achievements];
   let unlockedNew = false;
 
@@ -725,7 +726,6 @@ const checkAchievements = () => {
     }
   }
 };
-
 // Animation functions
 const triggerConfetti = () => {
   if (typeof window !== 'undefined') {
