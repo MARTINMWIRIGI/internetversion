@@ -1,9 +1,5 @@
 'use client';
 
-// Add these imports
-import MintLayerButton from '@/components/MintLayerButton'
-import { useUser } from '@/lib/supabase'
-
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import CulturalLayer from '@/components/layers/CulturalLayer';
@@ -11,8 +7,8 @@ import BiometricLayer from '@/components/layers/BiometricLayer';
 import EnvironmentalLayer from '@/components/layers/EnvironmentalLayer';
 import ExperientialLayer from '@/components/layers/ExperientialLayer';
 import EconomicLayer from '@/components/layers/EconomicLayer';
-import MintLayerButton from '@/components/MintLayerButton'; // ADD THIS IMPORT
-import { useUser } from '@/lib/supabase-client'; // ADD THIS IMPORT
+import MintLayerButton from '@/components/MintLayerButton'; // KEEP THIS ONE
+import { useUser } from '@/lib/supabase-client'; // KEEP THIS ONE
 import { 
   Brain, 
   Heart, 
