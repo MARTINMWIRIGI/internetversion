@@ -11,13 +11,22 @@
     "next": "14.2.5",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    
+    // Supabase only (remove ssr if causing issues)
     "@supabase/supabase-js": "2.39.0",
-    "@thirdweb-dev/react": "5.3.22",
-    "@thirdweb-dev/sdk": "5.20.31",
-    "@thirdweb-dev/chains": "0.1.70",
-    "nft.storage": "7.1.0",
+    
+    // Web3 - Simple and reliable
     "ethers": "6.9.0",
-    "lucide-react": "0.309.0"
+    
+    // NFT Storage
+    "nft.storage": "7.1.0",
+    
+    // UI
+    "lucide-react": "0.309.0",
+    
+    // Utilities
+    "clsx": "2.0.0",
+    "tailwind-merge": "2.2.0"
   },
   "devDependencies": {
     "@types/node": "20.11.24",
