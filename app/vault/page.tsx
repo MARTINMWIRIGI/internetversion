@@ -2,7 +2,7 @@
 
 // Add these imports
 import MintLayerButton from '@/components/MintLayerButton'
-import { useUser } from '@/lib/supabase/client'
+import { useUser } from '@/lib/supabase'
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
