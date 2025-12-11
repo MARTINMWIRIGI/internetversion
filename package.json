@@ -5,40 +5,24 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "start": "next start"
   },
   "dependencies": {
     "next": "14.2.5",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "@supabase/supabase-js": "2.43.4",
-    "@supabase/auth-helpers-nextjs": "0.9.0",
-    "@supabase/auth-helpers-react": "0.4.0",
-    "@supabase/ssr": "0.4.0",
-    "@thirdweb-dev/react": "5.4.2",
-    "@thirdweb-dev/sdk": "5.21.8",
-    "@thirdweb-dev/chains": "0.1.73",
-    "nft.storage": "8.0.1",
-    "@radix-ui/react-dialog": "1.0.5",
-    "canvas-confetti": "1.9.2",
-    "framer-motion": "10.16.16",
-    "@radix-ui/react-slot": "1.0.2",
-    "react-webcam": "7.0.1",
-    "@radix-ui/react-tooltip": "1.0.7",
+    "@supabase/supabase-js": "2.39.0",
+    "@thirdweb-dev/react": "5.3.22",
+    "@thirdweb-dev/sdk": "5.20.31",
+    "@thirdweb-dev/chains": "0.1.70",
+    "nft.storage": "7.1.0",
     "ethers": "6.9.0",
-    "@vercel/analytics": "1.0.0",
-    "class-variance-authority": "0.6.0",
-    "lucide-react": "0.309.0",
-    "clsx": "2.0.0",
-    "tailwind-merge": "2.2.0"
+    "lucide-react": "0.309.0"
   },
   "devDependencies": {
     "@types/node": "20.11.24",
     "@types/react": "18.2.61",
     "@types/react-dom": "18.2.19",
-    "autoprefixer": "10.4.16",
-    "postcss": "8.4.33",
     "tailwindcss": "3.4.6",
     "typescript": "5.3.3"
   }
