@@ -1,5 +1,9 @@
 'use client';
 
+// Add these imports
+import MintLayerButton from '@/components/MintLayerButton'
+import { useUser } from '@/lib/supabase/client'
+
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import CulturalLayer from '@/components/layers/CulturalLayer';
