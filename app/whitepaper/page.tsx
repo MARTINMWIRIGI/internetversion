@@ -47,7 +47,6 @@ import {
   FileText,
   Code,
   Terminal,
-  ShieldPlus,
   BarChart,
   LifeBuoy,
   Compass
