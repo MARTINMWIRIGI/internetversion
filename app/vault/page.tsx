@@ -1,12 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import CulturalLayer from '@/components/layers/CulturalLayer';
 import BiometricLayer from '@/components/layers/BiometricLayer';
 import EnvironmentalLayer from '@/components/layers/EnvironmentalLayer';
 import ExperientialLayer from '@/components/layers/ExperientialLayer';
 import EconomicLayer from '@/components/layers/EconomicLayer';
+import MintLayerButton from '@/components/MintLayerButton'; // ADD THIS IMPORT
+import { useUser } from '@/lib/supabase-client'; // ADD THIS IMPORT
 import { 
   Brain, 
   Heart, 
@@ -36,7 +38,7 @@ interface LayerStat {
   subValue?: string;
 }
 
-// Define the layer interface
+// Define the layer interface - UPDATED with real data
 interface VaultLayer {
   id: string;
   title: string;
@@ -51,131 +53,208 @@ interface VaultLayer {
   addButtonText: string;
   addPage: string;
   icon: React.ReactNode;
-  stats: LayerStat[]; // Make stats required
+  stats: LayerStat[];
+  sourceTable: string; // NEW: Which Supabase table this layer uses
+  dataItems?: any[]; // NEW: Actual data items from Supabase
 }
 
 export default function VaultPage() {
   const router = useRouter();
+  const { user } = useUser(); // Get authenticated user
   const [activeLayer, setActiveLayer] = useState<string | null>(null);
-  const [mintingLayer, setMintingLayer] = useState<string | null>(null);
   const [showAllLayers, setShowAllLayers] = useState(true);
   const [userBalance, setUserBalance] = useState(1245.50); // Milsa Tokens
   const [showEarningsModal, setShowEarningsModal] = useState(false);
+  const [layers, setLayers] = useState<VaultLayer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [realDataCounts, setRealDataCounts] = useState<Record<string, number>>({});
 
   // Milsa Token Conversion Rates
   const MILSA_TO_USD = 0.01;
   const USD_TO_KES = 150; // Approximate
   const milsaToKes = (tokens: number) => tokens * MILSA_TO_USD * USD_TO_KES;
 
-  const layers: VaultLayer[] = [
-    { 
-      id: 'cultural', 
-      title: '🏛️ Cultural Heritage', 
-      component: CulturalLayer, 
-      color: 'from-purple-900/30 to-cyan-900/30',
-      borderColor: 'border-purple-500/30',
-      description: 'Preserve stories, traditions, and cultural artifacts',
-      longDescription: 'Save endangered cultures and earn money for every word. Your stories become permanent digital artifacts that can never be lost.',
-      rewardRate: 1, // Tokens per word
-      progress: 85,
-      mintable: true,
-      addButtonText: 'Add More Culture',
-      addPage: '/vault/culture/add',
-      icon: <BookOpen className="w-5 h-5" />,
-      stats: [
-        { label: 'Words Preserved', value: '847', color: 'text-cyan-400' },
-        { label: 'Stories Saved', value: '23', color: 'text-purple-400' },
-        { label: 'Earned This Month', value: '847 Tokens', color: 'text-green-400', subValue: '≈ KSh 1,270' }
-      ]
-    },
-    { 
-      id: 'biometric', 
-      title: '🔐 Biometric Authentication', 
-      component: BiometricLayer, 
-      color: 'from-gray-900/30 to-blue-900/30',
-      borderColor: 'border-blue-500/30',
-      description: 'Your unique biological identity, secured forever',
-      longDescription: 'Turn your voice, heartbeat, and typing patterns into unforgeable digital signatures. Earn rewards for each unique trait.',
-      rewardRate: 3, // Tokens per trait
-      progress: 65,
-      mintable: true,
-      addButtonText: 'Complete Biometric Scan',
-      addPage: '/vault/biometrics/scan',
-      icon: <Mic className="w-5 h-5" />,
-      stats: [
-        { label: 'Traits Recorded', value: '4', color: 'text-blue-400' },
-        { label: 'Security Score', value: '92%', color: 'text-green-400' },
-        { label: 'Earned This Month', value: '12 Tokens', color: 'text-green-400',subValue: '≈ KSh 18' }
-      ]
-    },
-    { 
-      id: 'environmental', 
-      title: '🌱 Environmental Layer', 
-      component: EnvironmentalLayer, 
-      color: 'from-green-900/30 to-emerald-900/30',
-      borderColor: 'border-green-500/30',
-      description: 'Your environmental impact and sustainability data',
-      longDescription: 'Track and offset your carbon footprint while earning rewards. Contribute to climate research and sustainable living.',
-      rewardRate: 2, // Tokens per data point
-      progress: 45,
-      mintable: true,
-      addButtonText: 'Add Environmental Data',
-      addPage: '/vault/environment/add',
-      icon: <Leaf className="w-5 h-5" />,
-      stats: [
-        { label: 'Carbon Offset', value: '12.2 tons', color: 'text-green-400' },
-        { label: 'Trees Planted', value: '8', color: 'text-emerald-400' },
-        { label: 'Earned This Month', value: '90 Tokens', color: 'text-green-400',subValue: '≈ KSh 135' }
-      ]
-    },
-    { 
-      id: 'experiential', 
-      title: '🎭 Experiential Layer', 
-      component: ExperientialLayer, 
-      color: 'from-yellow-900/30 to-orange-900/30',
-      borderColor: 'border-orange-500/30',
-      description: 'Your life stories and memories, preserved forever',
-      longDescription: 'Turn precious memories into permanent digital treasures. Each memory earns you tokens while creating a family legacy.',
-      rewardRate: 1.5, // Tokens per memory
-      progress: 72,
-      mintable: true,
-      addButtonText: 'Add Experience',
-      addPage: '/vault/experience/add',
-      icon: <Camera className="w-5 h-5" />,
-      stats: [
-        { label: 'Memories Saved', value: '24', color: 'text-orange-400' },
-        { label: 'Family Members', value: '8', color: 'text-yellow-400' },
-        { label: 'Earned This Month', value: '36 Tokens',color: 'text-green-400', subValue: '≈ KSh 54' }
-      ]
-    },
-    { 
-      id: 'economic', 
-      title: '💰 Economic Layer', 
-      component: EconomicLayer, 
-      color: 'from-blue-900/30 to-indigo-900/30',
-      borderColor: 'border-indigo-500/30',
-      description: 'Your skills, income, and economic value',
-      longDescription: 'Document your professional journey and economic contributions. Verified skills and income data earn you higher rewards.',
-      rewardRate: 2.5, // Tokens per verified skill
-      progress: 88,
-      mintable: true,
-      addButtonText: 'Add Economic Data',
-      addPage: '/vault/economic/add',
-      icon: <Briefcase className="w-5 h-5" />,
-      stats: [
-        { label: 'Verified Skills', value: '12', color: 'text-indigo-400' },
-        { label: 'Monthly Income', value: '$85', color: 'text-blue-400' },
-        { label: 'Earned This Month', value: '260 Tokens',color: 'text-green-400', subValue: '≈ KSh 390' }
-      ]
-    },
-  ];
+  // Initialize layers with real data fetching
+  const initializeLayers = async () => {
+    if (!user) return;
 
-  // Calculate total earnings
-  const totalEarnings = layers.reduce((sum, layer) => {
-    // Simulated earnings based on progress
-    const earnings = layer.progress * layer.rewardRate * 10;
-    return sum + earnings;
-  }, 0);
+    try {
+      // Fetch counts from your Supabase tables
+      const counts = await fetchDataCounts(user.id);
+      setRealDataCounts(counts);
+
+      const baseLayers: Omit<VaultLayer, 'dataItems'>[] = [
+        { 
+          id: 'cultural', 
+          title: '🏛️ Cultural Heritage', 
+          component: CulturalLayer, 
+          color: 'from-purple-900/30 to-cyan-900/30',
+          borderColor: 'border-purple-500/30',
+          description: 'Preserve stories, traditions, and cultural artifacts',
+          longDescription: 'Save endangered cultures and earn money for every word. Your stories become permanent digital artifacts that can never be lost.',
+          rewardRate: 1, // Tokens per word
+          progress: calculateProgress('cultural_data', counts),
+          mintable: true,
+          addButtonText: 'Add More Culture',
+          addPage: '/vault/culture/add',
+          icon: <BookOpen className="w-5 h-5" />,
+          stats: [],
+          sourceTable: 'cultural_data'
+        },
+        { 
+          id: 'biometric', 
+          title: '🔐 Biometric Authentication', 
+          component: BiometricLayer, 
+          color: 'from-gray-900/30 to-blue-900/30',
+          borderColor: 'border-blue-500/30',
+          description: 'Your unique biological identity, secured forever',
+          longDescription: 'Turn your voice, heartbeat, and typing patterns into unforgeable digital signatures. Earn rewards for each unique trait.',
+          rewardRate: 3, // Tokens per trait
+          progress: calculateProgress('biometric_srfs', counts),
+          mintable: true,
+          addButtonText: 'Complete Biometric Scan',
+          addPage: '/vault/biometrics/scan',
+          icon: <Mic className="w-5 h-5" />,
+          stats: [],
+          sourceTable: 'biometric_srfs'
+        },
+        { 
+          id: 'environmental', 
+          title: '🌱 Environmental Layer', 
+          component: EnvironmentalLayer, 
+          color: 'from-green-900/30 to-emerald-900/30',
+          borderColor: 'border-green-500/30',
+          description: 'Your environmental impact and sustainability data',
+          longDescription: 'Track and offset your carbon footprint while earning rewards. Contribute to climate research and sustainable living.',
+          rewardRate: 2, // Tokens per data point
+          progress: calculateProgress('environmental_data', counts),
+          mintable: true,
+          addButtonText: 'Add Environmental Data',
+          addPage: '/vault/environment/add',
+          icon: <Leaf className="w-5 h-5" />,
+          stats: [],
+          sourceTable: 'environmental_data'
+        },
+        { 
+          id: 'experiential', 
+          title: '🎭 Experiential Layer', 
+          component: ExperientialLayer, 
+          color: 'from-yellow-900/30 to-orange-900/30',
+          borderColor: 'border-orange-500/30',
+          description: 'Your life stories and memories, preserved forever',
+          longDescription: 'Turn precious memories into permanent digital treasures. Each memory earns you tokens while creating a family legacy.',
+          rewardRate: 1.5, // Tokens per memory
+          progress: calculateProgress('experiential_data', counts),
+          mintable: true,
+          addButtonText: 'Add Experience',
+          addPage: '/vault/experience/add',
+          icon: <Camera className="w-5 h-5" />,
+          stats: [],
+          sourceTable: 'experiential_data'
+        },
+        { 
+          id: 'economic', 
+          title: '💰 Economic Layer', 
+          component: EconomicLayer, 
+          color: 'from-blue-900/30 to-indigo-900/30',
+          borderColor: 'border-indigo-500/30',
+          description: 'Your skills, income, and economic value',
+          longDescription: 'Document your professional journey and economic contributions. Verified skills and income data earn you higher rewards.',
+          rewardRate: 2.5, // Tokens per verified skill
+          progress: calculateProgress('economic_data', counts),
+          mintable: true,
+          addButtonText: 'Add Economic Data',
+          addPage: '/vault/economic/add',
+          icon: <Briefcase className="w-5 h-5" />,
+          stats: [],
+          sourceTable: 'economic_data'
+        },
+      ];
+// Update stats with real data
+      const updatedLayers = baseLayers.map(layer => ({
+        ...layer,
+        stats: generateRealStats(layer.id, counts)
+      }));
+
+      setLayers(updatedLayers as VaultLayer[]);
+    } catch (error) {
+      console.error('Error initializing layers:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchDataCounts = async (userId: string): Promise<Record<string, number>> => {
+    // This is a placeholder - implement actual Supabase queries
+    // For now, returning mock data
+    return {
+      cultural_data: 847,
+      biometric_srfs: 4,
+      voice_samples: 12,
+      emotional_patterns: 8,
+      language_progress: 45,
+      behavioral_data: 23,
+      environmental_data: 18,
+      experiential_data: 24,
+      economic_data: 12
+    };
+  };
+
+  const calculateProgress = (table: string, counts: Record<string, number>): number => {
+    const count = counts[table] || 0;
+    // Calculate progress based on data count (max 1000 for 100%)
+    return Math.min(Math.round((count / 10) * 100), 100);
+  };
+
+  const generateRealStats = (layerId: string, counts: Record<string, number>): LayerStat[] => {
+    const statsTemplates = {
+      cultural: [
+        { label: 'Words Preserved', value: `${counts.cultural_data || 0}`, color: 'text-cyan-400' },
+        { label: 'Stories Saved', value: `${Math.floor((counts.cultural_data || 0) / 100)}`, color: 'text-purple-400' },
+        { label: 'Earned This Month', value: `${(counts.cultural_data || 0) * 1} Tokens`, color: 'text-green-400', subValue: `≈ KSh ${((counts.cultural_data || 0) * 1 * MILSA_TO_USD * USD_TO_KES).toFixed(0)}` }
+      ],
+      biometric: [
+        { label: 'Traits Recorded', value: `${counts.biometric_srfs || 0}`, color: 'text-blue-400' },
+        { label: 'Security Score', value: `${Math.min(100, (counts.biometric_srfs || 0) * 25)}%`, color: 'text-green-400' },
+        { label: 'Earned This Month', value: `${(counts.biometric_srfs || 0) * 3} Tokens`, color: 'text-green-400', subValue: `≈ KSh ${((counts.biometric_srfs || 0) * 3 * MILSA_TO_USD * USD_TO_KES).toFixed(0)}` }
+      ],
+      environmental: [
+        { label: 'Data Points', value: `${counts.environmental_data || 0}`, color: 'text-green-400' },
+        { label: 'Carbon Offset', value: `${(counts.environmental_data || 0) * 0.5} tons`, color: 'text-emerald-400' },
+        { label: 'Earned This Month', value: `${(counts.environmental_data || 0) * 2} Tokens`, color: 'text-green-400', subValue: `≈ KSh ${((counts.environmental_data || 0) * 2 * MILSA_TO_USD * USD_TO_KES).toFixed(0)}` }
+      ],
+      experiential: [
+        { label: 'Memories Saved', value: `${counts.experiential_data || 0}`, color: 'text-orange-400' },
+        { label: 'Family Members', value: `${Math.min(10, Math.floor((counts.experiential_data || 0) / 3))}`, color: 'text-yellow-400' },
+        { label: 'Earned This Month', value: `${(counts.experiential_data || 0) * 1.5} Tokens`, color: 'text-green-400', subValue: `≈ KSh ${((counts.experiential_data || 0) * 1.5 * MILSA_TO_USD * USD_TO_KES).toFixed(0)}` }
+      ],
+      economic: [
+        { label: 'Verified Skills', value: `${counts.economic_data || 0}`, color: 'text-indigo-400' },
+        { label: 'Income Streams', value: `${Math.min(5, Math.floor((counts.economic_data || 0) / 3))}`, color: 'text-blue-400' },
+        { label: 'Earned This Month', value: `${(counts.economic_data || 0) * 2.5} Tokens`, color: 'text-green-400', subValue: `≈ KSh ${((counts.economic_data || 0) * 2.5 * MILSA_TO_USD * USD_TO_KES).toFixed(0)}` }
+      ]
+    };
+
+    return statsTemplates[layerId as keyof typeof statsTemplates] || [];
+  };
+
+  useEffect(() => {
+    initializeLayers();
+  }, [user]);
+
+  // Calculate total earnings from real data
+  const calculateTotalEarnings = () => {
+    return Object.entries(realDataCounts).reduce((total, [table, count]) => {
+      let rate = 1; // Default rate
+      if (table.includes('biometric')) rate = 3;
+      if (table.includes('environmental')) rate = 2;
+      if (table.includes('experiential')) rate = 1.5;
+      if (table.includes('economic')) rate = 2.5;
+      return total + (count * rate);
+    }, 0);
+  };
+
+  const totalEarnings = calculateTotalEarnings();
 
   const handleLayerClick = (layerId: string) => {
     setActiveLayer(layerId);
@@ -185,29 +264,6 @@ export default function VaultPage() {
   const handleBackToLayers = () => {
     setActiveLayer(null);
     setShowAllLayers(true);
-    setMintingLayer(null);
-  };
-
-  const handleMintLayer = async (layerId: string) => {
-    setMintingLayer(layerId);
-
-    // Simulate minting process
-    try {
-      console.log(`Minting ${layerId} layer...`);
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // Add minting bonus to balance
-      const mintBonus = 50; // Tokens for minting
-      setUserBalance(prev => prev + mintBonus);
-      
-      alert(`✅ Successfully minted as NFT! You earned ${mintBonus} bonus tokens (≈ KSh ${mintBonus * MILSA_TO_USD * USD_TO_KES})`);
-      setMintingLayer(null);
-
-    } catch (error) {
-      console.error('Minting failed:', error);
-      alert('❌ Minting failed. Please try again.');
-      setMintingLayer(null);
-    }
   };
 
   const handleAddToLayer = (layerId: string) => {
@@ -226,7 +282,17 @@ export default function VaultPage() {
     }
   };
 
-  // If a specific layer is active, show only that layer
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500 mx-auto"></div>
+          <p className="mt-4 text-gray-300">Loading your vault...</p>
+        </div>
+      </div>
+    );
+  }
+// If a specific layer is active, show only that layer
   if (activeLayer && !showAllLayers) {
     const layer = layers.find(l => l.id === activeLayer);
     if (!layer) return null;
@@ -256,27 +322,6 @@ export default function VaultPage() {
                 >
                   {layer.addButtonText}
                 </button>
-
-                {layer.mintable && (
-                  <button
-                    onClick={() => handleMintLayer(layer.id)}
-                    disabled={mintingLayer === layer.id}
-                    className={`px-6 py-2 rounded-lg font-semibold ${
-                      mintingLayer === layer.id
-                        ? 'bg-gray-700 text-gray-400'
-                        : 'bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-700 hover:to-cyan-600 text-white'
-                    }`}
-                  >
-                    {mintingLayer === layer.id ? (
-                      <span className="flex items-center gap-2">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                        Minting...
-                      </span>
-                    ) : (
-                      'Mint NFT'
-                    )}
-                  </button>
-                )}
               </div>
             </div>
           </div>
@@ -306,7 +351,6 @@ export default function VaultPage() {
               Preserve your life story • Earn money • Create legacy
             </p>
           </div>
-
           {/* Balance Card */}
           <div className="bg-gradient-to-br from-purple-900/20 to-cyan-900/20 rounded-2xl p-6 border border-purple-500/20 min-w-[300px]">
             <div className="flex items-center justify-between mb-4">
@@ -376,7 +420,7 @@ export default function VaultPage() {
                   </p>
                   <p className="flex items-start gap-2">
                     <span className="text-green-400">✓</span>
-                    <span><strong>Mint as NFT</strong> to create permanent ownership certificates</span>
+                    <span><strong>Mint as NFT</strong> to create permanent ownership certificates on Polygon blockchain</span>
                   </p>
                   <p className="flex items-start gap-2">
                     <span className="text-green-400">✓</span>
@@ -402,7 +446,7 @@ export default function VaultPage() {
               <div>
                 <div className="text-sm text-gray-400">Your Soul Score</div>
                 <div className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">
-                  6,450
+                  {totalEarnings.toLocaleString()}
                 </div>
                 <div className="text-sm text-gray-300 mt-1">
                   Based on contributions across {layers.length} layers
@@ -416,22 +460,23 @@ export default function VaultPage() {
                 </div>
                 <div className="relative">
                   <div className="h-20 w-20 md:h-24 md:w-24 rounded-full border-4 border-purple-500/30 flex items-center justify-center">
-                    <div className="text-xl md:text-2xl font-bold text-white">92%</div>
+                    <div className="text-xl md:text-2xl font-bold text-white">
+                      {Math.round(layers.reduce((acc, layer) => acc + layer.progress, 0) / layers.length)}%
+                    </div>
                   </div>
                   <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 text-xs text-gray-400">
                     Complete
                   </div>
                 </div>
                 <div className="text-center">
-                  <div className="text-xl font-bold text-white">5</div>
+                  <div className="text-xl font-bold text-white">{layers.length}</div>
                   <div className="text-sm text-gray-400">Active Layers</div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-
-        {/* Layer Grid - VERTICAL */}
+{/* Layer Grid - VERTICAL */}
         <div className="max-w-7xl mx-auto">
           <h2 className="text-2xl font-bold mb-6 text-white">Your Identity Layers</h2>
           <p className="text-gray-400 mb-8">Click any layer to view details and continue earning</p>
@@ -442,7 +487,7 @@ export default function VaultPage() {
                 key={layer.id}
                 className={`bg-gradient-to-br ${layer.color} rounded-2xl border ${layer.borderColor} overflow-hidden hover:border-opacity-50 transition-all duration-300`}
               >
-              {/* Layer Header */}
+                {/* Layer Header */}
                 <div className="p-6 border-b border-gray-800/50">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex-1">
@@ -519,7 +564,7 @@ export default function VaultPage() {
                         ))}
                       </div>
                     </div>
-{/* Earning Potential */}
+                    {/* Earning Potential */}
                     <div className="bg-black/30 rounded-xl p-4 border border-gray-800/50">
                       <h4 className="font-bold text-white mb-3 flex items-center gap-2">
                         <TrendingUp className="w-4 h-4" />
@@ -547,8 +592,8 @@ export default function VaultPage() {
                   </div>
                 </div>
 
-                {/* Layer Footer with Mint Button */}
-                {layer.mintable && (
+                {/* Layer Footer with REAL MINTING BUTTON */}
+                {layer.mintable && user && (
                   <div className="px-6 py-4 bg-black/20 border-t border-gray-800/50">
                     <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                       <div>
@@ -556,7 +601,7 @@ export default function VaultPage() {
                           Ready to mint as permanent NFT
                         </div>
                         <div className="text-xs text-gray-500">
-                          Minting earns 50 bonus tokens (≈ KSh {milsaToKes(50).toFixed(0)})
+                          Minting creates a permanent record on Polygon blockchain
                         </div>
                       </div>
                       <div className="flex gap-3">
@@ -566,24 +611,17 @@ export default function VaultPage() {
                         >
                           Add More First
                         </button>
-                        <button
-                          onClick={() => handleMintLayer(layer.id)}
-                          disabled={mintingLayer === layer.id}
-                          className={`px-6 py-2 rounded-lg font-semibold ${
-                            mintingLayer === layer.id
-                              ? 'bg-gray-700 text-gray-400'
-                              : 'bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-700 hover:to-cyan-600 text-white'
-                          }`}
-                        >
-                          {mintingLayer === layer.id ? (
-                            <span className="flex items-center gap-2">
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                              Minting...
-                            </span>
-                          ) : (
-                            'Mint as NFT'
-                          )}
-                        </button>
+                        {/* REPLACED: Using real MintLayerButton */}
+                        <MintLayerButton
+                          layer={{
+                            id: layer.id, // You'll need to pass actual data item ID here
+                            type: layer.id,
+                            data: {}, // You'll need to pass actual data
+                            name: layer.title,
+                            description: layer.description
+                          }}
+                          userId={user.id}
+                        />
                       </div>
                     </div>
                   </div>
@@ -613,8 +651,7 @@ export default function VaultPage() {
               </div>
             </div>
           </div>
-
-          {/* Statistics Bar */}
+{/* Statistics Bar */}
           <div className="mt-10 bg-gradient-to-br from-gray-900/30 to-black/30 rounded-2xl p-6 border border-gray-800/50">
             <h3 className="text-xl font-bold text-white mb-4">📊 Your Vault Statistics</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -635,7 +672,9 @@ export default function VaultPage() {
                 <div className="text-sm text-gray-400">Total Earned (KES)</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-yellow-400">92%</div>
+                <div className="text-2xl font-bold text-yellow-400">
+                  {Math.round(layers.reduce((acc, layer) => acc + layer.progress, 0) / layers.length)}%
+                </div>
                 <div className="text-sm text-gray-400">Completion Rate</div>
               </div>
             </div>
@@ -662,7 +701,8 @@ export default function VaultPage() {
             </div>
           </div>
         </div>
-{/* Earnings Modal */}
+
+        {/* Earnings Modal */}
         {showEarningsModal && (
           <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-6 max-w-md w-full border border-purple-500/30">
