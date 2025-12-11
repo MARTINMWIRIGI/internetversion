@@ -996,14 +996,10 @@ const handleShare = () => {
         <div className="mt-12 pt-8 border-t border-gray-800/50">
           <div className="text-center">
             <div className="flex justify-center gap-4 mb-4">
-              <div className="text-xs text-gray-500 font-mono">ETH: soulinternet.eth</div>
-              <div className="text-xs text-gray-500">•</div>
-              <div className="text-xs text-gray-500 font-mono">DNS: soulinternet.xyz</div>
-              <div className="text-xs text-gray-500">•</div>
-              <div className="text-xs text-gray-500 font-mono">v1.0.0</div>
+              
             </div>
             <p className="text-gray-500 text-sm mb-2">
-              © 2025 Soul Internet Protocol | Developed by Imperial Enterprise
+              © 2025 Soul Internet
             </p>
             <p className="text-gray-600 text-xs">
               This document is protected under international copyright law. Unauthorized reproduction or distribution prohibited.
