@@ -898,11 +898,11 @@ const handleShare = () => {
             )}
           </div>
 
-          <div className="prose prose-invert max-w-none">
-            <pre className="whitespace-pre-wrap font-mono text-gray-300 leading-relaxed text-sm md:text-base">
-              {whitepaperContent[currentPage].content}
-            </pre>
-          </div>
+         <div className="prose prose-invert max-w-none">
+  <div className="text-gray-300 leading-relaxed text-base md:text-lg font-sans whitespace-pre-line">
+    {whitepaperContent[currentPage].content}
+  </div>
+</div>
         </motion.div>
 {/* Navigation Buttons */}
         <div className="flex justify-between items-center mb-12">
