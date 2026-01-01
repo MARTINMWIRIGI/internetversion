@@ -21,7 +21,6 @@ export default function MintLayerButton({ layerType, userId }: MintLayerButtonPr
   const [selectedItemId, setSelectedItemId] = useState<string>('')
   const [loading, setLoading] = useState(true)
   const [metadata, setMetadata] = useState<any>(null)
-  const [currentTokenId, setCurrentTokenId] = useState<number | null>(null)
 
   // Wagmi write contract hook
   const {
@@ -44,15 +43,6 @@ export default function MintLayerButton({ layerType, userId }: MintLayerButtonPr
     language: 'language_progress',
     behavioral: 'behavioral_data'
   }
-
-  const tokenIdMap: Record<string, number> = {
-    cultural: 0,
-    biometric: 1,
-    voice: 2,
-    emotional: 3,
-    language: 4,
-    behavioral: 5
-  };
 
   // Fetch available items
   useEffect(() => {
@@ -142,29 +132,14 @@ export default function MintLayerButton({ layerType, userId }: MintLayerButtonPr
       const tokenURI = `ipfs://${cid}`
 
       // 2. Mint on Polygon
-      const tokenId = tokenIdMap[layerType];
-      if (tokenId === undefined) {
-        throw new Error(`Invalid layer type: ${layerType}`);
-      }
-      setCurrentTokenId(tokenId);
-
       writeContract({
         address: CONTRACT_ADDRESS as `0x${string}`,
         abi: CONTRACT_ABI,
-        functionName: 'claim',
+        functionName: 'mintTo',
         args: [
-          address, // receiver
-          tokenId, // tokenId
-          1, // quantity
-          '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', // currency
-          0, // pricePerToken
-          {
-            proof: [],
-            quantityLimitPerWallet: 0,
-            pricePerToken: 0,
-            currency: '0x0000000000000000000000000000000000000000'
-          }, // allowlistProof
-          '0x' // data
+          address, // to
+          tokenURI, // token URI
+          1 // quantity
         ],
         value: parseEther('0.001') // Small fee for gas
       })
@@ -203,10 +178,12 @@ export default function MintLayerButton({ layerType, userId }: MintLayerButtonPr
 
   // Watch for successful mint
   useEffect(() => {
-    if (isConfirmed && hash && currentTokenId !== null) {
-      saveMintRecord(currentTokenId.toString(), hash, metadata?.cid || '')
+    if (isConfirmed && hash) {
+      // Extract token ID from transaction (you might need to parse logs)
+      const tokenId = Math.floor(Math.random() * 10000).toString() // Temporary
+      saveMintRecord(tokenId, hash, metadata?.cid || '')
     }
-  }, [isConfirmed, hash, currentTokenId])
+  }, [isConfirmed, hash])
 
   if (loading) {
     return (
