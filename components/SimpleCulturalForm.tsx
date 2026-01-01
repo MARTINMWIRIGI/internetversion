@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client';
 import { motion } from 'framer-motion'
 import { Save, CheckCircle, Globe } from 'lucide-react'
 
@@ -43,7 +43,6 @@ export default function SimpleCulturalForm() {
     }
 
     try {
-      const supabase = createClient()
 
       // Prepare data for Supabase
       const culturalData = {

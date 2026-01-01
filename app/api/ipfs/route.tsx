@@ -10,8 +10,8 @@ export async function POST(request: Request) {
     // Upload to IPFS using NFT.Storage
     const nftstorage = new NFTStorage({ token: NFT_STORAGE_KEY })
     
-    const blob = new Blob([JSON.stringify(metadata)], { type: 'application/json' })
-    const cid = await nftstorage.storeBlob(blob)
+    const result = await nftstorage.store(metadata);
+    const cid = result.url.replace('ipfs://', '');
     
     return NextResponse.json({
       success: true,

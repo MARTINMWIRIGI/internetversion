@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client';
 
 interface LeaderboardUser {
   rank: number
@@ -21,8 +21,6 @@ export default function Leaderboard() {
 
   const fetchLeaderboard = async () => {
     try {
-      const supabase = createClient()
-      
       const { data, error } = await supabase
         .from('users')
         .select('wallet_address, total_xp, total_words_completed, username')

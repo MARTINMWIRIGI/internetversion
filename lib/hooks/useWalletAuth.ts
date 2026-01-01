@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 
 export function useWalletAuth() {
   const [walletAddress, setWalletAddress] = useState<string | null>(null)
@@ -46,7 +46,6 @@ export function useWalletAuth() {
 
   const syncUserWithSupabase = async (walletAddr: string) => {
     try {
-      const supabase = createClient()
       
       // Check if user exists
       const { data: existingUser, error: fetchError } = await supabase

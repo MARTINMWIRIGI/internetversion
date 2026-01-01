@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { BrowserProvider, Contract } from "ethers";
-import CONTRACT_ABI from "@/app/data/contractABI.json";
+import { BrowserProvider, Contract, parseEther } from "ethers";
+import CONTRACT_ABI from "@/lib/contract-abi.json";
 
 const CONTRACT_ADDRESS =
   process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ||
@@ -64,7 +64,21 @@ export default function WalletMintAdmin() {
       const contract = new Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
 
       // change mint() if your contract uses a different function
-      const tx = await contract.mint({ value: 0 });
+      const tx = await contract.claim(
+        address, // receiver
+        0, // tokenId
+        1, // quantity
+        '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', // currency
+        0, // pricePerToken
+        {
+          proof: [],
+          quantityLimitPerWallet: 0,
+          pricePerToken: 0,
+          currency: '0x0000000000000000000000000000000000000000'
+        }, // allowlistProof
+        '0x', // data
+        { value: parseEther('0.001') }
+      );
       const receipt = await tx.wait();
 
       setTxHash(receipt.hash);

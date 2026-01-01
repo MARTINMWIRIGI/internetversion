@@ -8,7 +8,7 @@ import EnvironmentalLayer from '@/components/layers/EnvironmentalLayer';
 import ExperientialLayer from '@/components/layers/ExperientialLayer';
 import EconomicLayer from '@/components/layers/EconomicLayer';
 import MintLayerButton from '@/components/MintLayerButton'; // KEEP THIS ONE
-import { useUser } from '@/lib/supabase-client'; // KEEP THIS ONE
+import { useUser } from '@/lib/supabase/client'; // KEEP THIS ONE
 import { 
   Brain, 
   Heart, 
@@ -613,13 +613,7 @@ export default function VaultPage() {
                         </button>
                         {/* REPLACED: Using real MintLayerButton */}
                         <MintLayerButton
-                          layer={{
-                            id: layer.id, // You'll need to pass actual data item ID here
-                            type: layer.id,
-                            data: {}, // You'll need to pass actual data
-                            name: layer.title,
-                            description: layer.description
-                          }}
+                          layerType={layer.id}
                           userId={user.id}
                         />
                       </div>
