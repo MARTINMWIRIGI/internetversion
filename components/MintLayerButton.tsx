@@ -23,7 +23,7 @@ export default function MintLayerButton({ layerType, userId }: MintLayerButtonPr
   const [metadata, setMetadata] = useState<any>(null)
 
   // Wagmi write contract hook
-  const { 
+  const {
     data: hash,
     writeContract,
     isPending,
@@ -31,7 +31,7 @@ export default function MintLayerButton({ layerType, userId }: MintLayerButtonPr
   } = useWriteContract()
 
   // Wait for transaction
-  const { isLoading: isConfirming, isSuccess: isConfirmed } = 
+  const { isLoading: isConfirming, isSuccess: isConfirmed } =
     useWaitForTransactionReceipt({ hash })
 
   // Map layer types to tables
@@ -131,18 +131,39 @@ export default function MintLayerButton({ layerType, userId }: MintLayerButtonPr
       const cid = await uploadToIPFS(metadata)
       const tokenURI = `ipfs://${cid}`
 
+      // New Token ID Mapping
+      const tokenIdMap: Record<string, bigint> = {
+        cultural: 0n,
+        biometric: 1n,
+        environmental: 2n,
+        experiential: 3n,
+        economic: 4n
+      };
+      const tokenId = tokenIdMap[layerType];
+      if (tokenId === undefined) {
+        throw new Error(`Invalid layerType: ${layerType}`);
+      }
+
       // 2. Mint on Polygon
       writeContract({
         address: CONTRACT_ADDRESS as `0x${string}`,
         abi: CONTRACT_ABI,
-        functionName: 'mintTo',
+        functionName: 'claim',
         args: [
           address, // to
-          tokenURI, // token URI
-          1 // quantity
+          tokenId, // tokenId
+          1n, // quantity
+          '0x0000000000000000000000000000000000000000', // currency
+          0, // pricePerToken
+          {
+            proof: [],
+            quantityLimitPerWallet: 0,
+            pricePerToken: 0,
+            currency: '0x0000000000000000000000000000000000000000'
+          }, // allowlistProof
+          '0x' // data
         ],
-        value: parseEther('0.001') // Small fee for gas
-      })
+      });
 
     } catch (error: any) {
       console.error('Minting error:', error)

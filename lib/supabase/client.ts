@@ -1,9 +1,16 @@
 'use client'
 
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createBrowserClient } from '@supabase/ssr'
 import { useEffect, useState } from 'react'
 
-export const supabase = createClientComponentClient()
+const cleanSupabaseUrl = (url: string) => {
+  return url.replace(/[^\x20-\x7E]/g, '').replace('coURL', '.co').trim();
+};
+
+const supabaseUrl = cleanSupabaseUrl(process.env.NEXT_PUBLIC_SUPABASE_URL!);
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
 
 export const useUser = () => {
   const [user, setUser] = useState<any>(null)

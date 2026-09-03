@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion'
 
 // Types
@@ -486,8 +486,6 @@ const saveWord = async () => {
 
     // 2. Save to Supabase (persistent storage)
     try {
-      const supabase = createClient();
-      
       const { data, error } = await supabase
         .from('language_progress')
         .insert({
@@ -565,7 +563,6 @@ const saveWord = async () => {
 // Update user stats in Supabase
 const updateUserStatsInSupabase = async (pronunciationScore: number, isPerfect: boolean, audioBase64: string | null) => {
   try {
-    const supabase = createClient();
 
     // Check if user exists in Supabase
     const { data: existingUser, error: fetchError } = await supabase
@@ -715,7 +712,6 @@ const checkAchievements = async () => {
     
     // Save achievements to Supabase
     try {
-      const supabase = createClient();
       await supabase.from('user_achievements').insert({
         user_id: localUserId,
         achievement_id: newAchievements[newAchievements.length - 1].id,
