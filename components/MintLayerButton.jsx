@@ -5,22 +5,17 @@ import { supabase } from '@/lib/supabase/client'
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { parseEther } from 'viem'
-import CONTRACT_ABI from '@/lib/contract-abi.json'
-
-interface MintLayerButtonProps {
-  layerType: string
-  userId: string
-}
+import CONTRACT_ABI from '@/app/data/contractABI.json'
 
 // Your deployed contract address
 const CONTRACT_ADDRESS = '0x202934e4dF29E57Ab7498bB31946174d7C95eDc7'
 
-export default function MintLayerButton({ layerType, userId }: MintLayerButtonProps) {
+export default function MintLayerButton({ layerType, userId }) {
   const { address, isConnected } = useAccount()
-  const [availableItems, setAvailableItems] = useState<any[]>([])
-  const [selectedItemId, setSelectedItemId] = useState<string>('')
+  const [availableItems, setAvailableItems] = useState([])
+  const [selectedItemId, setSelectedItemId] = useState('')
   const [loading, setLoading] = useState(true)
-  const [metadata, setMetadata] = useState<any>(null)
+  const [metadata, setMetadata] = useState(null)
 
   // Wagmi write contract hook
   const { 
@@ -35,7 +30,7 @@ export default function MintLayerButton({ layerType, userId }: MintLayerButtonPr
     useWaitForTransactionReceipt({ hash })
 
   // Map layer types to tables
-  const tableMap: Record<string, string> = {
+  const tableMap = {
     cultural: 'cultural_data',
     biometric: 'biometric_srfs',
     voice: 'voice_samples',
@@ -133,7 +128,7 @@ export default function MintLayerButton({ layerType, userId }: MintLayerButtonPr
 
       // 2. Mint on Polygon
       writeContract({
-        address: CONTRACT_ADDRESS as `0x${string}`,
+        address: CONTRACT_ADDRESS,
         abi: CONTRACT_ABI,
         functionName: 'mintTo',
         args: [
