@@ -1,7 +1,7 @@
 // app/whitepaper/page.tsx
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Download, 
@@ -55,6 +55,18 @@ import Link from 'next/link';
 
 export default function WhitepaperPage() {
   const [currentPage, setCurrentPage] = useState(0);
+
+  useEffect(() => {
+    const section = new URLSearchParams(window.location.search).get('section');
+    const sectionPageMap: Record<string, number> = {
+      tokenomics: 4,
+      roadmap: 7,
+    };
+
+    if (section && sectionPageMap[section] !== undefined) {
+      setCurrentPage(sectionPageMap[section]);
+    }
+  }, []);
 
   const whitepaperContent = [
     {
@@ -864,10 +876,17 @@ const handleShare = () => {
         {/* Whitepaper Content */}
         <motion.div
           key={currentPage}
+           id={
+             currentPage === 4
+               ? 'tokenomics'
+               : currentPage === 7
+                 ? 'roadmap'
+                 : 'whitepaper-content'
+           }
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="bg-black/40 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-6 md:p-8 mb-8"
+           className="scroll-mt-28 bg-black/40 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-6 md:p-8 mb-8"
         >
           <div className="mb-6">
             <div className="flex items-center justify-between mb-4">
