@@ -8,7 +8,7 @@ import EnvironmentalLayer from '@/components/layers/EnvironmentalLayer';
 import ExperientialLayer from '@/components/layers/ExperientialLayer';
 import EconomicLayer from '@/components/layers/EconomicLayer';
 import MintLayerButton from '@/components/MintLayerButton'; // KEEP THIS ONE
-import { useUser } from '@/lib/supabase-client'; // KEEP THIS ONE
+import { useUser } from '@/lib/supabase/client';
 import { 
   Brain, 
   Heart, 
