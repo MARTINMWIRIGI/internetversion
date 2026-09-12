@@ -1,122 +1,281 @@
 "use client"
 
 import Link from "next/link"
-import { useState, useEffect } from "react"
+import { usePathname } from "next/navigation"
+import { useEffect, useRef, useState } from "react"
+import {
+  ArrowUpRight,
+  ChevronDown,
+  ExternalLink,
+  Menu,
+  Smartphone,
+  Wallet,
+  X,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Menu, ExternalLink, Smartphone, Globe } from "lucide-react"
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
+import { connectWallet, formatAddress } from "@/lib/wallet"
+
+type MenuKey = "overview" | "documents" | "products"
+
+type NavigationItem = {
+  label: string
+  href: string
+  description?: string
+  external?: boolean
+}
+
+const overviewItems: NavigationItem[] = [
+  {
+    label: "Our Mission",
+    href: "/about#mission",
+    description: "Build a permissionless network for human connection.",
+  },
+  {
+    label: "Our Vision",
+    href: "/about#vision",
+    description: "Connect consciousness and preserve human understanding.",
+  },
+  {
+    label: "Our Goal",
+    href: "/#goal",
+    description: "Make culture, identity, and memory last beyond one lifetime.",
+  },
+  {
+    label: "Vaults",
+    href: "/vault",
+    description: "Explore the multi-layer identity preservation system.",
+  },
+  {
+    label: "OpenSea",
+    href: "https://opensea.io",
+    description: "Browse Soul Internet NFTs on the open marketplace.",
+    external: true,
+  },
+]
+
+const documentItems: NavigationItem[] = [
+  {
+    label: "Whitepaper",
+    href: "/whitepaper",
+    description: "Read the technical protocol and cultural thesis.",
+  },
+  {
+    label: "Tokenomics",
+    href: "/whitepaper?section=tokenomics",
+    description: "Review the MILSA token economy.",
+  },
+  {
+    label: "Roadmap",
+    href: "/whitepaper?section=roadmap",
+    description: "Follow the protocol development timeline.",
+  },
+]
+
+const productItems: NavigationItem[] = [
+  {
+    label: "OpenSea",
+    href: "https://opensea.io",
+    description: "View collectibles and marketplace activity.",
+    external: true,
+  },
+  {
+    label: "Minting",
+    href: "/wizard",
+    description: "Contribute language and create an NFT.",
+  },
+  {
+    label: "NFTs",
+    href: "/gallery",
+    description: "Explore the community language NFT gallery.",
+  },
+]
+
+const menuItems: Record<MenuKey, NavigationItem[]> = {
+  overview: overviewItems,
+  documents: documentItems,
+  products: productItems,
+}
+
+const menuLabels: Record<MenuKey, string> = {
+  overview: "Overview",
+  documents: "Documents",
+  products: "Products",
+}
+
+function isInternalItemActive(pathname: string, item: NavigationItem) {
+  if (item.external) return false
+
+  const itemPath = item.href.split(/[?#]/)[0]
+  if (itemPath === "/") return pathname === "/"
+  return pathname === itemPath || pathname.startsWith(`${itemPath}/`)
+}
+
+function isMenuActive(pathname: string, items: NavigationItem[]) {
+  return items.some((item) => isInternalItemActive(pathname, item))
+}
+
+function MenuItemLink({
+  item,
+  onSelect,
+  tabIndex,
+}: {
+  item: NavigationItem
+  onSelect: () => void
+  tabIndex?: number
+}) {
+  const className =
+    "group flex min-w-0 items-start justify-between gap-4 rounded-xl px-3 py-3 text-left transition-colors hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/80"
+
+  const content = (
+    <>
+      <span className="min-w-0">
+        <span className="flex items-center gap-2 text-sm font-medium text-white">
+          {item.label}
+          {item.external && <ArrowUpRight className="h-3.5 w-3.5 text-cyan-300" aria-hidden="true" />}
+        </span>
+        {item.description && (
+          <span className="mt-1 block text-xs leading-5 text-gray-400 transition-colors group-hover:text-gray-300">
+            {item.description}
+          </span>
+        )}
+      </span>
+      {!item.external && (
+        <span className="mt-1 h-1.5 w-1.5 flex-none rounded-full bg-purple-400/60 transition-colors group-hover:bg-cyan-300" />
+      )}
+    </>
+  )
+
+  if (item.external) {
+    return (
+      <a
+        href={item.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={className}
+        onClick={onSelect}
+        tabIndex={tabIndex}
+      >
+        {content}
+      </a>
+    )
+  }
+
+  return (
+    <Link href={item.href} className={className} onClick={onSelect} tabIndex={tabIndex}>
+      {content}
+    </Link>
+  )
+}
 
 export function Header() {
-  const [isOpen, setIsOpen] = useState(false)
+  const pathname = usePathname()
+  const navigationRef = useRef<HTMLElement>(null)
+  const [openMenu, setOpenMenu] = useState<MenuKey | null>(null)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [mobileOpenMenu, setMobileOpenMenu] = useState<MenuKey | null>(null)
   const [address, setAddress] = useState<string | null>(null)
   const [isConnecting, setIsConnecting] = useState(false)
   const [hasMetaMask, setHasMetaMask] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
-    // Check if mobile
-    if (typeof window !== 'undefined') {
-      setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent))
-      
-      // Check for MetaMask
-      const hasMM = !!(window.ethereum && window.ethereum.isMetaMask)
-      setHasMetaMask(hasMM)
-      
-      // Check if wallet was previously connected
-      const checkConnection = async () => {
-        if (window.ethereum) {
-          try {
-            const accounts = await window.ethereum.request({
-              method: "eth_accounts"
-            })
-            if (accounts && accounts.length > 0) {
-              setAddress(accounts[0])
-            }
-          } catch (error) {
-            console.error("Error checking wallet connection:", error)
-          }
-        }
+    if (typeof window === "undefined") return
+
+    setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent))
+    setHasMetaMask(Boolean(window.ethereum?.isMetaMask))
+
+    const ethereum = window.ethereum
+    if (!ethereum) return
+
+    const syncWallet = async () => {
+      try {
+        const accounts = await ethereum.request({ method: "eth_accounts" })
+        setAddress(accounts?.[0] ?? null)
+      } catch (error) {
+        console.error("Error checking wallet connection:", error)
       }
-      checkConnection()
+    }
+
+    const handleAccountsChanged = (accounts: string[]) => {
+      setAddress(accounts?.[0] ?? null)
+    }
+
+    syncWallet()
+    ethereum.on?.("accountsChanged", handleAccountsChanged)
+
+    return () => {
+      ethereum.removeListener?.("accountsChanged", handleAccountsChanged)
     }
   }, [])
 
-  // Function to switch or add Polygon network
-  const switchToPolygon = async () => {
-    try {
-      await window.ethereum!.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId: "0x89" }] // Polygon Mainnet
-      })
-      return true
-    } catch (switchError: any) {
-      if (switchError.code === 4902) {
-        try {
-          await window.ethereum!.request({
-            method: "wallet_addEthereumChain",
-            params: [{
-              chainId: "0x89",
-              chainName: "Polygon Mainnet",
-              nativeCurrency: {
-                name: "MATIC",
-                symbol: "MATIC",
-                decimals: 18
-              },
-              rpcUrls: ["https://polygon-rpc.com/"],
-              blockExplorerUrls: ["https://polygonscan.com"]
-            }]
-          })
-          return true
-        } catch (addError) {
-          console.error("Failed to add Polygon network:", addError)
-          return false
-        }
-      } else {
-        console.error("Failed to switch to Polygon:", switchError)
-        return false
+  useEffect(() => {
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (!navigationRef.current?.contains(event.target as Node)) {
+        setOpenMenu(null)
       }
     }
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpenMenu(null)
+        setMobileMenuOpen(false)
+      }
+    }
+
+    document.addEventListener("mousedown", handleOutsideClick)
+    document.addEventListener("keydown", handleEscape)
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick)
+      document.removeEventListener("keydown", handleEscape)
+    }
+  }, [])
+
+  const closeMenus = () => {
+    setOpenMenu(null)
+    setMobileMenuOpen(false)
+    setMobileOpenMenu(null)
   }
 
-  // MOBILE: Deep link to MetaMask app
+  const switchMenu = (menu: MenuKey) => {
+    setOpenMenu((current) => (current === menu ? null : menu))
+  }
+
   const connectMobileMetaMask = () => {
-    // MetaMask mobile deep link
     const dappUrl = window.location.href
-    const metamaskAppDeepLink = `https://metamask.app.link/dapp/${encodeURIComponent(dappUrl)}`
-    
-    // Open MetaMask app
-    window.open(metamaskAppDeepLink, '_blank')
-    
-    // Also try universal link
-    window.location.href = `https://metamask.app.link/dapp/${dappUrl.replace('https://', '')}`
+    const encodedDappUrl = encodeURIComponent(dappUrl)
+
+    window.open(`https://metamask.app.link/dapp/${encodedDappUrl}`, "_blank")
+    window.location.href = `https://metamask.app.link/dapp/${dappUrl.replace("https://", "")}`
   }
 
-  // DESKTOP: Normal MetaMask connection
-  const connectDesktopMetaMask = async () => {
-    setIsConnecting(true)
-    
-    try {
-      if (!window.ethereum) {
+  const handleConnectWallet = async () => {
+    if (address) {
+      setAddress(null)
+      return
+    }
+
+    if (!window.ethereum) {
+      if (isMobile) {
+        connectMobileMetaMask()
+      } else {
         window.open("https://metamask.io/download/", "_blank")
-        return
       }
+      return
+    }
 
-      // Request account access (POPUP APPEARS HERE)
-      const accounts = await window.ethereum.request({
-        method: "eth_requestAccounts"
-      })
-
-      if (accounts && accounts.length > 0) {
-        setAddress(accounts[0])
-        
-        // Auto switch to Polygon
-        const switched = await switchToPolygon()
-        if (!switched) {
-          alert("Connected! Please switch to Polygon Mainnet in MetaMask.")
-        }
-      }
+    setIsConnecting(true)
+    try {
+      const connectedAddress = await connectWallet()
+      setAddress(connectedAddress)
     } catch (error: any) {
-      if (error.code === 4001) {
+      if (error?.code === 4001) {
         alert("Connection rejected. Please approve in MetaMask.")
       } else {
         alert("Failed to connect. Please try again.")
@@ -126,238 +285,289 @@ export function Header() {
     }
   }
 
-  // Unified connect function
-  const handleConnectWallet = () => {
-    if (address) {
-      setAddress(null) // Disconnect
-      return
-    }
+  const openSeaUrl = address ? `https://opensea.io/${address}` : "https://opensea.io"
+  const connectedLabel = address ? formatAddress(address) : "Connect Wallet"
 
-    // Check if MetaMask is available
-    if (hasMetaMask) {
-      // MetaMask is installed - use appropriate method
-      if (isMobile) {
-        // On mobile with MetaMask installed
-        if (window.ethereum && window.ethereum.isMetaMask) {
-          // In MetaMask browser - use normal connection
-          connectDesktopMetaMask()
-        } else {
-          // Regular mobile browser - deep link to app
-          connectMobileMetaMask()
-        }
-      } else {
-        // Desktop - normal connection
-        connectDesktopMetaMask()
-      }
-    } else {
-      // No MetaMask installed
-      if (isMobile) {
-        // Mobile without MetaMask
-        const confirmInstall = confirm("MetaMask is not installed. Would you like to install it?")
-        if (confirmInstall) {
-          if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-            window.open("https://apps.apple.com/us/app/metamask-blockchain-wallet/id1438144202", "_blank")
-          } else {
-            window.open("https://play.google.com/store/apps/details?id=io.metamask", "_blank")
-          }
-        }
-      } else {
-        // Desktop without MetaMask
-        alert("Please install MetaMask to continue.")
-        window.open("https://metamask.io/download/", "_blank")
-      }
-    }
+  const resolveNavigationItem = (item: NavigationItem) =>
+    item.label === "OpenSea" && item.external ? { ...item, href: openSeaUrl } : item
+
+  const renderDesktopMenu = (menu: MenuKey) => {
+    const items = menuItems[menu]
+    const isOpen = openMenu === menu
+
+    return (
+      <div
+        className={`absolute left-1/2 top-full z-50 mt-3 w-[min(92vw,34rem)] -translate-x-1/2 origin-top rounded-2xl border border-purple-400/20 bg-[#0d1230]/95 p-3 shadow-2xl shadow-purple-950/50 backdrop-blur-xl transition-all duration-200 ${
+          isOpen
+            ? "visible translate-y-0 opacity-100"
+            : "invisible -translate-y-2 opacity-0"
+        }`}
+        aria-hidden={!isOpen}
+      >
+        <div className="grid gap-1 sm:grid-cols-2">
+          {items.map((item) => (
+            <MenuItemLink
+              key={item.label}
+              item={resolveNavigationItem(item)}
+              onSelect={closeMenus}
+              tabIndex={isOpen ? 0 : -1}
+            />
+          ))}
+        </div>
+        <div className="mt-2 flex items-center justify-between border-t border-white/10 px-3 pt-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-purple-300/70">
+          <span>{menuLabels[menu]}</span>
+          <span className="text-cyan-300/70">Soul Internet</span>
+        </div>
+      </div>
+    )
   }
 
-  const openSeaUrl = address ? `https://opensea.io/${address}` : "#"
-
   return (
-    <header className="border-b border-purple-500/20 bg-gradient-to-b from-purple-900/30 to-transparent backdrop-blur-lg sticky top-0 z-50">
-      <div className="container mx-auto px-4 py-4 md:py-5 flex items-center justify-between gap-4">
-        <Link href="/" className="hover:opacity-80 transition-opacity flex-shrink-0">
-          <h1 className="text-xl md:text-2xl font-bold gradient-text">Soul Internet</h1>
+    <header className="sticky top-0 z-50 border-b border-purple-400/15 bg-[#0a0e27]/80 backdrop-blur-xl">
+      <div className="mx-auto flex min-h-[4.5rem] max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
+        <Link
+          href="/"
+          className="flex flex-shrink-0 items-center gap-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/80"
+          aria-label="Soul Internet home"
+          onClick={closeMenus}
+        >
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-cyan-400 text-[10px] font-bold text-[#0a0e27] shadow-lg shadow-cyan-500/20">
+            SI
+          </span>
+          <span className="gradient-text text-lg font-bold tracking-tight sm:text-xl">Soul Internet</span>
         </Link>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex gap-6 items-center flex-1 justify-center text-sm">
-
-<Link href="/" className="text-gray-300 hover:text-cyan-400 transition-colors py-2 px-3 rounded-lg hover:bg-purple-500/10">
-  Home
-</Link>
-
- <Link href="/about" className="text-gray-300 hover:text-cyan-400 transition-colors py-2 px-3 rounded-lg hover:bg-purple-500/10">
-  About
-</Link>
-
-
-          <Link href="/wizard" className="text-gray-300 hover:text-cyan-400 transition-colors py-2 px-3 rounded-lg hover:bg-purple-500/10">
-            Contribute
+        <nav
+          ref={navigationRef}
+          aria-label="Primary navigation"
+          className="hidden flex-1 items-center justify-center gap-1 lg:flex"
+        >
+          <Link
+            href="/"
+            className={`rounded-lg px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/80 ${
+              pathname === "/"
+                ? "bg-white/[0.06] text-white"
+                : "text-gray-300 hover:bg-white/[0.04] hover:text-cyan-300"
+            }`}
+            aria-current={pathname === "/" ? "page" : undefined}
+            onClick={closeMenus}
+          >
+            Welcome to Soul Internet
           </Link>
-          {/* VAULT LINK */}
-          <Link href="/vault" className="bg-gradient-to-r from-purple-600/20 to-cyan-500/20 text-white border border-purple-500/30 hover:border-cyan-500/60 transition-colors py-2 px-4 rounded-lg flex items-center gap-2">
-            <span>🏦</span>
-            <span>Explore Vault</span>
-          </Link>
-          {address && (
-            <Link href={openSeaUrl} target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-cyan-400 transition-colors py-2 px-3 rounded-lg hover:bg-purple-500/10">
-              View NFTs on OpenSea
-            </Link>
-          )}
+
+          {(Object.keys(menuItems) as MenuKey[]).map((menu) => {
+            const active = isMenuActive(pathname, menuItems[menu])
+            const isOpen = openMenu === menu
+
+            return (
+              <div
+                key={menu}
+                className="relative"
+                onMouseEnter={() => setOpenMenu(menu)}
+                onMouseLeave={() => setOpenMenu(null)}
+              >
+                <button
+                  type="button"
+                  className={`flex items-center gap-1 rounded-lg px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/80 ${
+                    active || isOpen
+                      ? "bg-white/[0.06] text-white"
+                      : "text-gray-300 hover:bg-white/[0.04] hover:text-cyan-300"
+                  }`}
+                  aria-expanded={isOpen}
+                  aria-haspopup="true"
+                  aria-controls={`${menu}-menu`}
+                  onClick={() => switchMenu(menu)}
+                  onKeyDown={(event) => {
+                    if (event.key === "ArrowDown" || event.key === "Enter" || event.key === " ") {
+                      event.preventDefault()
+                      setOpenMenu(menu)
+                    }
+                  }}
+                >
+                  {menuLabels[menu]}
+                  <ChevronDown
+                    className={`h-3.5 w-3.5 transition-transform ${isOpen ? "rotate-180 text-cyan-300" : ""}`}
+                    aria-hidden="true"
+                  />
+                </button>
+                <div id={`${menu}-menu`}>{renderDesktopMenu(menu)}</div>
+              </div>
+            )
+          })}
         </nav>
 
-        {/* Desktop Right Actions */}
-        <div className="hidden md:flex items-center gap-3">
-          {address && (
-            <Link href="/vault">
-              <Button variant="ghost" className="text-cyan-400 hover:bg-cyan-500/10">
-                My Vault
-              </Button>
-            </Link>
-          )}
-          
-          {/* Desktop Connect Button */}
+        <div className="ml-auto hidden items-center lg:flex">
           <Button
             onClick={handleConnectWallet}
             disabled={isConnecting}
-            className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white hover:shadow-lg hover:shadow-orange-500/50 disabled:opacity-50 flex items-center gap-2"
+            aria-label={address ? "Disconnect wallet" : "Connect wallet"}
+            className="min-w-[9.75rem] rounded-xl border border-cyan-300/30 bg-gradient-to-r from-purple-600 to-cyan-500 px-4 text-sm font-semibold text-white shadow-lg shadow-cyan-500/10 transition-all hover:-translate-y-0.5 hover:from-purple-500 hover:to-cyan-400 hover:shadow-cyan-500/25 disabled:opacity-60"
           >
             {isConnecting ? (
               <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
                 Connecting...
-              </>
-            ) : address ? (
-              <>
-                <div className="w-2 h-2 rounded-full bg-green-400"></div>
-                {`${address.slice(0, 6)}...${address.slice(-4)}`}
               </>
             ) : (
               <>
-                <svg className="w-5 h-5" viewBox="0 0 40 37" fill="none">
-                  {/* MetaMask SVG - same as before */}
-                  <path d="M36.011 1.32408L22.1887 12.1118L24.7553 6.09119L36.011 1.32408Z" fill="#E2761B"/>
-                  {/* ... rest of MetaMask logo */}
-                </svg>
-                Connect MetaMask
+                <Wallet className="mr-2 h-4 w-4" aria-hidden="true" />
+                {connectedLabel}
               </>
             )}
           </Button>
         </div>
 
-        {/* Mobile Menu */}
-        <Sheet open={isOpen} onOpenChange={setIsOpen}>
-          <SheetTrigger asChild className="md:hidden">
-            <Button variant="ghost" size="icon" className="text-cyan-400">
-              <Menu className="w-5 h-5" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="right" className="bg-gradient-to-b from-purple-900/40 to-purple-950/40 border-purple-500/20 backdrop-blur-xl w-80">
-            <div className="space-y-6 mt-8 px-2">
-              <nav className="space-y-2">
-                <p className="text-xs text-purple-400 font-semibold px-4 mb-3">EXPLORE</p>
-      
+        <div className="lg:hidden">
+          <Sheet
+            open={mobileMenuOpen}
+            onOpenChange={(open) => {
+              setMobileMenuOpen(open)
+              if (!open) setMobileOpenMenu(null)
+            }}
+          >
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                className="gap-2 rounded-lg px-3 text-cyan-300 hover:bg-white/[0.06] hover:text-white"
+                aria-label="Open navigation menu"
+              >
+                <Menu className="h-5 w-5" aria-hidden="true" />
+                <span className="text-sm font-medium">Menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent
+              side="right"
+              className="w-[min(88vw,24rem)] border-purple-400/20 bg-[#0b1030]/[.98] p-0 text-white backdrop-blur-2xl"
+            >
+              <SheetTitle className="sr-only">Soul Internet navigation</SheetTitle>
+              <SheetDescription className="sr-only">
+                Navigate Soul Internet and connect your wallet.
+              </SheetDescription>
 
-<Link href="/" className="text-gray-300 hover:text-cyan-400 transition-colors py-2 px-3 rounded-lg hover:bg-purple-500/10"onClick={() => setIsOpen(false)}>
-  Home
-</Link>
-    
- <Link href="/about" className="text-gray-300 hover:text-cyan-400 transition-colors py-2 px-3 rounded-lg hover:bg-purple-500/10"onClick={() => setIsOpen(false)}>
-  About
-</Link>
-
-                <Link href="/wizard" className="block text-gray-300 hover:text-cyan-400 py-4 px-4 rounded-lg" onClick={() => setIsOpen(false)}>Contribute</Link>
-                <Link href="/vault" className="block text-gray-300 hover:text-cyan-400 py-4 px-4 rounded-lg bg-gradient-to-r from-purple-600/10 to-cyan-500/10 border border-purple-500/20" onClick={() => setIsOpen(false)}>
-                  <div className="flex items-center gap-2">
-                    <span>🏦</span>
-                    <span>Vault</span>
+              <div className="flex h-full flex-col overflow-y-auto p-6">
+                <div className="mb-8 flex items-center justify-between border-b border-white/10 pb-5">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300/70">Menu</p>
+                    <p className="mt-1 text-lg font-semibold text-white">Soul Internet</p>
                   </div>
-                </Link>
-                {address && (
-                  <Link href={openSeaUrl} target="_blank" rel="noopener noreferrer" className="block text-gray-300 hover:text-cyan-400 py-4 px-4 rounded-lg" onClick={() => setIsOpen(false)}>
-                    View NFTs on OpenSea
-                  </Link>
-                )}
-              </nav>
+                  <button
+                    type="button"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-white/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/80"
+                    aria-label="Close navigation menu"
+                  >
+                    <X className="h-5 w-5" aria-hidden="true" />
+                  </button>
+                </div>
 
-              <div className="pt-6 border-t border-purple-500/20 space-y-3">
-                <p className="text-xs text-purple-400 font-semibold px-4">CONNECT WALLET</p>
-                
-                {address && (
-                  <>
-                    <Link href="/vault" onClick={() => setIsOpen(false)}>
-                      <Button variant="outline" className="w-full border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 mb-2">My Vault</Button>
-                    </Link>
-                    <Button
-                      onClick={() => {
-                        setAddress(null)
-                        setIsOpen(false)
-                      }}
-                      className="w-full bg-gradient-to-r from-red-600/20 to-red-500/20 text-red-300 border border-red-500/30 hover:border-red-600"
-                    >
-                      Disconnect Wallet
-                    </Button>
-                  </>
-                )}
-                
-                {/* MOBILE CONNECT OPTIONS */}
-                {!address && (
-                  <>
-                    {/* Option 1: MetaMask Browser */}
-                    <Button
-                      onClick={() => {
-                        handleConnectWallet()
-                        setIsOpen(false)
-                      }}
-                      disabled={isConnecting}
-                      className="w-full bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white hover:shadow-lg hover:shadow-orange-500/50 disabled:opacity-50 mb-2"
-                    >
-                      {isConnecting ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          Connecting...
-                        </>
-                      ) : (
-                        <>
-                          <Globe className="w-4 h-4 mr-2" />
-                          Connect in Browser
-                        </>
-                      )}
-                    </Button>
-                    
-                    {/* Option 2: MetaMask App (Mobile only) */}
-                    {isMobile && (
-                      <Button
-                        onClick={() => {
-                          connectMobileMetaMask()
-                          setIsOpen(false)
-                        }}
-                        className="w-full bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white border border-purple-500/30"
-                      >
-                        <Smartphone className="w-4 h-4 mr-2" />
-                        Open in MetaMask App
-                      </Button>
-                    )}
-                    
-                    {/* Install MetaMask if not installed */}
-                    {!hasMetaMask && (
-                      <div className="space-y-2 mt-3">
-                        <p className="text-xs text-gray-400 text-center">Don't have MetaMask?</p>
-                        <Button
-                          onClick={() => window.open("https://metamask.io/download/", "_blank")}
-                          variant="outline"
-                          className="w-full border-orange-500/50 text-orange-400 hover:bg-orange-500/10"
+                <nav aria-label="Mobile navigation" className="space-y-2">
+                  <Link
+                    href="/"
+                    onClick={closeMenus}
+                    className="block rounded-xl px-4 py-3 text-base font-medium text-white transition-colors hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/80"
+                  >
+                    Welcome
+                  </Link>
+
+                  {(Object.keys(menuItems) as MenuKey[]).map((menu) => {
+                    const isOpen = mobileOpenMenu === menu
+                    return (
+                      <div key={menu} className="rounded-xl border border-white/[0.06] bg-white/[0.02]">
+                        <button
+                          type="button"
+                          onClick={() => setMobileOpenMenu(isOpen ? null : menu)}
+                          className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-left text-base font-medium text-white transition-colors hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/80"
+                          aria-expanded={isOpen}
                         >
-                          <ExternalLink className="w-4 h-4 mr-2" />
-                          Install MetaMask
-                        </Button>
+                          {menuLabels[menu]}
+                          <ChevronDown
+                            className={`h-4 w-4 text-cyan-300 transition-transform ${isOpen ? "rotate-180" : ""}`}
+                            aria-hidden="true"
+                          />
+                        </button>
+                        <div
+                          className={`grid transition-[grid-template-rows,opacity] duration-200 ${
+                            isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+                          }`}
+                        >
+                          <div className="min-h-0 overflow-hidden">
+                            <div className="space-y-1 px-2 pb-2">
+                              {menuItems[menu].map((item) => (
+                                <MenuItemLink
+                                  key={item.label}
+                                  item={resolveNavigationItem(item)}
+                                  onSelect={closeMenus}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        </div>
                       </div>
+                    )
+                  })}
+                </nav>
+
+                <div className="mt-auto border-t border-white/10 pt-6">
+                  <Button
+                    onClick={() => {
+                      void handleConnectWallet()
+                      setMobileMenuOpen(false)
+                    }}
+                    disabled={isConnecting}
+                    className="w-full rounded-xl border border-cyan-300/30 bg-gradient-to-r from-purple-600 to-cyan-500 py-6 font-semibold text-white shadow-lg shadow-cyan-500/10"
+                  >
+                    {isConnecting ? (
+                      <>
+                        <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+                        Connecting...
+                      </>
+                    ) : (
+                      <>
+                        <Wallet className="mr-2 h-4 w-4" aria-hidden="true" />
+                        {connectedLabel}
+                      </>
                     )}
-                  </>
-                )}
+                  </Button>
+
+                  {!address && !hasMetaMask && (
+                    <button
+                      type="button"
+                      onClick={() => window.open("https://metamask.io/download/", "_blank")}
+                      className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-orange-400/30 px-4 py-3 text-sm text-orange-300 transition-colors hover:bg-orange-400/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300/80"
+                    >
+                      <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                      Install MetaMask
+                    </button>
+                  )}
+
+                  {isMobile && !address && hasMetaMask && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        connectMobileMetaMask()
+                        setMobileMenuOpen(false)
+                      }}
+                      className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-purple-400/30 px-4 py-3 text-sm text-purple-200 transition-colors hover:bg-purple-400/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300/80"
+                    >
+                      <Smartphone className="h-4 w-4" aria-hidden="true" />
+                      Open in MetaMask
+                    </button>
+                  )}
+
+                  {address && (
+                    <Link
+                      href="/vault"
+                      onClick={closeMenus}
+                      className="mt-3 flex items-center justify-center gap-2 rounded-xl border border-cyan-400/25 px-4 py-3 text-sm text-cyan-200 transition-colors hover:bg-cyan-400/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/80"
+                    >
+                      Open My Vault
+                    </Link>
+                  )}
+                </div>
               </div>
-            </div>
-          </SheetContent>
-        </Sheet>
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
     </header>
   )
