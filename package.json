@@ -11,24 +11,14 @@
     "next": "14.2.5",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    
-    // Supabase
     "@supabase/supabase-js": "2.39.0",
     "@supabase/auth-helpers-nextjs": "0.9.0",
     "@supabase/auth-helpers-react": "0.4.0",
-    
-    // Web3
     "ethers": "6.9.0",
-    
-    // NFT Storage
     "nft.storage": "7.1.0",
-    
-    // UI Libraries
     "lucide-react": "0.309.0",
     "framer-motion": "10.16.16",
     "canvas-confetti": "1.9.2",
-    
-    // Utilities
     "clsx": "2.0.0",
     "tailwind-merge": "2.2.0"
   },
