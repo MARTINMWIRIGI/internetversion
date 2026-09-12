@@ -251,7 +251,7 @@ return (
 <section className="py-20 px-4 relative">
   <div className="max-w-6xl mx-auto">
     <div className="flex flex-col md:flex-row gap-8 mb-16">
-      <div className="flex-1">
+      <div id="mission" className="flex-1 scroll-mt-28">
         <Card className="bg-gradient-to-br from-purple-900/10 to-cyan-900/10 border border-purple-500/20 backdrop-blur-sm">
           <CardHeader>
             <CardTitle className="flex items-center gap-3">
@@ -269,7 +269,7 @@ return (
         </Card>
       </div>
 
-      <div className="flex-1">
+      <div id="vision" className="flex-1 scroll-mt-28">
         <Card className="bg-gradient-to-br from-cyan-900/10 to-purple-900/10 border border-cyan-500/20 backdrop-blur-sm">
           <CardHeader>
             <CardTitle className="flex items-center gap-3">
