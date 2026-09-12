@@ -768,7 +768,8 @@ return (
   </div>
 </section>
       {/* SECTION 8: USE CASES */}
-      <section id="use-cases" className="py-16 md:py-24 px-4 md:px-8 lg:px-16 bg-gradient-to-b from-transparent to-black/30">
+      <section id="use-cases" className="relative scroll-mt-28 py-16 md:py-24 px-4 md:px-8 lg:px-16 bg-gradient-to-b from-transparent to-black/30">
+        <span id="goal" className="absolute -top-24" aria-hidden="true" />
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12 md:mb-16">
             <h2 className="text-3xl md:text-5xl font-bold mb-4">
