@@ -17,7 +17,7 @@ import {
 
 const config = getDefaultConfig({
   appName: 'Vault Guardian',
-  projectId: 'YOUR_WALLETCONNECT_PROJECT_ID', // Get from https://cloud.walletconnect.com
+  projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_ID || 'YOUR_WALLETCONNECT_PROJECT_ID',
   chains: [polygon, polygonMumbai],
   ssr: true,
 })

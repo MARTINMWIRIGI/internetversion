@@ -2,7 +2,7 @@ import type React from "react";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
-import { Header } from "../components/header"; // Fixed import path
+import { Header } from "../components/header";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -58,7 +58,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/logo.png" />
         <link
           rel="canonical"
-          href="https://soul-internet. com"
+          href="https://soul-internet.com"
         />
       </head>
       <body className={`${inter.className} antialiased bg-background text-foreground`}>
