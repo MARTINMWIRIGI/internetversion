@@ -1,58 +1,60 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+
+export const maxDuration = 60
+
+const JWT = process.env.PINATA_JWT!
+
+async function pinFile(file: File, name: string): Promise<string> {
+  const form = new FormData()
+  form.append('file', file, name)
+  form.append('pinataMetadata', JSON.stringify({ name }))
+  const res = await fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${JWT}` },
+    body: form,
+  })
+  if (!res.ok) throw new Error(`Pinata file upload failed: ${await res.text()}`)
+  const { IpfsHash } = await res.json()
+  return IpfsHash
+}
+
+async function pinJSON(obj: object, name: string): Promise<string> {
+  const res = await fetch('https://api.pinata.cloud/pinning/pinJSONToIPFS', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${JWT}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ pinataMetadata: { name }, pinataContent: obj }),
+  })
+  if (!res.ok) throw new Error(`Pinata JSON upload failed: ${await res.text()}`)
+  const { IpfsHash } = await res.json()
+  return IpfsHash
+}
 
 export async function POST(request: Request) {
   try {
-    const { userId, layerType, dataId } = await request.json()
+    const data = await request.formData()
+    const file = data.get('file') as File | null
+    const name = (data.get('name') as string) || 'Untitled Audio NFT'
+    const metadataJson = data.get('metadata') as string | null
 
-    // Initialize Supabase with service role key
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
+    if (!file) return NextResponse.json({ error: 'No file uploaded' }, { status: 400 })
 
-    // Generate mock NFT data
-    const tokenId = Math.floor(Math.random() * 10000)
-    const transactionHash = '0x' + Array.from({length: 64}, () => 
-      Math.floor(Math.random() * 16).toString(16)).join('')
+    const audioHash = await pinFile(file, `${name}.webm`)
+    const audioURI = `ipfs://${audioHash}`
 
-    // Map layer to table
-    const tableMap: Record<string, string> = {
-      cultural: 'cultural_data',
-      biometric: 'biometric_srfs',
-      voice: 'voice_samples',
-      emotional: 'emotional_patterns',
-      language: 'language_progress',
-      behavioral: 'behavioral_data'
+    const extraMeta = metadataJson ? JSON.parse(metadataJson) : {}
+    const metadata = {
+      name,
+      description: extraMeta.description || `Audio NFT: ${name}`,
+      image: extraMeta.image || 'ipfs://QmStaticPlaceholderImageHash',
+      animation_url: audioURI,
+      attributes: extraMeta.attributes || [],
     }
 
-    const sourceTable = tableMap[layerType] || 'cultural_data'
-
-    // Store in nft_minting_tracker
-    const { error } = await supabase.from('nft_minting_tracker').insert({
-      user_id: userId,
-      token_id: tokenId,
-      layer_type: layerType,
-      source_table: sourceTable,
-      source_id: dataId,
-      transaction_hash: transactionHash,
-      status: 'minted'
-    })
-
-    if (error) throw error
-
-    return NextResponse.json({
-      success: true,
-      tokenId,
-      transactionHash,
-      message: 'NFT minted successfully (simulation)'
-    })
+    const metaHash = await pinJSON(metadata, `${name}-metadata.json`)
+    return NextResponse.json({ tokenURI: `ipfs://${metaHash}`, audioURI })
 
   } catch (error: any) {
-    console.error('Minting error:', error)
-    return NextResponse.json(
-      { error: error.message || 'Minting failed' },
-      { status: 500 }
-    )
+    console.error('Mint API error:', error)
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }

@@ -7,7 +7,7 @@ import BiometricLayer from '@/components/layers/BiometricLayer';
 import EnvironmentalLayer from '@/components/layers/EnvironmentalLayer';
 import ExperientialLayer from '@/components/layers/ExperientialLayer';
 import EconomicLayer from '@/components/layers/EconomicLayer';
-import MintLayerButton from '@/components/MintLayerButton'; // KEEP THIS ONE
+import MintLayerButton from '@/components/MintLayerButton'
 import { useUser } from '@/lib/supabase/client';
 import { 
   Brain, 

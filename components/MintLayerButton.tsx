@@ -4,18 +4,18 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
-import { parseEther } from 'viem'
+import { createWalletClient } from 'viem'
 import CONTRACT_ABI from '@/app/data/contractABI.json'
 
 // Your deployed contract address
 const CONTRACT_ADDRESS = '0x202934e4dF29E57Ab7498bB31946174d7C95eDc7'
 
-export default function MintLayerButton({ layerType, userId }) {
+export default function MintLayerButton({ layerType, userId }: { layerType: string; userId: string }) {
   const { address, isConnected } = useAccount()
-  const [availableItems, setAvailableItems] = useState([])
+  const [availableItems, setAvailableItems] = useState<any[]>([])
   const [selectedItemId, setSelectedItemId] = useState('')
   const [loading, setLoading] = useState(true)
-  const [metadata, setMetadata] = useState(null)
+  const [metadata, setMetadata] = useState<any>(null)
 
   // Wagmi write contract hook
   const { 
@@ -130,13 +130,11 @@ export default function MintLayerButton({ layerType, userId }) {
       writeContract({
         address: CONTRACT_ADDRESS,
         abi: CONTRACT_ABI,
-        functionName: 'mintTo',
+        functionName: 'safeMint',
         args: [
-          address, // to
-          tokenURI, // token URI
-          1 // quantity
-        ],
-        value: parseEther('0.001') // Small fee for gas
+          address,   // to
+          tokenURI   // uri
+        ]
       })
 
     } catch (error: any) {
