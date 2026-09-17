@@ -10,7 +10,21 @@ import CONTRACT_ABI from '@/app/data/contractABI.json'
 // Your deployed contract address
 const CONTRACT_ADDRESS = '0x202934e4dF29E57Ab7498bB31946174d7C95eDc7'
 
-export default function MintLayerButton({ layerType, userId }: { layerType: string; userId: string }) {
+interface MintLayerButtonProps {
+  layerType?: string;
+  userId?: string;
+  layer?: {
+    id: string;
+    type?: string;
+    data?: any;
+    name?: string;
+    description?: string;
+  };
+}
+
+export default function MintLayerButton(props: MintLayerButtonProps) {
+  const layerType = props.layerType || props.layer?.type || props.layer?.id || "cultural";
+  const userId = props.userId || "";
   const { address, isConnected } = useAccount()
   const [availableItems, setAvailableItems] = useState<any[]>([])
   const [selectedItemId, setSelectedItemId] = useState('')
