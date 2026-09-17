@@ -25,7 +25,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# misclellaneous files
 docs
 install_output.txt
 build_output.txt
 package-lock.json
+npm-updates.txt
+
+.idea/
