@@ -8,7 +8,6 @@ import {
 import { WagmiProvider } from 'wagmi'
 import {
   polygon,
-  polygonMumbai,
 } from 'wagmi/chains'
 import {
   QueryClientProvider,
@@ -18,7 +17,7 @@ import {
 const config = getDefaultConfig({
   appName: 'Vault Guardian',
   projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_ID || 'YOUR_WALLETCONNECT_PROJECT_ID',
-  chains: [polygon, polygonMumbai],
+  chains: [polygon],
   ssr: true,
 })
 

@@ -175,25 +175,6 @@ export function MintStep({ wizardData, onBack }: MintStepProps) {
 
       setTxHash(hash)
 
-      // Save to Supabase
-      await fetch("/api/submissions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          language: wizardData.language,
-          content_type: wizardData.contentType,
-          words_phrases: wizardData.words,
-          definition: wizardData.definition,
-          context: wizardData.context,
-          audio_url: wizardData.audioUrl,
-          wallet_address: account,
-          nft_metadata_url: tokenURI,
-          transaction_hash: hash,
-          milsa_score: milsaScore,
-          quality_status: "approved"
-        })
-      })
-
       setStatus(null)
 
     } catch (err: any) {
